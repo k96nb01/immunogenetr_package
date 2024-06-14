@@ -20,3 +20,4 @@ HLA_column_repair <- function(data) {
     rename_with(~ str_replace(., "HLA\\-", "HLA_")) %>%
     rename_with(~ str_replace(., "\\*$", ""))
 }
+
