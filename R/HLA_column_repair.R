@@ -15,7 +15,7 @@
 #' @export
 #' @importFrom dplyr "%>%"
 
-HLA_column_repair <- function(data) {
+HLA_column_repair <- function(data, format = "tidyverse") {
   data %>%
     rename_with(~ str_replace(., "HLA\\-", "HLA_")) %>%
     rename_with(~ str_replace(., "\\*$", ""))
