@@ -1,0 +1,41 @@
+---
+title: "Function tests"
+output: html_notebook
+---
+
+```{r}
+# These are the libraries needed for the functions.
+
+library(dplyr)
+library(tidyselect)
+library(stringr)
+library(tidyr)
+library(xml2)
+library(rlang)
+
+```
+
+```{r}
+# Open the test data
+(test1 <- read.csv("test1.csv"))
+(test2 <- read.csv("test2.csv"))
+(test3 <- read.csv("test3.csv"))
+(test4 <- read.csv("test4.csv"))
+```
+
+```{r}
+# Test the HLA_column_repair function
+
+(test <- tribble(
+  ~case, ~"HLA-A*", ~"HLA-B", ~"HLA-DRB1*", ~"HLA-DQB1",
+  1, "A2", "A3", "A2", "A68",
+  2, "2", "3", "3", "2",
+  3, "01:01", NA, "01:01", "01:01",
+  4, "01:02:06", NA, NA, "01:02:06"
+  ))
+
+test %>% HLA_column_repair()
+test %>% HLA_column_repair(format = "WHO", asterisk = TRUE)
+
+```
+

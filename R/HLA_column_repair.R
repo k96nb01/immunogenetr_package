@@ -15,9 +15,22 @@
 #' @export
 #' @importFrom dplyr "%>%"
 
-HLA_column_repair <- function(data, format = "tidyverse") {
-  data %>%
-    rename_with(~ str_replace(., "HLA\\-", "HLA_")) %>%
-    rename_with(~ str_replace(., "\\*$", ""))
+HLA_column_repair <- function(data, format = "tidyverse", asterisk = FALSE) {
+  # Step 1: turn "HLA-A" to "HLA_A" or vice-versa.
+  if (format == "tidyverse") {
+    step_1 <- data %>% rename_with(~ str_replace(., "HLA\\-", "HLA_"))
+  } else if (format == "WHO") {
+    step_1 <- data %>% rename_with(~ str_replace(., "HLA_", "HLA-"))
+  } else {
+    abort("'format' argument must be either 'tidyverse' or 'WHO.'")
+  }
+  # Step 2: remove asterisk from all columns.
+  step_2 <- step_1 %>% rename_with(~ str_replace(., "\\*$", ""))
+  # Step 3: add askterisk back if wanted.
+  if (asterisk == TRUE) {
+    step_3 <- step_2 %>% rename_with(~ str_replace(., "$", "*"), starts_with("HLA"))
+  } else {
+    step_3 <- step_2
+  }
+  return(step_3)
 }
-
