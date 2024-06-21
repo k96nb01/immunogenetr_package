@@ -1864,6 +1864,16 @@ test %&gt;% HLA_column_repair()</code></pre>
   </script>
 </div>
 <!-- rnb-frame-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdCAlPiUgSExBX2NvbHVtbl9yZXBhaXIoZm9ybWF0ID0gXCJ0aWR5dmVyc2VcIiwgYXN0ZXJpc2sgPSBGQUxTRSlcbmBgYCJ9 -->
+<pre class="r"><code>test %&gt;% HLA_column_repair(format = &quot;tidyverse&quot;, asterisk = FALSE)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-frame-begin eyJtZXRhZGF0YSI6eyJjbGFzc2VzIjpbInRibF9kZiIsInRibCIsImRhdGEuZnJhbWUiXSwibnJvdyI6NCwibmNvbCI6NSwic3VtbWFyeSI6eyJBIHRpYmJsZSI6WyI0IMOXIDUiXX19LCJyZGYiOiJINHNJQUFBQUFBQUFCbzFSelVyRFFCQ2VKcHZhQkZvRm55TWhQMUJLTDVwU3hJTVhpMEp2c2lheEJ1TW1KS2w2OUpGOWdGS2RUWGNraVFvTzdNNThNL3ZOMzY2VzY4QmFXd0NnQTJONEcyaUNjWHR6WWM4QW1JWmdBQXhNcWQ4d2ZDcWplQ1o0Mk5rSE5ISU9TbytVUGdFU2FUR1ZRQXQ5U2tXRzRYcHoxMU5nSklFL2Q2Yy9lQUh4QXJ6TVQ1U1cvcU5FMEMzeCszczluTTcrMjFObkdZYmd6MG1sc2huS3lTSmVKZlRnOGlxOEM5dGdRU2tsV0s0V1hnZGZJKzZXTU12ODFhRXlZem5jTzE0NHc2N2ZTNVR4aW5vaHB4WHptanNQSmZJUjdYdVVvN3lvMDF3Z1NaTS9PdXlSQjJYUGNid1ZzcFBZamg2MzRzbjJlMkc5RUJ0WnMzRWRaS3hzMXJLTlF4Y2EvY0pRMFllSjJLVGllM01adjA4eXlod25MOHFjNEQ2YWRUaEZtWXFhNWtSdjVkUjV6WWxpUlhsR25tWnkySDhCWWtuQ0hlWUNBQUE9In0= -->
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["case"],"name":[1],"type":["dbl"],"align":["right"]},{"label":["HLA_A"],"name":[2],"type":["chr"],"align":["left"]},{"label":["HLA_B"],"name":[3],"type":["chr"],"align":["left"]},{"label":["HLA_DRB1"],"name":[4],"type":["chr"],"align":["left"]},{"label":["HLA_DQB1"],"name":[5],"type":["chr"],"align":["left"]}],"data":[{"1":"1","2":"A2","3":"A3","4":"A2","5":"A68"},{"1":"2","2":"2","3":"3","4":"3","5":"2"},{"1":"3","2":"01:01","3":"NA","4":"01:01","5":"01:01"},{"1":"4","2":"01:02:06","3":"NA","4":"NA","5":"01:02:06"}],"options":{"columns":{"min":{},"max":[10],"total":[5]},"rows":{"min":[10],"max":[10],"total":[4]},"pages":{}}}
+  </script>
+</div>
+<!-- rnb-frame-end -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdCAlPiUgSExBX2NvbHVtbl9yZXBhaXIoZm9ybWF0ID0gXCJXSE9cIiwgYXN0ZXJpc2sgPSBUUlVFKVxuYGBgIn0= -->
 <pre class="r"><code>test %&gt;% HLA_column_repair(format = &quot;WHO&quot;, asterisk = TRUE)</code></pre>
 <!-- rnb-source-end -->
@@ -1874,14 +1884,32 @@ test %&gt;% HLA_column_repair()</code></pre>
   </script>
 </div>
 <!-- rnb-frame-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuTkFcbmBgYCJ9 -->
-<pre class="r"><code>NA</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdCAlPiUgSExBX2NvbHVtbl9yZXBhaXIoZm9ybWF0ID0gXCJSXCIsIGFzdGVyaXNrID0gRkFMU0UpXG5gYGAifQ== -->
+<pre class="r"><code>test %&gt;% HLA_column_repair(format = &quot;R&quot;, asterisk = FALSE)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gYEhMQV9jb2x1bW5fcmVwYWlyKClgOlxuISAnZm9ybWF0JyBhcmd1bWVudCBtdXN0IGJlIGVpdGhlciAndGlkeXZlcnNlJyBvciAnV0hPLidcbkJhY2t0cmFjZTpcbiAxLiB0ZXN0ICU+JSBITEFfY29sdW1uX3JlcGFpcihmb3JtYXQgPSBcIlJcIiwgYXN0ZXJpc2sgPSBGQUxTRSlcbiAyLiBnbG9iYWwgSExBX2NvbHVtbl9yZXBhaXIoLiwgZm9ybWF0ID0gXCJSXCIsIGFzdGVyaXNrID0gRkFMU0UpXG4ifQ== -->
+<pre><code>Error in `HLA_column_repair()`:
+! &#39;format&#39; argument must be either &#39;tidyverse&#39; or &#39;WHO.&#39;
+Backtrace:
+ 1. test %&gt;% HLA_column_repair(format = &quot;R&quot;, asterisk = FALSE)
+ 2. global HLA_column_repair(., format = &quot;R&quot;, asterisk = FALSE)</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuIyBBIGZ1bmN0aW9uIHRvIHRha2UgSExBIHR5cGluZyBkYXRhIHNwcmVhZCBhY3Jvc3MgZGlmZmVyZW50LCBjb2x1bW5zLCBhcyBpcyBvZnRlbiBmb3VuZCBpbiB3aWxkLWNhdWdodCBkYXRhLCBhbmQgdHJhbnNmb3JtIGl0IHRvIGEgR0wgc3RyaW5nLlxuXG5ITEFfY29sdW1uc190b19HTHN0cmluZyA8LSBmdW5jdGlvbihkYXRhLCBwYXRpZW50X2NvdW1uID0gXCJwYXRpZW50XCIpe1xuICBkYXRhICU+JSBwaXZvdF9sb25nZXIoKVxufVxuYGBgIn0= -->
+<pre class="r"><code># A function to take HLA typing data spread across different, columns, as is often found in wild-caught data, and transform it to a GL string.
+
+HLA_columns_to_GLstring &lt;- function(data, patient_coumn = &quot;patient&quot;){
+  data %&gt;% pivot_longer()
+}</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkZ1bmN0aW9uIHRlc3RzIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KYGBge3J9DQojIFRoZXNlIGFyZSB0aGUgbGlicmFyaWVzIG5lZWRlZCBmb3IgdGhlIGZ1bmN0aW9ucy4NCg0KbGlicmFyeShkcGx5cikNCmxpYnJhcnkodGlkeXNlbGVjdCkNCmxpYnJhcnkoc3RyaW5ncikNCmxpYnJhcnkodGlkeXIpDQpsaWJyYXJ5KHhtbDIpDQpsaWJyYXJ5KHJsYW5nKQ0KDQpgYGANCg0KYGBge3J9DQojIE9wZW4gdGhlIHRlc3QgZGF0YQ0KKHRlc3QxIDwtIHJlYWQuY3N2KCJ0ZXN0MS5jc3YiKSkNCih0ZXN0MiA8LSByZWFkLmNzdigidGVzdDIuY3N2IikpDQoodGVzdDMgPC0gcmVhZC5jc3YoInRlc3QzLmNzdiIpKQ0KKHRlc3Q0IDwtIHJlYWQuY3N2KCJ0ZXN0NC5jc3YiKSkNCmBgYA0KDQpgYGB7cn0NCiMgVGVzdCB0aGUgSExBX2NvbHVtbl9yZXBhaXIgZnVuY3Rpb24NCg0KKHRlc3QgPC0gdHJpYmJsZSgNCiAgfmNhc2UsIH4iSExBLUEqIiwgfiJITEEtQiIsIH4iSExBLURSQjEqIiwgfiJITEEtRFFCMSIsDQogIDEsICJBMiIsICJBMyIsICJBMiIsICJBNjgiLA0KICAyLCAiMiIsICIzIiwgIjMiLCAiMiIsDQogIDMsICIwMTowMSIsIE5BLCAiMDE6MDEiLCAiMDE6MDEiLA0KICA0LCAiMDE6MDI6MDYiLCBOQSwgTkEsICIwMTowMjowNiINCiAgKSkNCg0KdGVzdCAlPiUgSExBX2NvbHVtbl9yZXBhaXIoKQ0KdGVzdCAlPiUgSExBX2NvbHVtbl9yZXBhaXIoZm9ybWF0ID0gIldITyIsIGFzdGVyaXNrID0gVFJVRSkNCg0KYGBgDQoNCg==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkZ1bmN0aW9uIHRlc3RzIg0Kb3V0cHV0OiBodG1sX25vdGVib29rDQotLS0NCg0KYGBge3J9DQojIFRoZXNlIGFyZSB0aGUgbGlicmFyaWVzIG5lZWRlZCBmb3IgdGhlIGZ1bmN0aW9ucy4NCg0KbGlicmFyeShkcGx5cikNCmxpYnJhcnkodGlkeXNlbGVjdCkNCmxpYnJhcnkoc3RyaW5ncikNCmxpYnJhcnkodGlkeXIpDQpsaWJyYXJ5KHhtbDIpDQpsaWJyYXJ5KHJsYW5nKQ0KDQpgYGANCg0KYGBge3J9DQojIE9wZW4gdGhlIHRlc3QgZGF0YQ0KKHRlc3QxIDwtIHJlYWQuY3N2KCJ0ZXN0MS5jc3YiKSkNCih0ZXN0MiA8LSByZWFkLmNzdigidGVzdDIuY3N2IikpDQoodGVzdDMgPC0gcmVhZC5jc3YoInRlc3QzLmNzdiIpKQ0KKHRlc3Q0IDwtIHJlYWQuY3N2KCJ0ZXN0NC5jc3YiKSkNCmBgYA0KDQpgYGB7cn0NCiMgVGVzdCB0aGUgSExBX2NvbHVtbl9yZXBhaXIgZnVuY3Rpb24NCg0KKHRlc3QgPC0gdHJpYmJsZSgNCiAgfmNhc2UsIH4iSExBLUEqIiwgfiJITEEtQiIsIH4iSExBLURSQjEqIiwgfiJITEEtRFFCMSIsDQogIDEsICJBMiIsICJBMyIsICJBMiIsICJBNjgiLA0KICAyLCAiMiIsICIzIiwgIjMiLCAiMiIsDQogIDMsICIwMTowMSIsIE5BLCAiMDE6MDEiLCAiMDE6MDEiLA0KICA0LCAiMDE6MDI6MDYiLCBOQSwgTkEsICIwMTowMjowNiINCiAgKSkNCg0KdGVzdCAlPiUgSExBX2NvbHVtbl9yZXBhaXIoKQ0KdGVzdCAlPiUgSExBX2NvbHVtbl9yZXBhaXIoZm9ybWF0ID0gInRpZHl2ZXJzZSIsIGFzdGVyaXNrID0gRkFMU0UpDQp0ZXN0ICU+JSBITEFfY29sdW1uX3JlcGFpcihmb3JtYXQgPSAiV0hPIiwgYXN0ZXJpc2sgPSBUUlVFKQ0KdGVzdCAlPiUgSExBX2NvbHVtbl9yZXBhaXIoZm9ybWF0ID0gIlIiLCBhc3RlcmlzayA9IEZBTFNFKQ0KYGBgDQoNCmBgYHtyfQ0KIyBBIGZ1bmN0aW9uIHRvIHRha2UgSExBIHR5cGluZyBkYXRhIHNwcmVhZCBhY3Jvc3MgZGlmZmVyZW50LCBjb2x1bW5zLCBhcyBpcyBvZnRlbiBmb3VuZCBpbiB3aWxkLWNhdWdodCBkYXRhLCBhbmQgdHJhbnNmb3JtIGl0IHRvIGEgR0wgc3RyaW5nLg0KDQpITEFfY29sdW1uc190b19HTHN0cmluZyA8LSBmdW5jdGlvbihkYXRhLCBwYXRpZW50X2NvdW1uID0gInBhdGllbnQiKXsNCiAgZGF0YSAlPiUgcGl2b3RfbG9uZ2VyKCkNCn0NCmBgYA0KDQo=</div>
 
 
 

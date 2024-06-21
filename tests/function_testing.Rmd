@@ -35,7 +35,16 @@ library(rlang)
   ))
 
 test %>% HLA_column_repair()
+test %>% HLA_column_repair(format = "tidyverse", asterisk = FALSE)
 test %>% HLA_column_repair(format = "WHO", asterisk = TRUE)
+test %>% HLA_column_repair(format = "R", asterisk = FALSE)
+```
 
+```{r}
+# A function to take HLA typing data spread across different, columns, as is often found in wild-caught data, and transform it to a GL string.
+
+HLA_columns_to_GLstring <- function(data, patient_coumn = "patient"){
+  data %>% pivot_longer()
+}
 ```
 
