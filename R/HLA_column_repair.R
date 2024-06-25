@@ -2,9 +2,9 @@
 #'
 #' @description This function will change column names that have the official
 #'  HLA nomenclature (e.g. "HLA-A*" or "HLA-A") to a format more easily selected
-#'  in tidyverse function (e.g. "HLA_A"). The dash and asterisk are a special
+#'  in tidyverse functions (e.g. "HLA_A"). The dash and asterisk are special
 #'  characters in R, and makes selecting columns by name difficult. This function
-#'  will also allow for easily changing back to WHO-compliant nomenlcautre
+#'  will also allow for easily changing back to WHO-compliant nomenclature
 #'  (e.g. "HLA-A*").
 #'
 #' @param data A data frame
