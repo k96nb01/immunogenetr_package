@@ -72,14 +72,14 @@ HLA_truncate <- function(data, columns, fields = 2, keep_suffix = TRUE) {
 
 # A function to take HLA typing data spread across different, columns, as is often found in wild-caught data, and transform it to a GL string.
 
-HLA_columns_to_GLstring <- function(.data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", serologic = FALSE){
+HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", serologic = FALSE){
   # Set up prefix and suffix regex
   prefix <- str_c("^", str_escape(prefix_to_remove))
   suffix <- str_c(str_escape(suffix_to_remove), "$")
   # Identify the columns to modify
-  col2mod <- names(select(.data, {{HLA_typing_columns}}))
+  col2mod <- names(select(data, {{HLA_typing_columns}}))
   
-  .data %>% 
+  step1 <- data %>% 
     # pivoting longer to get each allele on a separate row.
     pivot_longer(cols = all_of(col2mod), names_to = "names", values_to = "allele") %>% 
     # Remove any prefixes or suffixes from locus names
@@ -108,14 +108,24 @@ HLA_columns_to_GLstring <- function(.data, HLA_typing_columns, prefix_to_remove 
       str_detect(locus_from_name, "DRB(?![1345])"),str_extract(allele, ".+(?=\\*)"), NA_character_
     )) %>% 
     # Remove any info before the asterisk from the allele field
-    mutate(allele = str_replace(allele, ".+\\*", "")) %>% 
+    mutate(allele = str_replace(allele, ".+\\*", ""))  
+  
     # Assemble the final type
-    mutate(final_type = if_else(serologic == TRUE, "bloop", "beep"))
+    if (serologic == TRUE){
+      step2 <- step1 %>% mutate(final_type = str_glue("{locus_from_name}{DRB_locus}{allele}", .na = ""))
+    } else {
+      step2 <- step1 %>% mutate(final_type = str_glue("{locus_from_name}{DRB_locus}*{allele}", .na = ""))
+    }
+  
+    # Assemble the GL string
+    step2 %>% summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c({{case_column}}, locus_from_name, DRB_locus)) %>% 
+      summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = c({{case_column}})) %>% dplyr::pull(GL_string)
     
+    # To do: add error message about an "unknown" locus.
 }
 ```
 
-     str_glue("{locus_from_name}{DRB_locus}{allele}", .na = ""), str_glue("{locus_from_name}{DRB_locus}*{allele}", .na = "")) 
+     , ) 
 ,
 ```{r}
 # Test the HLA_columns_to_GLstring function
@@ -136,10 +146,10 @@ HLA_columns_to_GLstring <- function(.data, HLA_typing_columns, prefix_to_remove 
   4, "11:01", NA, NA, "4*03", "01:01", "05:01", "002:03", NA, "06:01", "01:01", "003", NA, "0101"
   ))
 
-(test4 %>% HLA_columns_to_GLstring(c(mA1Cd.recipient:mDPB12cd.recipient), prefix_to_remove = "m", suffix_to_remove = "Cd.recipient"))
-(test1 %>% HLA_columns_to_GLstring(c(A1:DPB1_2)))
-(test_a %>% HLA_columns_to_GLstring(c(a1:cw2), serologic = TRUE))
-(test_b %>% HLA_columns_to_GLstring(c(A1:O1)))
+(test4 %>% mutate(GL_string = HLA_columns_to_GLstring(., patient, c(mA1Cd.recipient:mDPB12cd.recipient), prefix_to_remove = "m", suffix_to_remove = "Cd.recipient")))
+(test1 %>% mutate(GL_string = HLA_columns_to_GLstring(., patient, c(A1:DPB1_2))))
+(test_a %>% mutate(GL_string = HLA_columns_to_GLstring(., case, c(a1:cw2), serologic = TRUE)))
+(test_b %>% mutate(GL_string = HLA_columns_to_GLstring(., case, c(A1:O1))))
 ```
  
 
