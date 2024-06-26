@@ -9,7 +9,7 @@ HLA_prefix_remove(.data, columns)
 \arguments{
 \item{.data}{A data frame}
 
-\item{columns}{Names of columns in `.data` containing HLA typing results.}
+\item{columns}{Names of columns in .data containing HLA typing results}
 }
 \value{
 A data frame object with specified columns modified to remove HLA
@@ -23,6 +23,6 @@ values `c("HLA-A2", "A2", "A*11:01", "A66", "HLA-DRB3*15:01")` changes to
 }
 \examples{
 data(toydata)
-output <- toydata \%>\% HLA_prefix_remove(Column1)
+output <- toydata \%>\% HLA_prefix_remove(A.2_recipient)
 
 }
