@@ -12,6 +12,7 @@ library(stringr)
 library(tidyr)
 library(xml2)
 library(rlang)
+library(cli)
 
 ```
 
@@ -70,7 +71,7 @@ HLA_truncate <- function(data, columns, fields = 2, keep_suffix = TRUE) {
   }
 }
 
-# A function to take HLA typing data spread across different, columns, as is often found in wild-caught data, and transform it to a GL string.
+# A function to take HLA typing data spread across different columns, as is often found in wild-caught data, and transform it to a GL string.
 
 HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", serologic = FALSE){
   # Set up prefix and suffix regex
@@ -83,22 +84,22 @@ HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefi
     # pivoting longer to get each allele on a separate row.
     pivot_longer(cols = all_of(col2mod), names_to = "names", values_to = "allele") %>% 
     # Remove any prefixes or suffixes from locus names
-    mutate(names = str_replace(names, regex(prefix, ignore_case = TRUE), "")) %>% 
-    mutate(names = str_replace(names, regex(suffix, ignore_case = TRUE), "")) %>% 
+    mutate(trunctated_names = str_replace(names, regex(prefix, ignore_case = TRUE), "")) %>% 
+    mutate(trunctated_names = str_replace(trunctated_names, regex(suffix, ignore_case = TRUE), "")) %>% 
     # Use the HLA_truncate function to clean up the typing, and remove any blank values.
     mutate(allele = HLA_truncate(allele, fields = 4, keep_suffix = TRUE)) %>% 
     # Remove any blank (now NA) typing values.
     filter(!is.na(allele)) %>% 
     # Determine the locus from the column names
     mutate(locus_from_name = case_when(
-      str_detect(names, "[Dd]") ~ str_c("HLA-", str_to_upper(str_extract(names, "[Dd][PpQqRr]?[AaBb]?[:digit:]?"))),  #If the column was named "DRB345" then all of the locus names will be "DRB3." Will have to extract names from allele to determine which locus.
-      str_detect(names, regex("TAP", ignore_case = TRUE)) ~ str_to_upper(str_extract(names, "TAP[12]")),
-      str_detect(names, regex("HFE", ignore_case = TRUE)) ~ "HFE",
-      str_detect(names, regex("MIC", ignore_case = TRUE)) ~ str_to_upper(str_extract(names, "MIC[AB]")),
-      str_detect(names, "(?<![LlQqPpRrCcTt])[Aa]") ~ "HLA-A",
-      str_detect(names, "(?<![QqPpRrCc])[Bb]") ~ "HLA-B",
-      str_detect(names, "(?<![QqPpRrIi])[Cc]") ~ str_c("HLA-", str_to_upper(str_extract(names, "[Cc][Ww]?"))),
-      str_detect(names, "[EFGHJKLNPSTUVWYefghjklnpstuvwy]") ~ str_c("HLA-", str_to_upper(str_extract(names, "[EFGHJKLNPSTUVWYefghjklnpstuvwy]"))),
+      str_detect(trunctated_names, "[Dd]") ~ str_c("HLA-", str_to_upper(str_extract(trunctated_names, "[Dd][PpQqRr]?[AaBb]?[:digit:]?"))),  #If the column was named "DRB345", for example, then all of the locus names will be "DRB3." Will have to extract names from allele to determine which locus.
+      str_detect(trunctated_names, regex("TAP", ignore_case = TRUE)) ~ str_to_upper(str_extract(trunctated_names, "TAP[12]")),
+      str_detect(trunctated_names, regex("HFE", ignore_case = TRUE)) ~ "HFE",
+      str_detect(trunctated_names, regex("MIC", ignore_case = TRUE)) ~ str_to_upper(str_extract(trunctated_names, "MIC[AB]")),
+      str_detect(trunctated_names, "(?<![LlQqPpRrCcTt])[Aa]") ~ "HLA-A",
+      str_detect(trunctated_names, "(?<![QqPpRrCc])[Bb]") ~ "HLA-B",
+      str_detect(trunctated_names, "(?<![QqPpRrIi])[Cc]") ~ str_c("HLA-", str_to_upper(str_extract(trunctated_names, "[Cc][Ww]?"))),
+      str_detect(trunctated_names, "[EFGHJKLNPSTUVWYefghjklnpstuvwy]") ~ str_c("HLA-", str_to_upper(str_extract(trunctated_names, "[EFGHJKLNPSTUVWYefghjklnpstuvwy]"))),
       .default = "unknown"
     )) %>% 
     # Rename any "CW" properly
@@ -110,23 +111,38 @@ HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefi
     # Remove any info before the asterisk from the allele field
     mutate(allele = str_replace(allele, ".+\\*", ""))  
   
-    # Assemble the final type
+  # Set up error detection for any loci that could not be determined
+  error_table <- step1 %>% filter(locus_from_name == "unknown")
+  error_column_names <- error_table %>% select(names) %>% distinct() %>% dplyr::pull(names)
+  
+  # Error code
+  if (nrow(error_table) != 0) {
+  abort(format_error("The  column(s) {error_column_names} could not be parsed to determine HLA loci."))
+  }
+  
+  # Assemble the final type
     if (serologic == TRUE){
       step2 <- step1 %>% mutate(final_type = str_glue("{locus_from_name}{DRB_locus}{allele}", .na = ""))
     } else {
       step2 <- step1 %>% mutate(final_type = str_glue("{locus_from_name}{DRB_locus}*{allele}", .na = ""))
     }
   
-    # Assemble the GL string
+  # Assemble the GL string
     step2 %>% summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c({{case_column}}, locus_from_name, DRB_locus)) %>% 
       summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = c({{case_column}})) %>% dplyr::pull(GL_string)
+  
+    #return(step1)
     
     # To do: add error message about an "unknown" locus.
 }
 ```
 
-     , ) 
-,
+
+
+
+  
+    
+
 ```{r}
 # Test the HLA_columns_to_GLstring function
 
@@ -139,17 +155,17 @@ HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefi
   ))
 
 (test_b <- tribble(
-  ~case, ~"A1", ~"A2", ~"DRBX1", ~"DRBX2", ~"E1", ~"E2", ~"MICB1", ~"MICA2", ~"TAP11", ~"TAP22", ~"HFE1", ~"HFE2", ~"O1",
+  ~case, ~"A1", ~"A2", ~"DRBX1", ~"DRBX2", ~"E1", ~"E2", ~"MICB1", ~"MICA2", ~"TAP11", ~"TAP22", ~"HFE1", ~"HFE2", ~"mO1Cd.recipient",
   1, "01:01", "02:01", "3*01:01", "5*02:01", "01:01", "02:01", "001:01", "002:02", "01:01", "03:01", "001:01", "002", "001:001",
   2, "02:02", "03:01", "4*02:01", "blank", "03:01", "blank", "001:02", "002:01", "01:03", "blank", "001:01", "missing", NA,
   3, "68:02", NA, "3*02:02", "4*03:01N", "04:01", NA, "001:01", "blank", "05:01", NA, "004", NA, "blank",
   4, "11:01", NA, NA, "4*03", "01:01", "05:01", "002:03", NA, "06:01", "01:01", "003", NA, "0101"
   ))
 
-(test4 %>% mutate(GL_string = HLA_columns_to_GLstring(., patient, c(mA1Cd.recipient:mDPB12cd.recipient), prefix_to_remove = "m", suffix_to_remove = "Cd.recipient")))
+#(test4 %>% mutate(GL_string = HLA_columns_to_GLstring(., patient, c(mA1Cd.recipient:mDPB12cd.recipient), prefix_to_remove = "m", suffix_to_remove = "Cd.recipient")))
 (test1 %>% mutate(GL_string = HLA_columns_to_GLstring(., patient, c(A1:DPB1_2))))
-(test_a %>% mutate(GL_string = HLA_columns_to_GLstring(., case, c(a1:cw2), serologic = TRUE)))
-(test_b %>% mutate(GL_string = HLA_columns_to_GLstring(., case, c(A1:O1))))
+#(test_a %>% mutate(GL_string = HLA_columns_to_GLstring(., case, c(a1:cw2), serologic = TRUE)))
+#(test_b %>% HLA_columns_to_GLstring(case, c(A1:mO1Cd.recipient), prefix_to_remove = "m", suffix_to_remove = "Cd.recipient"))
 ```
  
 
