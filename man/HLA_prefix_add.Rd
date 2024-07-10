@@ -20,7 +20,7 @@ selected columns.
 }
 \description{
 This function adds a specified prefix to the beginning of
-values in the specified columns of the given data frame.
+each value in the identified columns of the given data frame.
 }
 \examples{
 data(toydata)

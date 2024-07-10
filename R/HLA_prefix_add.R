@@ -1,7 +1,7 @@
 #' @title HLA_prefix_add
 #'
 #' @description This function adds a specified prefix to the beginning of
-#' values in the specified columns of the given data frame.
+#' each value in the identified columns of the given data frame.
 #'
 #' @param .data A data frame
 #' @param columns Name of columns in .data to which the prefix should be added
