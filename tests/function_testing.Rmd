@@ -44,8 +44,8 @@ test %>% HLA_column_repair(format = "R", asterisk = FALSE)
 ```{r}
 # HLA genomic truncate function: truncate multi-field typing to fewer fields. If any number other than 1, 2, or 3 is entered for "fields," the entire type will be returned. Similarly, non-molecular nomenclature will be returned without modification. Note this will not keep G or P group designations, as they are not WHO-recognized suffixes. Should these also be kept? Maybe have a separate argument to keep or remove them?
 
-HLA_truncate <- function(data, columns, fields = 2, keep_suffix = TRUE) {
-    # Extract first 3, 2, or 1 fields and any prefixes.
+HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE) {
+  # Extract first 3, 2, or 1 fields and any prefixes.
   if (fields == 3) {
     A <- str_extract(data, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
   } else if (fields == 2) {
@@ -57,19 +57,29 @@ HLA_truncate <- function(data, columns, fields = 2, keep_suffix = TRUE) {
   }
 
   {
-  # Extract any WHO-recognized suffixes
-  B <- replace_na(str_extract(data, "[LSCAQNlscaqn]$"), "")
+    # Extract any WHO-recognized suffixes
+    B <- replace_na(str_extract(data, "[LSCAQNlscaqn]$"), "")
   }
-  
+
   {
     # Glue truncated typing and suffixes if indicated.
     if (keep_suffix == TRUE) {
-    na_if(str_c({A}, {B}, sep = ""), "NA")
+      na_if(str_c({A}, {B}, sep = ""), "NA")
     } else {
       A
     }
   }
 }
+
+# Test the function
+
+typing <- "A*01:01:01:02N"
+typing %>% HLA_truncate(fields = 2, keep_suffix = FALSE)
+```
+
+
+```{r}
+
 
 # A function to take HLA typing data spread across different columns, as is often found in wild-caught data, and transform it to a GL string.
 

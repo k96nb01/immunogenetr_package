@@ -1,23 +1,24 @@
 #' @title HLA_truncate
 #'
-#' @description This function truncates the HLA typing values in the
-#' identified columns of the given data frame. The truncation is based on
-#' the number of fields specified and optionally retains any recognized
-#' suffixes.
+#' @description This function truncates the HLA typing values. The truncation
+#' is based on the number of fields specified and optionally retains any
+#' WHO-recognized suffixes (L, S, C, A, Q, or N). Note this will not keep
+#' G or P group designations, as these are defined to specific fields
+#' (3 fields for G groups, and 2 fields for P groups), so if typings
+#' are to be truncated, the G or P group nomenclature is not being preserved.
 #'
-#' @param data A data frame
-#' @param columns Names of columns in the data to be truncated
+#' @param data A string containing an HLA type.
 #' @param fields An integer specifying the number of fields to retain in the
 #' truncated values. Default is 2.
 #' @param keep_suffix A logical value indicating whether to retain any
 #' WHO-recognized suffixes. Default is TRUE.
 #'
-#' @return A data frame with the specified columns truncated according to
+#' @return A string with the HLA typing truncated according to
 #' the specified number of fields and optional suffix retention.
 #'
 #' @examples
-#' data(toydata)
-#' output <- toydata %>% HLA_truncate(A.1, fields = 2, keep_suffix = TRUE)
+#' typing <- "A*01:01:01:02N"
+#' typing %>% HLA_truncate(fields = 2, keep_suffix = FALSE)
 #'
 #' @export
 #'
@@ -30,7 +31,7 @@
 #' @importFrom tidyr replace_na
 #' @importFrom dplyr na_if
 
-HLA_truncate <- function(data, columns, fields = 2, keep_suffix = TRUE) {
+HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE) {
   # Extract first 3, 2, or 1 fields and any prefixes.
   if (fields == 3) {
     A <- str_extract(data, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
