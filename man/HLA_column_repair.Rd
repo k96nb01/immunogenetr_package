@@ -4,7 +4,7 @@
 \alias{HLA_column_repair}
 \title{HLA_column_repair}
 \usage{
-HLA_column_repair(data)
+HLA_column_repair(data, format = "tidyverse", asterisk = FALSE)
 }
 \arguments{
 \item{data}{A data frame}
@@ -14,9 +14,11 @@ A data frame object with column names renamed in the "HLA_A" format.
 }
 \description{
 This function will change column names that have the official
- HLA nomenclature (e.g. "HLA-A*" or "HLA-A") to a format supported by R
- (e.g. "HLA_A"). The dash and asterisk are a special characters in R,
- and makes selecting columns by name difficult.
+ HLA nomenclature (e.g. "HLA-A*" or "HLA-A") to a format more easily selected
+ in tidyverse functions (e.g. "HLA_A"). The dash and asterisk are special
+ characters in R, and makes selecting columns by name difficult. This function
+ will also allow for easily changing back to WHO-compliant nomenclature
+ (e.g. "HLA-A*").
 }
 \examples{
 data(toydata) # I think we need to make some toydata.
