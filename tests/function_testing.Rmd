@@ -167,6 +167,7 @@ HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefi
 str_view("HLA-DRB3", "DRB")
 
 #Test
+#Test2
 ```
 
 
