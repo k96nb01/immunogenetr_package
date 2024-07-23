@@ -4,12 +4,10 @@
 \alias{HLA_truncate}
 \title{HLA_truncate}
 \usage{
-HLA_truncate(data, columns, fields = 2, keep_suffix = TRUE)
+HLA_truncate(data, fields = 2, keep_suffix = TRUE)
 }
 \arguments{
-\item{data}{A data frame}
-
-\item{columns}{Names of columns in the data to be truncated}
+\item{data}{A string containing an HLA type.}
 
 \item{fields}{An integer specifying the number of fields to retain in the
 truncated values. Default is 2.}
@@ -18,17 +16,19 @@ truncated values. Default is 2.}
 WHO-recognized suffixes. Default is TRUE.}
 }
 \value{
-A data frame with the specified columns truncated according to
+A string with the HLA typing truncated according to
 the specified number of fields and optional suffix retention.
 }
 \description{
-This function truncates the HLA typing values in the
-identified columns of the given data frame. The truncation is based on
-the number of fields specified and optionally retains any recognized
-suffixes.
+This function truncates the HLA typing values. The truncation
+is based on the number of fields specified and optionally retains any
+WHO-recognized suffixes (L, S, C, A, Q, or N). Note this will not keep
+G or P group designations, as these are defined to specific fields
+(3 fields for G groups, and 2 fields for P groups), so if typings
+are to be truncated, the G or P group nomenclature is not being preserved.
 }
 \examples{
-data(toydata)
-output <- toydata \%>\% HLA_truncate(A.1, fields = 2, keep_suffix = TRUE)
+typing <- "A*01:01:01:02N"
+typing \%>\% HLA_truncate(fields = 2, keep_suffix = FALSE)
 
 }
