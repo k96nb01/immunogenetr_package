@@ -170,4 +170,65 @@ str_view("HLA-DRB3", "DRB")
 #Test2
 ```
 
+```{r}
+# Test HLA_mismatch_HvG function
+test_cases <- tribble(
+  ~case, ~GL_string_recip, ~GL_string_donor, ~locus, ~expected_result,
+  1, "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01", "HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01^HLA-DRB5*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01", "DQB1", TRUE,
+  2, "HLA-A*24:02+HLA-A*29:02", "HLA-A*02:01", "A", TRUE,
+  3, "HLA-A*02:01", "HLA-A*02:01+HLA-A*11:05", "HLA-A", TRUE,
+  4, "HLA-A*02:01+HLA-A*11:05", "HLA-A*02:01", "A", FALSE
+)
+test_cases <- test_cases %>%
+  rowwise() %>%
+  mutate(result = HLA_mismatch_HvG(GL_string_recip, GL_string_donor, locus),
+         passed = result == expected_result)
 
+print(test_cases)
+```
+
+```{r}
+# Test HLA_mismatch_alleles_HvG function
+test_cases <- tribble(
+  ~case, ~GL_string_recip, ~GL_string_donor, ~locus, ~expected_result,
+  1, "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01", "HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01^HLA-DRB5*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01", "HLA-DQB1", "HLA-DQB1*02:01+HLA-DQB1*06:02",
+  2, "HLA-A*24:02+HLA-A*29:02", "HLA-A*02:01", "HLA-A", "HLA-A*02:01",
+  3, "HLA-A*02:01", "HLA-A*02:01+HLA-A*11:05", "A", "HLA-A*11:05",
+  4, "HLA-A*02:01+HLA-A*11:05", "HLA-A*02:01", "A", NA
+)
+test_cases <- test_cases %>%
+  rowwise() %>%
+  mutate(result = HLA_mismatch_alleles_HvG(GL_string_recip, GL_string_donor, locus),
+         passed = result == expected_result)
+
+print(test_cases)
+```
+
+```{r}
+# Test HLA_mismatch_number_HvG function
+test_cases <- tribble(
+  ~case, ~GL_string_recip, ~GL_string_donor, ~locus, ~expected_result,
+  1, "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01", "HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01^HLA-DRB5*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01", "HLA-DQB1", 2,
+  2, "HLA-A*24:02+HLA-A*29:02", "HLA-A*02:01", "HLA-A", 1,
+  3, "HLA-A*02:01", "HLA-A*02:01+HLA-A*11:05", "A", 1,
+  4, "HLA-A*02:01+HLA-A*11:05", "HLA-A*02:01", "A", 0
+)
+test_cases <- test_cases %>%
+  rowwise() %>%
+  mutate(result = HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, locus),
+         passed = result == expected_result)
+
+print(test_cases)
+```
+```{r}
+# Test GLstring_genes and GLstring_genes_expanded
+GLstring_genes <- tibble(GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01") %>%
+    GLstring_genes("GL_string")
+
+GLstring_genes_expanded <- tibble(GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01") %>%
+    GLstring_genes_expanded("GL_string")
+
+print(GLstring_genes)
+print(GLstring_genes_expanded)
+
+```
