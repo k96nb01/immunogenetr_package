@@ -30,6 +30,7 @@ GLstring_genes_expanded <- function(data, gl_string) {
   data %>%
     GLstring_genes(gl_string) %>%
     pivot_longer(cols = everything(), names_to = "locus", values_to = "alleles") %>%  # Pivot to long format
+    mutate(locus = gsub("HLA-|HLA_", "", locus)) %>%  # Normalize locus names
     separate_rows(alleles, sep = "\\+") %>%  # Separate rows by "+"
     pivot_wider(names_from = locus, values_from = alleles, values_fn = list(alleles = list)) %>%  # Pivot back to wide format
     unnest(cols = everything())  # Unnest the columns
