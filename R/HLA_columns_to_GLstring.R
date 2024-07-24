@@ -17,8 +17,18 @@
 #' @return A list of GL strings in the order of the original data frame.
 #'
 #' @examples
-#' data(toydata)
-#' output <- toydata %>% mutate(GL_string = HLA_columns_to_GLstring(., patient, c(mA1Cd.recipient:mDPB12cd.recipient), prefix_to_remove = "m", suffix_to_remove = "Cd.recipient"))
+#' df2 <- data.frame(
+#'   patient = c("patient1", "patient2", "patient3"),
+#'   A1 = c("A*01:01", "A*02:01", "A*03:01"),
+#'   A2 = c("A*11:01", "A*24:02", "A*26:01"),
+#'   B1 = c("B*07:02", "B*08:01", "B*15:01"),
+#'   B2 = c("B*44:02", "B*40:01", "B*27:05"),
+#'   C1 = c("C*03:04", "C*04:01", "C*05:01"),
+#'   C2 = c("C*07:01", "C*07:02", "C*08:01"),
+#'   stringsAsFactors = FALSE
+#' )
+#'
+#' HLA_columns_to_GLstring(df2, case_column = "patient", HLA_typing_columns = c("A1", "A2", "B1", "B2", "C1", "C2"))
 #'
 #' @export
 #'

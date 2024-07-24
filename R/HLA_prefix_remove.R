@@ -12,8 +12,13 @@
 #' and locus prefixes.
 #'
 #' @examples
-#' data(toydata)
-#' output <- toydata %>% HLA_prefix_remove(A.2_recipient)
+#' df <- data.frame(
+#'   A1 = c("HLA-A2", "A2", "A*11:01", "A66", "HLA-DRB3*15:01"),
+#'   A2 = c("HLA-A1", "A1", "A*02:01", "A68", "HLA-DRB4*14:01"),
+#'   stringsAsFactors = FALSE
+#' )
+#'
+#' df %>% HLA_prefix_remove(columns = c("A1", "A2"))
 #'
 #' @export
 #'

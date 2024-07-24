@@ -18,7 +18,7 @@
 #'
 #' @examples
 #' typing <- "A*01:01:01:02N"
-#' typing %>% HLA_truncate(fields = 2, keep_suffix = FALSE)
+#' HLA_truncate(typing, fields = 2, keep_suffix = FALSE) # "A*01:01"
 #'
 #' @export
 #'

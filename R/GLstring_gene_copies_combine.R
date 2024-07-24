@@ -13,8 +13,13 @@
 #' for each locus, in GL string format.
 #'
 #' @examples
-#' data(toydata)
-#' output <- GLstring_gene_copies_combine(toydata, c("column1", "column2"), sample_column = "sample_id")
+#' output <- data.frame(
+#'   sample = c("sample1", "sample2"),
+#'   HLA_A1 = c("HLA-A*01:01", "HLA-A*02:01"),
+#'   HLA_A2 = c("HLA-A*01:02", "HLA-A*02:02"),
+#'   stringsAsFactors = FALSE
+#'   )
+#' GLstring_gene_copies_combine(output, columns = c("HLA_A1", "HLA_A2"))
 #'
 #' @export
 #'

@@ -18,8 +18,13 @@
 #' ambiguities are placed in separate columns.
 #'
 #' @examples
-#' data(toydata)
-#' output <- GLstring_genotype_ambiguity(toydata, c("GL_column1", "GL_column2"), keep_ambiguities = TRUE)
+#' df <- data.frame(
+#'   sample = c("sample1", "sample2"),
+#'   HLA_A = c("A*01:01|A*01:02", "A*02:01|A*02:02"),
+#'   HLA_B = c("B*07:02|B*07:03", "B*08:01|B*08:02"),
+#'   stringsAsFactors = FALSE
+#' )
+#' GLstring_genotype_ambiguity(df, columns = c("HLA_A", "HLA_B"))
 #'
 #' @export
 #'
