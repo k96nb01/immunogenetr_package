@@ -27,5 +27,4 @@ GL_string_donor <- "HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+
 locus <- "DPA1"
 result <- HLA_mismatch_HvG(GL_string_recip, GL_string_donor, locus)
 print(result)
-
 }
