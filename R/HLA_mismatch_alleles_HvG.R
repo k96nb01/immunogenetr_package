@@ -47,7 +47,7 @@ HLA_mismatch_alleles_HvG <- function(GL_string_recip, GL_string_donor, locus) {
 
   # Return mismatched alleles as a concatenated string, or "NA" if no mismatches
   if (length(mismatches) == 0) {
-    return("NA")
+    return(NA_character_)
   } else {
     return(paste(mismatches, collapse = "+"))
   }
