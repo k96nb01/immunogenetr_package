@@ -47,18 +47,23 @@ test %>% HLA_column_repair(format = "R", asterisk = FALSE)
 HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE) {
   # Split the input GL string into individual alleles
   alleles <- strsplit(data, "\\^")[[1]]
-  
-  # Function to truncate an individual HLA type
-  truncate_single <- function(allele) {
+
+  # Initialize an empty vector to store truncated alleles
+  truncated_alleles <- vector("character", length(alleles))
+
+  # Loop through each allele to apply truncation
+  for (i in seq_along(alleles)) {
+    allele <- alleles[i]
+
     # Extract fields based on the number of fields specified
-    if (fields == 3) {
-      A <- str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
+    A <- if (fields == 3) {
+      str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
     } else if (fields == 2) {
-      A <- str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}")
+      str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}")
     } else if (fields == 1) {
-      A <- str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}")
+      str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}")
     } else {
-      A <- str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
+      str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
     }
 
     # Extract any WHO-recognized suffixes
@@ -66,18 +71,18 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE) {
 
     # Glue truncated typing and suffixes if indicated
     if (keep_suffix == TRUE) {
-      na_if(str_c({A}, {B}, sep = ""), "NA")
+      truncated_alleles[i] <- na_if(str_c({A}, {B}, sep = ""), "NA")
     } else {
-      A
+      truncated_alleles[i] <- A
     }
   }
-  
-  # Apply the truncation to each allele and join them back
-  truncated_alleles <- sapply(alleles, truncate_single)
+
+  # Join the truncated alleles back into a single string
   truncated_string <- paste(truncated_alleles, collapse = "^")
-  
+
   return(truncated_string)
 }
+
   
 
 

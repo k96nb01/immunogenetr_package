@@ -32,28 +32,40 @@
 #' @importFrom dplyr na_if
 
 HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE) {
-  # Extract first 3, 2, or 1 fields and any prefixes.
-  if (fields == 3) {
-    A <- str_extract(data, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
-  } else if (fields == 2) {
-    A <- str_extract(data, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}")
-  } else if (fields == 1) {
-    A <- str_extract(data, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}")
-  } else {
-    A <- str_extract(data, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
-  }
+  # Split the input GL string into individual alleles
+  alleles <- strsplit(data, "\\^")[[1]]
 
-  {
-    # Extract any WHO-recognized suffixes
-    B <- replace_na(str_extract(data, "[LSCAQNlscaqn]$"), "")
-  }
+  # Initialize an empty vector to store truncated alleles
+  truncated_alleles <- vector("character", length(alleles))
 
-  {
-    # Glue truncated typing and suffixes if indicated.
-    if (keep_suffix == TRUE) {
-      na_if(str_c({A}, {B}, sep = ""), "NA")
+  # Loop through each allele to apply truncation
+  for (i in seq_along(alleles)) {
+    allele <- alleles[i]
+
+    # Extract fields based on the number of fields specified
+    A <- if (fields == 3) {
+      str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
+    } else if (fields == 2) {
+      str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}")
+    } else if (fields == 1) {
+      str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}")
     } else {
-      A
+      str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
+    }
+
+    # Extract any WHO-recognized suffixes
+    B <- replace_na(str_extract(allele, "[LSCAQNlscaqn]$"), "")
+
+    # Glue truncated typing and suffixes if indicated
+    if (keep_suffix == TRUE) {
+      truncated_alleles[i] <- na_if(str_c({A}, {B}, sep = ""), "NA")
+    } else {
+      truncated_alleles[i] <- A
     }
   }
+
+  # Join the truncated alleles back into a single string
+  truncated_string <- paste(truncated_alleles, collapse = "^")
+
+  return(truncated_string)
 }
