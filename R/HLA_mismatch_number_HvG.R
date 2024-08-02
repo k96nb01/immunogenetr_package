@@ -63,7 +63,7 @@ HLA_mismatch_number_HvG <- function(GL_string_recip, GL_string_donor, loci) {
     return(mismatch_counts[[loci]])
   } else {
     return(paste(sapply(names(mismatch_counts), function(locus) {
-      paste(locus, ":", mismatch_counts[[locus]])
-    }), collapse = ", "))
+      paste0(locus, ":", mismatch_counts[[locus]])
+    }), collapse = ","))
   }
 }
