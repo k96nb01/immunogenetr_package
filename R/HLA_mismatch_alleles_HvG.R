@@ -54,14 +54,16 @@ HLA_mismatch_alleles_HvG <- function(GL_string_recip, GL_string_donor, loci) {
     # Identify mismatched alleles
     mismatches <- donor_locus_entries[!donor_locus_entries %in% recip_locus_entries]
 
-    # Store mismatches in the list if there are any
+    # Store mismatches in the list
     if (length(mismatches) > 0) {
-      mismatch_list[[locus]] <- mismatches
+      # Create GL strings for mismatched alleles
+      mismatch_list[[locus]] <- paste(mismatches, collapse = "+")
     }
   }
 
   # Concatenate mismatches into a single GL string
   mismatch_gl_string <- paste(unlist(mismatch_list), collapse = "^")
 
+  # Return result
   return(mismatch_gl_string)
 }
