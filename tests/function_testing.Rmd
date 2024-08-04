@@ -313,3 +313,56 @@ HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, locus)
 
 ```
 
+```{r}
+glstring_test <- "HLA-A*01:01:01:01/HLA-A*01:02/HLA-A*01:03/HLA-A*01:95+HLA-A*24:02:01:01|HLA-A*01:01:01:01/HLA-A*01:03+HLA-A*24:03:01:01^HLA-B*07:01:01+B*15:01:01/B*15:02:01|B*07:03+B*15:99:01^HLA-DRB1*03:01:02~HLA-DRB5*01:01:01"
+
+# GLstring_expand_longer function
+GLstring_expand_longer <- function(GL_string){
+  as_tibble(GL_string) %>% 
+    # Separate GL string precedence 1: gene/locus
+    separate_longer_delim(value, delim = "^") %>% 
+    # Identify locus
+    mutate(locus = str_extract(value, "HLA-[^*]+")) %>% 
+    # Separate GL string precedence 2: genotype list
+    separate_longer_delim(value, delim = "|") %>% 
+    # Identify genotype ambiguities
+    mutate(genotype_ambiguity = row_number(), .by = locus) %>% 
+    # Separate GL string precedence 3: genotype
+    separate_longer_delim(value, delim = "+") %>% 
+    # Identify genotypes
+    mutate(genotype = row_number(), .by = c(locus, genotype_ambiguity)) %>% 
+    # Separate GL string precedence 4: haplotype
+    separate_longer_delim(value, delim = "~") %>% 
+    # Identify haplotypes
+    mutate(haplotype = row_number(), .by = c(locus, genotype_ambiguity, genotype)) %>% 
+    # Separate GL string precedence 5: allele list
+    separate_longer_delim(value, delim = "/") %>% 
+    # Identify alleles
+    mutate(allele = row_number(), .by = c(locus, genotype_ambiguity, genotype, haplotype))
+}
+
+(GL_string_tibble <- GLstring_expand_longer(glstring_test))
+
+# ambiguity_table_to_GLstring function
+ambiguity_table_to_GLstring <- function(data){
+  data %>% 
+    # Combine allele ambiguities
+    summarise(value = str_flatten(value, collapse = "/"), .by = c(locus, genotype_ambiguity, genotype, haplotype)) %>% 
+    # Combine alleles in a hapotype
+    summarise(value = str_flatten(value, collapse = "~"), .by = c(locus, genotype_ambiguity, genotype)) %>% 
+    # Combine gene copies to a genotype
+    summarise(value = str_flatten(value, collapse = "+"), .by = c(locus, genotype_ambiguity)) %>% 
+    # Combine genotypes to a genotype list
+    summarise(value = str_flatten(value, collapse = "|"), .by = locus) %>% 
+    # Combine loci to a final GL string
+    summarise(value = str_flatten(value, collapse = "^")) %>% 
+    # Output a string
+    pull(value)
+}
+
+(glstring_test_recombined <- ambiguity_table_to_GLstring(GL_string_tibble))
+
+glstring_test_recombined == glstring_test # Test if separating and recombing a GL string results in the same string.
+```
+ summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c({{case_column}}, locus_from_name, DRB_locus))
+
