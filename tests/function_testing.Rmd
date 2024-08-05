@@ -364,5 +364,13 @@ ambiguity_table_to_GLstring <- function(data){
 
 glstring_test_recombined == glstring_test # Test if separating and recombing a GL string results in the same string.
 ```
- summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c({{case_column}}, locus_from_name, DRB_locus))
+
+```{r}
+GL_string_recip <- "HLA-A*29:02+HLA-A*30:02"
+GL_string_donor_homozygous <- "HLA-A*03:01+HLA-A*03:01"
+GL_string_donor_heterozygous <- "HLA-A*03:01+HLA-A*68:01"
+
+HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor_homozygous, "A")
+HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor_heterozygous, "A")
+```
 
