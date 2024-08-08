@@ -49,7 +49,7 @@ GLstring_genotype_ambiguity <- function(.data, columns, keep_ambiguities = FALSE
   cols2mod <- names(select(.data, {{columns}}))
 
   # Set up error detection of "^", which indicates the genes haven't been separated from the GL string.
-  (genes_not_separated <- .data %>% mutate(across({{ cols2mod }}, ~str_detect(., "\\^"))) %>%
+  (genes_not_separated <- .data %>% mutate(across(all_of({{ cols2mod }}), ~str_detect(., "\\^"))) %>%
       summarize(X = toString(across({{ cols2mod }}))) %>%
       mutate(X = str_replace_all(X, "c[:punct:]", " ")) %>%
       mutate(Y = str_detect(X, "TRUE")) %>%
