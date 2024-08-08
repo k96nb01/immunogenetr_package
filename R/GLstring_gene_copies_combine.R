@@ -41,7 +41,7 @@ GLstring_gene_copies_combine <- function(.data, columns, sample_column = "sample
   cols2mod <- names(select(.data, {{columns}}))
 
   .data %>%
-    pivot_longer(cols2mod, names_to = "locus", values_to = "allele") %>%
+    pivot_longer(all_of(cols2mod), names_to = "locus", values_to = "allele") %>%
     mutate(locus = str_extract(allele, "HLA-[:alnum:]+")) %>%
     filter(!is.na(locus)) %>%
     summarise(allele = str_c(allele, collapse = "+"), .by = c({{sample_column}}, locus)) %>%
