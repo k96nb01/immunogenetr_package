@@ -34,28 +34,27 @@ HLA_mismatch_HvG <- function(GL_string_recip, GL_string_donor, loci) {
   loci <- gsub("HLA_", "", loci)  # Remove HLA_ if present
   loci <- gsub("HLA-", "", loci)  # Remove HLA- if present
 
-  # Process recipient and donor GL strings
-  recip_data <- tibble(GL_string = GL_string_recip) %>%
-    GLstring_genes_expanded("GL_string")
-  donor_data <- tibble(GL_string = GL_string_donor) %>%
-    GLstring_genes_expanded("GL_string")
+  # Process recipient and donor GL strings using GLstring_expand_longer
+  recip_data <- GLstring_expand_longer(GL_string_recip)
+  donor_data <- GLstring_expand_longer(GL_string_donor)
 
   # Initialize a list to store mismatch results
   mismatch_results <- list()
 
   # Check mismatch for each locus
   for (locus in loci) {
-    # Check if the specified locus exists in both datasets
-    if (!(locus %in% names(recip_data)) | !(locus %in% names(donor_data))) {
-      stop(paste("Locus", locus, "not found in both recipient and donor data."))
-    }
+    full_locus <- paste0("HLA-", locus)
 
-    # Extract unique entries for the specified locus from recipient and donor data
-    recip_locus_entries <- recip_data %>% pull({{ locus }}) %>% na.omit() %>% unique()
-    donor_locus_entries <- donor_data %>% pull({{ locus }}) %>% na.omit() %>% unique()
+    # Filter data for the specified locus
+    recip_locus_data <- recip_data %>% filter(locus == full_locus)
+    donor_locus_data <- donor_data %>% filter(locus == full_locus)
+
+    # Extract unique alleles for the specified locus
+    recip_alleles <- unique(recip_locus_data$value)
+    donor_alleles <- unique(donor_locus_data$value)
 
     # Check for mismatch
-    mismatch <- any(!donor_locus_entries %in% recip_locus_entries)
+    mismatch <- any(!donor_alleles %in% recip_alleles)
     mismatch_results[[locus]] <- mismatch
   }
 

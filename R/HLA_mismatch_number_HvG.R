@@ -21,41 +21,54 @@
 #' @importFrom dplyr %>%
 #' @importFrom stats na.omit
 
-HLA_mismatch_number_HvG <- function(GL_string_recip, GL_string_donor, loci) {
+HLA_mismatch_number_HvG <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 1) {
   # Check for ambiguity
   if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
     stop("HLA_mismatch_number_HvG does not support ambiguous GL strings that contain the delimiters | or /")
   }
 
-  # Normalize the loci input
+  # Normalize loci input
   loci <- gsub("HLA_", "", loci)  # Remove HLA_ if present
   loci <- gsub("HLA-", "", loci)  # Remove HLA- if present
 
   # Process recipient and donor GL strings
-  recip_data <- tibble(GL_string = GL_string_recip) %>%
-    GLstring_genes_expanded("GL_string")
-  donor_data <- tibble(GL_string = GL_string_donor) %>%
-    GLstring_genes_expanded("GL_string")
+  recip_data <- GLstring_expand_longer(GL_string_recip)
+  donor_data <- GLstring_expand_longer(GL_string_donor)
 
-  # Initialize a list to store mismatch counts for each locus
+  # Initialize list to store mismatch counts
   mismatch_counts <- list()
 
   # Check mismatch for each locus
   for (locus in loci) {
+    full_locus <- paste0("HLA-", locus)
+
     # Check if the specified locus exists in both datasets
-    if (!(locus %in% names(recip_data)) | !(locus %in% names(donor_data))) {
-      stop(paste("Locus", locus, "not found in both recipient and donor data."))
+    if (!(full_locus %in% recip_data$locus) | !(full_locus %in% donor_data$locus)) {
+      stop(paste("Locus", full_locus, "not found in both recipient and donor data."))
     }
 
-    # Extract unique entries for the specified locus from recipient and donor data
-    recip_locus_entries <- recip_data %>% pull({{ locus }}) %>% na.omit() %>% unique()
-    donor_locus_entries <- donor_data %>% pull({{ locus }}) %>% na.omit() %>% unique()
+    # Filter data for specified locus
+    recip_locus_data <- recip_data %>% filter(locus == full_locus)
+    donor_locus_data <- donor_data %>% filter(locus == full_locus)
+
+    # Extract unique alleles for specified locus
+    recip_alleles <- unique(recip_locus_data$value)
+    donor_alleles <- donor_locus_data$value
+
+    # Check homozygous_count
+    if (homozygous_count == 1) {
+      donor_alleles <- unique(donor_alleles)
+    }
 
     # Identify mismatched alleles
-    mismatches <- donor_locus_entries[!donor_locus_entries %in% recip_locus_entries]
+    mismatches <- donor_alleles[!donor_alleles %in% recip_alleles]
 
-    # Store the number of mismatches
-    mismatch_counts[[locus]] <- length(mismatches)
+    # If homozygous_count is 2, count duplicates in mismatches
+    if (homozygous_count == 2) {
+      mismatch_counts[[locus]] <- sum(table(mismatches))
+    } else {
+      mismatch_counts[[locus]] <- length(mismatches)
+    }
   }
 
   # Return result
