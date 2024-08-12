@@ -4,7 +4,12 @@
 \alias{HLA_mismatch_alleles_HvG}
 \title{HLA_mismatch_alleles_HvG}
 \usage{
-HLA_mismatch_alleles_HvG(GL_string_recip, GL_string_donor, loci)
+HLA_mismatch_alleles_HvG(
+  GL_string_recip,
+  GL_string_donor,
+  loci,
+  homozygous_count = 1
+)
 }
 \arguments{
 \item{GL_string_recip}{GL string for the HLA data of the recipient.}

@@ -21,12 +21,11 @@ This function will change column names that have the official
  (e.g. "HLA-A*").
 }
 \examples{
-df <- data.frame(
-  "HLA-A*" = c("A*01:01", "A*02:01"),
-  "HLA-B*" = c("B*07:02", "B*08:01"),
-  "HLA-C*" = c("C*03:04", "C*04:01"),
-  stringsAsFactors = FALSE
+HLA_type <- tibble(
+"HLA-A*" = c("01:01", "02:01"),
+"HLA-B*" = c("07:02", "08:01"),
+"HLA-C*" = c("03:04", "04:01")
 )
-HLA_column_repair(df, format = "tidyverse") # Convert to tidyverse format
+HLA_type \%>\% HLA_column_repair(format = "tidyverse")
 
 }

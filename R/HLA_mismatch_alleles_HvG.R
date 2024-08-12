@@ -23,47 +23,48 @@
 
 
 HLA_mismatch_alleles_HvG <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 1) {
+  # Check for ambiguity
   if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
     stop("HLA_mismatch_alleles_HvG does not support ambiguous GL strings that contain the delimiters | or /")
   }
 
-  # Normalize the loci input
+  # Normalize  loci input
   loci <- gsub("HLA_", "", loci)  # Remove HLA_ if present
   loci <- gsub("HLA-", "", loci)  # Remove HLA- if present
 
-  # Expand GL strings
+  # Process recipient and donor GL strings
   recip_data <- GLstring_expand_longer(GL_string_recip)
   donor_data <- GLstring_expand_longer(GL_string_donor)
 
-  # Initialize a list to store mismatches for each locus
+  # Initialize list to store mismatches
   mismatch_list <- list()
 
   for (locus in loci) {
-    # Ensure locus filtering matches the format in the data
     full_locus <- paste0("HLA-", locus)
 
-    # Check if the specified locus exists in both datasets
+    # Check if the specified loci exist in both
     if (!(full_locus %in% recip_data$locus) | !(full_locus %in% donor_data$locus)) {
       stop(paste("Locus", full_locus, "not found in both recipient and donor data."))
     }
 
-    # Filter data for the specified locus
+    # Filter data for the loci
     recip_locus_data <- recip_data %>% filter(locus == full_locus)
     donor_locus_data <- donor_data %>% filter(locus == full_locus)
 
-    # Identify mismatched alleles (those in donor but not in recipient)
+    # Identify mismatches
     mismatches <- donor_locus_data %>%
       filter(!value %in% recip_locus_data$value)
 
     if (homozygous_count == 1) {
-      # Ensure mismatches are unique based only on 'value'
       mismatches <- mismatches %>%
         distinct(value, .keep_all = TRUE)
     }
 
+    # Add mismatched to list
     mismatch_list[[locus]] <- mismatches
   }
 
+    # Create return GL string
     mismatch_data <- bind_rows(mismatch_list)
     mismatch_gl_string <- ambiguity_table_to_GLstring(mismatch_data)
     return(mismatch_gl_string)

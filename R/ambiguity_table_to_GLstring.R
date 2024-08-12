@@ -21,7 +21,9 @@
 #'   locus = c("HLA-A", "HLA-A", "HLA-A", "HLA-A", "HLA-A", "HLA-A", "HLA-A",
 #'     "HLA-A", "HLA-B", "HLA-B"),
 #'   genotype_ambiguity = c(1, 1, 1, 1, 1, 2, 2, 2, 1, 1),
-#'   genotype = c(1, 1, 1, 1, 2, 1, 1, 2, 1, 2)
+#'   genotype = c(1, 1, 1, 1, 2, 1, 1, 2, 1, 2),
+#'   haplotype = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+#'   allele = c(1, 2, 3, 4, 1, 1, 2, 1, 1, 1)
 #' )
 #' result <- ambiguity_table_to_GLstring(data)
 #' print(result)

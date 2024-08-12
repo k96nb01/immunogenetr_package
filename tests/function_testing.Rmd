@@ -215,10 +215,11 @@ print(HLA_mismatch_HvG(GL_string_recip, GL_string_donor, c("A", "DQB1", "HLA-DRB
 ```{r}
 # Test HLA_mismatch_alleles_HvG function
 GL_string_recip <- "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01" 
-GL_string_donor <-  "HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01^HLA-DRB5*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01"
+GL_string_donor <-  "HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01^HLA-DRB5*01:01^HLA-DRB1*03:01+HLA-DRB1*03:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01"
 loci <- c("A", "DQB1", "HLA-DRB1")
+#made DRB1 homozygous in donor to test homozygous_count parameter
 
-print(HLA_mismatch_alleles_HvG(GL_string_recip, GL_string_donor, loci))
+print(HLA_mismatch_alleles_HvG(GL_string_recip, GL_string_donor, loci, homozygous_count = 1))
 
 ```
 
@@ -239,9 +240,10 @@ test_cases <- test_cases %>%
 print(test_cases)
 
 GL_string_recip <- "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01" 
-GL_string_donor <-  "HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01^HLA-DRB5*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01"
+GL_string_donor <-  "HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01^HLA-DRB5*01:01^HLA-DRB1*03:01+HLA-DRB1*03:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01"
+#made DRB1 homozygous in donor to test homozygous_count parameter
 
-print(HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, c("A", "DQB1", "HLA-DRB1")))
+print(HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, c("A", "DQB1", "HLA-DRB1"), homozygous_count = 2))
 ```
 
 ```{r}
@@ -314,11 +316,16 @@ HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, locus)
 ```
 
 ```{r}
-glstring_test <- "HLA-A*01:01:01:01/HLA-A*01:02/HLA-A*01:03/HLA-A*01:95+HLA-A*24:02:01:01|HLA-A*01:01:01:01/HLA-A*01:03+HLA-A*24:03:01:01^HLA-B*07:01:01+B*15:01:01/B*15:02:01|B*07:03+B*15:99:01^HLA-DRB1*03:01:02~HLA-DRB5*01:01:01"
+glstring_test <- "HLA-A*01:01:01:01/HLA-A*01:02/HLA-A*01:03/HLA-A*01:95+HLA-A*24:02:01:01|HLA-A*01:01:01:01/HLA-A*01:03+HLA-A*24:03:01:01^HLA-B*07:01:01+B*15:01:01/B*15:02:01|B*07:03+B*15:99:01^HLA-DRB1*03:01:02~HLA-DRB5*01:01:01+HLA-KIR2DL5A*0010101+HLA-KIR2DL5A*0010201?HLA-KIR2DL5B*0010201+HLA-KIR2DL5B*0010301"
+
 
 # GLstring_expand_longer function
 GLstring_expand_longer <- function(GL_string){
   as_tibble(GL_string) %>% 
+    # Separate GL string precedence 0: possible gene locations
+    separate_longer_delim(value, delim = "?") %>% 
+    # Assign a unique identifier for each possible gene location
+    mutate(possible_gene_location = row_number()) %>% 
     # Separate GL string precedence 1: gene/locus
     separate_longer_delim(value, delim = "^") %>% 
     # Identify locus
@@ -338,30 +345,34 @@ GLstring_expand_longer <- function(GL_string){
     # Separate GL string precedence 5: allele list
     separate_longer_delim(value, delim = "/") %>% 
     # Identify alleles
-    mutate(allele = row_number(), .by = c(locus, genotype_ambiguity, genotype, haplotype))
+    mutate(allele = row_number(), .by = c(possible_gene_location, locus, genotype_ambiguity, genotype, haplotype))
 }
 
 (GL_string_tibble <- GLstring_expand_longer(glstring_test))
+glimpse(GL_string_tibble)
+
 
 # ambiguity_table_to_GLstring function
 ambiguity_table_to_GLstring <- function(data){
   data %>% 
     # Combine allele ambiguities
-    summarise(value = str_flatten(value, collapse = "/"), .by = c(locus, genotype_ambiguity, genotype, haplotype)) %>% 
+    summarise(value = str_flatten(value, collapse = "/"), .by = c(possible_gene_location, locus, genotype_ambiguity, genotype, haplotype)) %>% 
     # Combine alleles in a hapotype
-    summarise(value = str_flatten(value, collapse = "~"), .by = c(locus, genotype_ambiguity, genotype)) %>% 
+    summarise(value = str_flatten(value, collapse = "~"), .by = c(possible_gene_location, locus, genotype_ambiguity, genotype)) %>% 
     # Combine gene copies to a genotype
-    summarise(value = str_flatten(value, collapse = "+"), .by = c(locus, genotype_ambiguity)) %>% 
+    summarise(value = str_flatten(value, collapse = "+"), .by = c(possible_gene_location, locus, genotype_ambiguity)) %>% 
     # Combine genotypes to a genotype list
-    summarise(value = str_flatten(value, collapse = "|"), .by = locus) %>% 
+    summarise(value = str_flatten(value, collapse = "|"), .by = c(possible_gene_location, locus)) %>% 
     # Combine loci to a final GL string
-    summarise(value = str_flatten(value, collapse = "^")) %>% 
+    summarise(value = str_flatten(value, collapse = "^"), .by = possible_gene_location) %>% 
+    
+     # Combine loci to a final GL string
+    summarise(value = str_flatten(value, collapse = "?")) %>% 
     # Output a string
     pull(value)
 }
 
 (glstring_test_recombined <- ambiguity_table_to_GLstring(GL_string_tibble))
-
 glstring_test_recombined == glstring_test # Test if separating and recombing a GL string results in the same string.
 ```
 
