@@ -41,7 +41,7 @@ GLstring_expand_longer <- function(GL_string){
     # Separate GL string precedence 1: gene/locus
     separate_longer_delim(value, delim = "^") %>%
     # Identify locus
-    mutate(locus = str_extract(value, "HLA-[^*]+")) %>%
+    mutate(locus = row_number()) %>%
     # Separate GL string precedence 2: genotype list
     separate_longer_delim(value, delim = "|") %>%
     # Identify genotype ambiguities
