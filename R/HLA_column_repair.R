@@ -8,8 +8,10 @@
 #'  (e.g. "HLA-A*").
 #'
 #' @param data A data frame
+#' @param format Either "tidyverse" or "WHO".
+#' @param asterisk Logical value to return column with an asterisk.
 #'
-#' @return A data frame object with column names renamed in the "HLA_A" format.
+#' @return A data frame object with column names renamed in the specified format.
 #'
 #' @examples
 #' HLA_type <- tibble(
