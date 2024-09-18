@@ -67,8 +67,8 @@ HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefi
     # Remove any prefixes or suffixes from locus names
     mutate(trunctated_names = str_replace(names, regex(prefix, ignore_case = TRUE), "")) %>%
     mutate(trunctated_names = str_replace(trunctated_names, regex(suffix, ignore_case = TRUE), "")) %>%
-    # Use the HLA_truncate function to clean up the typing, and remove any blank values.
-    mutate(allele = HLA_truncate(allele, fields = 4, keep_suffix = TRUE)) %>%
+    # Use the HLA_validate function to clean up the typing, and remove any blank values.
+    mutate(allele = HLA_validate(allele)) %>%
     # Remove any blank (now NA) typing values.
     filter(!is.na(allele)) %>%
     # Determine the locus from the column names
