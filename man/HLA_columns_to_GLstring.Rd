@@ -19,13 +19,14 @@ individual columns containing a single allele.}
 
 \item{case_column}{A column that uniquely identifies the typing result.}
 
-\item{HLA_typing_columns}{The list of columns containing the HLA alleles.}
+\item{HLA_typing_columns}{A list of columns containing the HLA alleles. Tidyselect is supported.}
 
 \item{prefix_to_remove}{An optional string of characters to remove from the
-locus names.}
+locus names. The goal is to get the column names to the locus and a number. For example,
+columns named "mDRB11Cd" and "mDRB12Cd" should use the `prefix_to_remove` value of "m".}
 
 \item{suffix_to_remove}{An optional string of characters to remove from the
-locus names.}
+locus names. Using the example above, the `suffix_to_remove` value will be "Cd".}
 
 \item{serologic}{Whether the final type should be formatted in serologic resolution;
 molecular resolution is the default.}
@@ -35,20 +36,23 @@ A list of GL strings in the order of the original data frame.
 }
 \description{
 A function to take HLA typing data spread across different columns,
-as is often found in wild-caught data, and transform it to a GL string.
+as is often found in wild-caught data, and transform it to a GL string. If column names
+have anything besides the locus name and a number (e.g. "mA1Cd" instead of just "A1"),
+the function will have trouble determining the locus from the column name. The `prefix_to_remove`
+and `suffix_to_remove` arguments can be used to clean up the column names. See the example for
+how these arguments are used.
 }
 \examples{
-df2 <- data.frame(
-  patient = c("patient1", "patient2", "patient3"),
-  A1 = c("A*01:01", "A*02:01", "A*03:01"),
-  A2 = c("A*11:01", "A*24:02", "A*26:01"),
-  B1 = c("B*07:02", "B*08:01", "B*15:01"),
-  B2 = c("B*44:02", "B*40:01", "B*27:05"),
-  C1 = c("C*03:04", "C*04:01", "C*05:01"),
-  C2 = c("C*07:01", "C*07:02", "C*08:01"),
-  stringsAsFactors = FALSE
+typing_table <- tibble(
+patient = c("patient1", "patient2", "patient3"),
+mA1cd = c("A*01:01", "A*02:01", "A*03:01"),
+mA2cd = c("A*11:01", "blank", "A*26:01"),
+mB1cd = c("B*07:02", "B*08:01", "B*15:01"),
+mB2cd = c("B*44:02", "B*40:01", "-"),
+mC1cd = c("C*03:04", "C*04:01", "C*05:01"),
+mC2cd = c("C*07:01", "C*07:02", "C*08:01")
 )
 
-HLA_columns_to_GLstring(df2, case_column = "patient", HLA_typing_columns = c("A1", "A2", "B1", "B2", "C1", "C2"))
+typing_table \%>\% mutate(GL_string = HLA_columns_to_GLstring(., case_column = "patient", HLA_typing_columns = c(mA1cd:mC2cd), prefix_to_remove = "m", suffix_to_remove = "cd"))
 
 }
