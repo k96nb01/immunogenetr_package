@@ -4,31 +4,34 @@
 \alias{HLA_truncate}
 \title{HLA_truncate}
 \usage{
-HLA_truncate(data, fields = 2, keep_suffix = TRUE)
+HLA_truncate(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = FALSE)
 }
 \arguments{
-\item{data}{A string containing an HLA type.}
+\item{data}{A string containing an HLA allele or a GL string.}
 
 \item{fields}{An integer specifying the number of fields to retain in the
 truncated values. Default is 2.}
 
 \item{keep_suffix}{A logical value indicating whether to retain any
 WHO-recognized suffixes. Default is TRUE.}
+
+\item{keep_G_P_group}{A logical value indicated whether to retain any
+G or P group desingations. Default is FALSE.}
 }
 \value{
 A string with the HLA typing truncated according to
 the specified number of fields and optional suffix retention.
 }
 \description{
-This function truncates the HLA typing values. The truncation
-is based on the number of fields specified and optionally retains any
-WHO-recognized suffixes (L, S, C, A, Q, or N). Note this will not keep
-G or P group designations, as these are defined to specific fields
-(3 fields for G groups, and 2 fields for P groups), so if typings
-are to be truncated, the G or P group nomenclature is not being preserved.
+This function truncates HLA typing values in molecular nomenclature
+(for example from 4 fields to 2 fields). The truncation is based on the number
+of fields specified and optionally retains any WHO-recognized suffixes
+(L, S, C, A, Q, or N) or G and P group designations (G or P). This function
+will work on individual alleles (e.g. "HLA-A*02:01:01:01") or on all alleles
+in a GL string (e.g. "HLA-A*02:01:01:01+HLA-A*68:01:01^HLA-DRB1*01:01:01+HLA-DRB1*03:01:01").
 }
 \examples{
 typing <- "A*01:01:01:02N"
-HLA_truncate(typing, fields = 2, keep_suffix = FALSE) # "A*01:01"
+HLA_truncate(typing) # "A*01:01"
 
 }

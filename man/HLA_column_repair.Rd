@@ -8,9 +8,13 @@ HLA_column_repair(data, format = "tidyverse", asterisk = FALSE)
 }
 \arguments{
 \item{data}{A data frame}
+
+\item{format}{Either "tidyverse" or "WHO".}
+
+\item{asterisk}{Logical value to return column with an asterisk.}
 }
 \value{
-A data frame object with column names renamed in the "HLA_A" format.
+A data frame object with column names renamed in the specified format.
 }
 \description{
 This function will change column names that have the official

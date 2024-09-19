@@ -23,7 +23,7 @@ haplotypes, and alleles. The function processes each level of the GL string
 and assigns identifiers for each hierarchical component.
 }
 \examples{
-GL_string <- glstring_test <- "HLA-A*01:01:01:01/HLA-A*01:02/HLA-A*01:03/HLA-A
+GL_string <- "HLA-A*01:01:01:01/HLA-A*01:02/HLA-A*01:03/HLA-A
   *01:95+HLA-A*24:02:01:01|HLA-A*01:01:01:01/HLA-A*01:03+HLA-A*24:03:01:01
   ^HLA-B*07:01:01+B*15:01:01/B*15:02:01|B*07:03+B*15:99:01^HLA-DRB1*03:01:02
   ~HLA-DRB5*01:01:01+HLA-KIR2DL5A*0010101+HLA-KIR2DL5A*0010201?
