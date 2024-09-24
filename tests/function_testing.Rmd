@@ -380,31 +380,38 @@ samples <-  HML %>%
    xml_find_all( ".//d1:sample")
 
 # Get sample number and GL strings for each sample
-gl_strings <- map(samples, function(node){
+map(samples, function(node){
    # Get sample ID 
    sampleID <- node %>% xml_attr("id")
    # Get GL strings 
    glstring <- node %>% xml_find_all( ".//d1:glstring") %>% xml_text() 
    # Combine to a tibble
    tibble(sampleID, glstring)
-})
-
-# Create a table of the typing for each sample
-bind_rows(gl_strings) %>% 
+}) %>% 
+  bind_rows %>% 
   mutate(locus = str_extract(glstring, "[^//*]+")) %>% 
   # Some implementations of HML put the same locus in multiple nodes; this combines them with "+" to form a compliant GL string
   mutate(glstring = paste0(glstring, collapse = "+"), .by = c(sampleID, locus)) %>% 
-  distinct(sampleID, glstring, locus) %>%
-  # Turn the data frame into one sample per row
-  pivot_wider(names_from = locus, values_from = glstring) %>% 
+  # Clean up values
+  distinct(sampleID, glstring, locus) %>% 
+  filter(!is.na(sampleID) & !is.na(glstring)) %>% 
+  select(-locus) %>% 
   # Combine to a single GL string per sample
-  unite(GL_string, 2:last_col(), sep = "^", remove = TRUE, na.rm = TRUE)
-}
+  summarise(GL_string = str_flatten(glstring, collapse = "^"), .by = sampleID)
+ }
 
 read_HML("HML_1.hml")
 read_HML("HML_2.hml")
 ```
-
+# Create a table of the typing for each sample
+ 
+   %>% 
+   %>% 
+   %>%
+  # Turn the data frame into one sample per row
+  pivot_wider(names_from = locus, values_from = glstring) %>% 
+  
+  unite(GL_string, 2:last_col(), sep = "^", remove = TRUE, na.rm = TRUE)
    
   
   
