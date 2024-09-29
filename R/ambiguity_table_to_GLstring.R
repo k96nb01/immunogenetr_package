@@ -38,17 +38,17 @@
 ambiguity_table_to_GLstring <- function(data){
   data %>%
     # Combine allele ambiguities
-    summarise(value = str_flatten(value, collapse = "/"), .by = c(possible_gene_location, locus, genotype_ambiguity, genotype, haplotype)) %>%
+    summarise(value = str_flatten(value, collapse = "/"), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype, haplotype)) %>%
     # Combine alleles in a haplotype
-    summarise(value = str_flatten(value, collapse = "~"), .by = c(possible_gene_location, locus, genotype_ambiguity, genotype)) %>%
+    summarise(value = str_flatten(value, collapse = "~"), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype)) %>%
     # Combine gene copies to a genotype
-    summarise(value = str_flatten(value, collapse = "+"), .by = c(possible_gene_location, locus, genotype_ambiguity)) %>%
+    summarise(value = str_flatten(value, collapse = "+"), .by = c(entry, possible_gene_location, locus, genotype_ambiguity)) %>%
     # Combine genotypes to a genotype list
-    summarise(value = str_flatten(value, collapse = "|"), .by = c(possible_gene_location, locus)) %>%
+    summarise(value = str_flatten(value, collapse = "|"), .by = c(entry, possible_gene_location, locus)) %>%
     # Combine loci
-    summarise(value = str_flatten(value, collapse = "^"), .by = possible_gene_location) %>%
+    summarise(value = str_flatten(value, collapse = "^"), .by = c(entry, possible_gene_location)) %>%
     # Combine possible gene locations to a final GL string
-    summarise(value = str_flatten(value, collapse = "?")) %>%
+    summarise(value = str_flatten(value, collapse = "?"), .by = entry) %>%
     # Output a string
     pull(value)
 }
