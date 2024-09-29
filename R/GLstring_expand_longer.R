@@ -34,28 +34,30 @@
 
 GLstring_expand_longer <- function(GL_string){
   as_tibble(GL_string) %>%
+    # Assign a unique identifier for each entry for the function
+    mutate(entry = row_number()) %>%
     # Separate GL string precedence 0: possible gene locations
     separate_longer_delim(value, delim = "?") %>%
     # Assign a unique identifier for each possible gene location
-    mutate(possible_gene_location = row_number()) %>%
+    mutate(possible_gene_location = row_number(), .by = entry) %>%
     # Separate GL string precedence 1: gene/locus
     separate_longer_delim(value, delim = "^") %>%
     # Identify locus
-    mutate(locus = row_number()) %>%
+    mutate(locus = row_number(), .by = c(entry, possible_gene_location)) %>%
     # Separate GL string precedence 2: genotype list
     separate_longer_delim(value, delim = "|") %>%
     # Identify genotype ambiguities
-    mutate(genotype_ambiguity = row_number(), .by = locus) %>%
+    mutate(genotype_ambiguity = row_number(), .by = c(entry, possible_gene_location, locus)) %>%
     # Separate GL string precedence 3: genotype
     separate_longer_delim(value, delim = "+") %>%
     # Identify genotypes
-    mutate(genotype = row_number(), .by = c(locus, genotype_ambiguity)) %>%
+    mutate(genotype = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity)) %>%
     # Separate GL string precedence 4: haplotype
     separate_longer_delim(value, delim = "~") %>%
     # Identify haplotypes
-    mutate(haplotype = row_number(), .by = c(locus, genotype_ambiguity, genotype)) %>%
+    mutate(haplotype = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype)) %>%
     # Separate GL string precedence 5: allele list
     separate_longer_delim(value, delim = "/") %>%
     # Identify alleles
-    mutate(allele = row_number(), .by = c(possible_gene_location, locus, genotype_ambiguity, genotype, haplotype))
+    mutate(allele = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype, haplotype))
 }
