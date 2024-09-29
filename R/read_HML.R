@@ -30,31 +30,44 @@
 
 
 read_HML <- function(HML_file){
+  # Validate input
+  if (!file.exists(HML_file)) {
+    stop("The file does not exist:", HML_file)
+  }
+
   # Load the HML file
-  HML <- read_xml(HML_file)
+  HML <- tryCatch({
+    read_xml(HML_file)
+  }, error = function(e){
+    stop("Failed to read HML; check that file is in compliant HML format.")
+  })
 
   # Filter for all the children in the HML file that represent a sample
-  samples <-  HML %>%
-    xml_find_all( ".//d1:sample")
+  samples <- xml_find_all(HML, ".//d1:sample")
 
   # Get sample number and GL strings for each sample
-  gl_strings <- map(samples, function(node){
+  GL_strings <- map(samples, function(node){
     # Get sample ID
-    sampleID <- node %>% xml_attr("id")
+    sampleID <-  xml_attr(node, "id")
     # Get GL strings
-    glstring <- node %>% xml_find_all( ".//d1:glstring") %>% xml_text()
+    glstring <- xml_text(xml_find_all(node, ".//d1:glstring"))
     # Combine to a tibble
     tibble(sampleID, glstring)
   })
 
-  # Create a table of the typing for each sample
-  bind_rows(gl_strings) %>%
+  # Combine to a single tibble.
+  combined <- bind_rows(GL_strings)
+
+  # Some implementations of HML put the same locus in multiple nodes; this combines them with "+" to form a compliant GL string
+  reduced <- combined %>%
     mutate(locus = str_extract(glstring, "[^//*]+")) %>%
-    # Some implementations of HML put the same locus in multiple nodes; this combines them with "+" to form a compliant GL string
     mutate(glstring = paste0(glstring, collapse = "+"), .by = c(sampleID, locus)) %>%
+    # Clean up values
     distinct(sampleID, glstring, locus) %>%
-    # Turn the data frame into one sample per row
-    pivot_wider(names_from = locus, values_from = glstring) %>%
-    # Combine to a single GL string per sample
-    unite(GL_string, 2:last_col(), sep = "^", remove = TRUE, na.rm = TRUE)
+    filter(!is.na(sampleID) & !is.na(glstring)) %>%
+    select(-locus)
+
+  # Combine to a single GL string per sample
+  summarise(reduced, GL_string = str_flatten(glstring, collapse = "^"), .by = sampleID)
+
 }
