@@ -412,24 +412,111 @@ reduced <- combined %>%
 # Combine to a single GL string per sample
   summarise(reduced, GL_string = str_flatten(glstring, collapse = "^"), .by = sampleID)
   
+  
+  
  }
 
 read_HML("HML_1.hml")
 read_HML("HML_2.hml")
 read_HML("test1.csv")
 ```
-# Create a table of the typing for each sample
- 
-   %>% 
-   %>% 
-   %>%
-  # Turn the data frame into one sample per row
-  pivot_wider(names_from = locus, values_from = glstring) %>% 
+
+```{r}
+# Troubleshoot HLA_truncate error
+
+HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = FALSE) {
+  # Expand the GL string
+    alleles <- GLstring_expand_longer(data) %>%
+      # Extract any WHO-recognized suffixes
+      mutate(suffix = replace_na(str_extract(value, "(?<=[:digit:])[LSCAQNlscaqn]$"), "")) %>%
+      # Extract any P or G group designation
+      mutate(GP = replace_na(str_extract(value, "(?<=[:digit:])[PGpg]$"), "")) %>%
+      # Separate HLA prefix if available
+      separate_wider_delim(value, delim = "-", names = c("prefix", "rest"), too_few = "align_end") %>% 
+      separate_wider_delim(rest, delim = "*", names = c("gene", "molecular_type"), too_few = "align_start") %>% 
+      mutate(sero_type = str_extract(gene, "[:digit:]+$"), .after = molecular_type) %>% 
+      mutate(gene = str_replace(gene, "[:digit:]+$", "")) %>%
+      # Separate molecular fields
+      separate_wider_delim(molecular_type, delim = ":", names = c("one", "two", "three", "four"), too_few = "align_start") %>%
+      # Keep only numbers in each field, in case there were non-standard suffixes.
+      mutate(across(one:four, ~str_extract(., "[:digit:]+")))
+
+    # Delete fields for truncating and reunite the alleles
+    if (fields == 1) {
+      trunctated <- alleles %>% select(-four, -three, -two) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(gene, gene, one, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+    } else if (fields == 2) {
+      trunctated <- alleles %>% select(-four, -three) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:two, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+    } else if (fields == 3) {
+      trunctated <- alleles %>% select(-four) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:three, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+    } else {
+      trunctated <- alleles %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:four, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+    }
+    
+    # Retain suffix if desired
+    if (keep_suffix) {
+      with_suffix <- trunctated %>% unite(gene, gene, suffix, sep = "", na.rm = TRUE)
+    } else {
+      with_suffix <- trunctated %>% select(-suffix)
+    }
+    # Retain P/G group designation if desired
+    if (keep_G_P_group) {
+      with_g_p <- with_suffix %>% unite(gene, gene, GP, sep = "", na.rm = TRUE)
+    } else {
+      with_g_p <- with_suffix %>% select(-GP)
+    }
+
+    # Combine everything back to a GL string.
+    final <- with_g_p %>% rename(value = gene) %>% ambiguity_table_to_GLstring()
+    return(final)
+}
+
+HLA_truncate(c("A2", "HLA-A*68:01:02N", "DQA01", "DP4", "DR51"), fields = 2)
+```
   
-  unite(GL_string, 2:last_col(), sep = "^", remove = TRUE, na.rm = TRUE)
+      
+      
+
+    
+
+    )
    
-  
-  
+# Don't alter data if it is not in molecular nomenclature.
+  if (!str_detect(data, "\\*")) {
+    return(data)
+  } else {
 
 
+```{r}
+GLstring_expand_longer <- function(GL_string){
+  as_tibble(GL_string) %>%
+    # Assign a unique identifier for each entry for the function
+    mutate(entry = row_number()) %>%
+    # Separate GL string precedence 0: possible gene locations
+    separate_longer_delim(value, delim = "?") %>%
+    # Assign a unique identifier for each possible gene location
+    mutate(possible_gene_location = row_number(), .by = entry) %>%
+    # Separate GL string precedence 1: gene/locus
+    separate_longer_delim(value, delim = "^") %>%
+    # Identify locus
+    mutate(locus = row_number(), .by = c(entry, possible_gene_location)) %>%
+    # Separate GL string precedence 2: genotype list
+    separate_longer_delim(value, delim = "|") %>%
+    # Identify genotype ambiguities
+    mutate(genotype_ambiguity = row_number(), .by = c(entry, possible_gene_location, locus)) %>%
+    # Separate GL string precedence 3: genotype
+    separate_longer_delim(value, delim = "+") %>%
+    # Identify genotypes
+    mutate(genotype = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity)) %>%
+    # Separate GL string precedence 4: haplotype
+    separate_longer_delim(value, delim = "~") %>%
+    # Identify haplotypes
+    mutate(haplotype = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype)) %>%
+    # Separate GL string precedence 5: allele list
+    separate_longer_delim(value, delim = "/") %>%
+    # Identify alleles
+    mutate(allele = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype, haplotype))
+}
+
+GLstring_expand_longer(c("A*02:01", "A2"))
+```
 
