@@ -42,14 +42,18 @@ HLA_mismatch_alleles_HvG <- function(GL_string_recip, GL_string_donor, loci, hom
   for (locus in loci) {
     full_locus <- paste0("HLA-", locus)
 
+    # Extract just the locus part (e.g., "HLA-A") from the alleles
+    recip_data_locus <- gsub("\\*.*", "", recip_data$value)
+    donor_data_locus <- gsub("\\*.*", "", donor_data$value)
+
     # Check if the specified loci exist in both
-    if (!(full_locus %in% recip_data$locus) | !(full_locus %in% donor_data$locus)) {
+    if (!(full_locus %in% recip_data_locus) | !(full_locus %in% donor_data_locus)) {
       stop(paste("Locus", full_locus, "not found in both recipient and donor data."))
     }
 
-    # Filter data for the loci
-    recip_locus_data <- recip_data %>% filter(locus == full_locus)
-    donor_locus_data <- donor_data %>% filter(locus == full_locus)
+    # Filter data for the specified loci
+    recip_locus_data <- recip_data %>% filter(gsub("\\*.*", "", value) == full_locus)
+    donor_locus_data <- donor_data %>% filter(gsub("\\*.*", "", value) == full_locus)
 
     # Identify mismatches
     mismatches <- donor_locus_data %>%
