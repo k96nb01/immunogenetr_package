@@ -698,4 +698,3 @@ return(paste(mismatch_results, collapse = ","))
 
 HLA_mismatch_HvG_number("HLA-A*02:01+HLA-A*68:01^HLA-B*15:02+HLA-B*15:01", "HLA-A*03:01+HLA-A*03:01^HLA-B*15:01+HLA-B*15:01", c("A", "B"), homozygous_count = 2)
 ```
-
