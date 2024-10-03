@@ -583,7 +583,6 @@ HLA_mismatch_HvG_alleles <- function(GL_string_recip, GL_string_donor, loci) {
   available_loci_recip <- unique(gsub("\\*.*", "", recip_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
   available_loci_donor <- unique(gsub("\\*.*", "", donor_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
 
-  
   # Check if all specified loci exist in both recipient and donor data
   missing_loci_names <- setdiff(normalized_loci, intersect(available_loci_recip, available_loci_donor))
   
@@ -624,67 +623,70 @@ HLA_mismatch_HvG_alleles <- function(GL_string_recip, GL_string_donor, loci) {
    return(result_string)
 }
 
-HLA_mismatch_HvG_alleles("HLA-A*02:01+HLA-A*30:01^HLA-B*15:01", "HLA-A*02:02+HLA-A*68:01^HLA-B*15:01+HLA-B*14:01", c("A", "B"))
+HLA_mismatch_HvG_alleles("HLA-A*02:01+HLA-A*30:01", "HLA-A*02:02+HLA-A*02:02", c("A"))
 ```
 
 ```{r}
 # HLA_mismatch_HvG_number function
 
-HLA_mismatch_HvG_number <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 1) {
+HLA_mismatch_HvG_number <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2) {
   # Check for ambiguity
   if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
     stop("HLA_mismatch_HvG does not support ambiguous GL strings with | or /")
   }
-  
+
   # Split GL strings by "^" to separate different loci
   recip_alleles_list <- unlist(strsplit(GL_string_recip, "\\^"))
   donor_alleles_list <- unlist(strsplit(GL_string_donor, "\\^"))
 
   # Normalize loci names by removing "HLA-" prefix and any "*" characters
   normalized_loci <- gsub("HLA-", "", loci)
-
+  
   # Extract unique locus names present in recipient and donor data without asterisks (*)
   available_loci_recip <- unique(gsub("\\*.*", "", recip_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
   available_loci_donor <- unique(gsub("\\*.*", "", donor_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
 
-  
   # Check if all specified loci exist in both recipient and donor data
   missing_loci_names <- setdiff(normalized_loci, intersect(available_loci_recip, available_loci_donor))
   
   if (length(missing_loci_names) > 0) {
     stop(paste("Loci not found in both recipient and donor data:", paste(missing_loci_names, collapse = ", ")))
   }
-
-   # Iterate over each locus and corresponding allele strings from recipient and donor
-   mismatch_results <- map2(loci, seq_along(loci), ~{
+  
+  # Iterate over each locus and corresponding allele strings from recipient and donor
+  mismatch_results <- map2(normalized_loci, seq_along(normalized_loci), ~{
      locus_name <- .x
      locus_index <- .y
 
      recip_alleles_str <- recip_alleles_list[locus_index]
      donor_alleles_str <- donor_alleles_list[locus_index]
 
-     recip_alleles <- unlist(strsplit(recip_alleles_str, "\\+"))
-     donor_alleles <- unlist(strsplit(donor_alleles_str, "\\+"))
+     # Make sure there are two donor alleles for comparison by duplicating a single allele if necessary
+      donor_alleles_split<-str_split(donor_alleles_str,"\\+")
+	   if(length(donor_alleles_split[[1]]) == 1){
+       donor_allele<-rep(donor_alleles_split[[1]], homozygous_count)
+	   } else {
+	   donor_allele<-donor_alleles_split[[1]]
+	   }
 
-     if (length(donor_alleles) == 2 && donor_alleles[1] == donor_alleles[2] && homozygous_count == 1) {
-       donor_alleles <- donor_alleles[1]
-     }
+	 # Calculate mismatches	
+	 mismatch_count <-
+	   sum(!(donor_allele %in% recip_alleles_list))
 
-     mismatch_count <-
-       sum(!(donor_alleles %in% recip_alleles))
+	 # Adjust mismatch count for homozygous donors if necessary
+	 if(homozygous_count == 1 && length(unique(donor_allele)) == 1) {
+       mismatch_count <- min(mismatch_count, homozygous_count)
+	 }
 
-	# Create a string representation of mismatch count per locus or '0' if no mismatches are found 
-    allele_mismatches_str <-
-      paste0(locus_name, ":", ifelse(mismatch_count > 0, mismatch_count, "0"))
+	 # Create a string representation of mismatch count per locus
+	 paste0(locus_name, ":", ifelse(mismatch_count > 0,mismatch_count,"0"))
 
-    return(allele_mismatches_str)
-   })
+	 })
 
-   # Collapse all results into a single comma-separated string and return it
-   result_string <- paste(mismatch_results, collapse = ", ")
-   
+   result_string<-paste(mismatch_results,collapse=", ")
+
    return(result_string)
 }
 
-HLA_mismatch_HvG_number("HLA-A*02:01+HLA-A*68:01^HLA-B*15:02+HLA-B*15:01", "HLA-A*03:01+HLA-A*03:01^HLA-B*15:03+HLA-B*15:15", c("A", "B"), homozygous_count = 2)
+HLA_mismatch_HvG_number("HLA-A*02:01+HLA-A*68:01^B*15:01", "HLA-A*03:01+HLA-A*03:03^B*15:01+B*15:15", c("A", "B"), homozygous_count = 2)
 ```
