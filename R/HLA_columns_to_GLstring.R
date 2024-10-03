@@ -9,7 +9,6 @@
 #'
 #' @param data A data frame with each row including an HLA typing result, with
 #' individual columns containing a single allele.
-#' @param case_column A column that uniquely identifies the typing result.
 #' @param HLA_typing_columns A list of columns containing the HLA alleles. Tidyselect is supported.
 #' @param prefix_to_remove An optional string of characters to remove from the
 #' locus names. The goal is to get the column names to the locus and a number. For example,
@@ -32,7 +31,7 @@
 #' mC2cd = c("C*07:01", "C*07:02", "C*08:01")
 #' )
 #'
-#' typing_table %>% mutate(GL_string = HLA_columns_to_GLstring(., case_column = "patient", HLA_typing_columns = c(mA1cd:mC2cd), prefix_to_remove = "m", suffix_to_remove = "cd"))
+#' typing_table %>% mutate(GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = c(mA1cd:mC2cd), prefix_to_remove = "m", suffix_to_remove = "cd"))
 #'
 #' @export
 #'
@@ -58,19 +57,22 @@
 #' @importFrom tidyselect all_of
 #' @importFrom cli format_error
 
-HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", serologic = FALSE){
+HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", serologic = FALSE){
   # Set up prefix and suffix regex
-  prefix <- str_c("^", str_escape(prefix_to_remove))
-  suffix <- str_c(str_escape(suffix_to_remove), "$")
+  prefix_regex <- regex(str_c("^", str_escape(prefix_to_remove)), ignore_case = TRUE)
+  suffix_regex <- regex(str_c(str_escape(suffix_to_remove), "$"), ignore_case = TRUE)
+
   # Identify the columns to modify
   col2mod <- names(select(data, {{HLA_typing_columns}}))
 
   step1 <- data %>%
+    # Add a unique row identifier
+    mutate(row_for_function = 1:nrow(.)) %>%
     # pivoting longer to get each allele on a separate row.
     pivot_longer(cols = all_of(col2mod), names_to = "names", values_to = "allele") %>%
     # Remove any prefixes or suffixes from locus names
-    mutate(trunctated_names = str_replace(names, regex(prefix, ignore_case = TRUE), "")) %>%
-    mutate(trunctated_names = str_replace(trunctated_names, regex(suffix, ignore_case = TRUE), "")) %>%
+    mutate(trunctated_names = str_replace(names, prefix_regex, "")) %>%
+    mutate(trunctated_names = str_replace(trunctated_names, suffix_regex, "")) %>%
     # Use the HLA_validate function to clean up the typing, and remove any blank values.
     mutate(allele = HLA_validate(allele)) %>%
     # Remove any blank (now NA) typing values.
@@ -115,6 +117,6 @@ HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefi
   }
 
   # Assemble the GL string
-  step2 %>% summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c({{case_column}}, locus_from_name, DRB_locus)) %>%
-    summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = c({{case_column}})) %>% dplyr::pull(GL_string)
+  step2 %>% summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c(row_for_function, locus_from_name, DRB_locus)) %>%
+    summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = c(row_for_function)) %>% dplyr::pull(GL_string)
 }
