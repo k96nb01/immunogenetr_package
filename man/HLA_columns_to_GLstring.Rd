@@ -6,7 +6,6 @@
 \usage{
 HLA_columns_to_GLstring(
   data,
-  case_column,
   HLA_typing_columns,
   prefix_to_remove = "",
   suffix_to_remove = "",
@@ -16,8 +15,6 @@ HLA_columns_to_GLstring(
 \arguments{
 \item{data}{A data frame with each row including an HLA typing result, with
 individual columns containing a single allele.}
-
-\item{case_column}{A column that uniquely identifies the typing result.}
 
 \item{HLA_typing_columns}{A list of columns containing the HLA alleles. Tidyselect is supported.}
 
@@ -53,6 +50,6 @@ mC1cd = c("C*03:04", "C*04:01", "C*05:01"),
 mC2cd = c("C*07:01", "C*07:02", "C*08:01")
 )
 
-typing_table \%>\% mutate(GL_string = HLA_columns_to_GLstring(., case_column = "patient", HLA_typing_columns = c(mA1cd:mC2cd), prefix_to_remove = "m", suffix_to_remove = "cd"))
+typing_table \%>\% mutate(GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = c(mA1cd:mC2cd), prefix_to_remove = "m", suffix_to_remove = "cd"))
 
 }
