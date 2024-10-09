@@ -727,17 +727,15 @@ HLA_mismatched_alleles_HvG <- function(GL_string_recip, GL_string_donor, loci, h
      recip_alleles_str <- recip_alleles_list[locus_index]
      donor_alleles_str <- donor_alleles_list[locus_index]
      
-     # Check for homozygosity first.
+     # Check for homozygosity.
      recip_homozygous <- (length(unique(str_split(recip_alleles_str,"\\+")[[1]])) == 1)
      donor_homozygous <- (length(unique(str_split(donor_alleles_str,"\\+")[[1]])) == 1)
      
      # Split the recipient and donor alleles and remove elements ending with 'n' or 'N'.
-     recip_alleles_split<-str_split(recip_alleles_str,"\\+") %>% 
-       map(discard, ~str_detect(., "[nN]$")) %>% 
-       first()
-     donor_alleles_split<-str_split(donor_alleles_str,"\\+") %>% 
-       map(discard, ~str_detect(., "[nN]$")) %>% 
-       first()
+     recip_alleles_split<-first(str_split(recip_alleles_str,"\\+") %>% 
+       map(discard, ~str_detect(., "[nN]$"))) 
+     donor_alleles_split<-first(str_split(donor_alleles_str,"\\+") %>% 
+       map(discard, ~str_detect(., "[nN]$"))) 
      
      # Find mismatched HvG alleles: present in the donor but not in the recipient
      mismatched_alleles <- setdiff(donor_alleles_split, recip_alleles_split)
