@@ -507,7 +507,7 @@ GLstring_expand_longer <- function(GL_string){
 GLstring_expand_longer(c("A*02:01", "A2"))
 ```
 
-# Starting here for Busra. All three of these functions below are working properly in my tests. Please add them to the function files and test some more.
+# Skip these functions, go down to the function on line 695.
 ```{r}
 # Updated HLA_mismatch_HvG function, with help from PennDnA (Penn's Microsoft copilot service).
 
@@ -689,4 +689,80 @@ HLA_mismatch_HvG_number <- function(GL_string_recip, GL_string_donor, loci, homo
 }
 
 HLA_mismatch_HvG_number("HLA-A*02:01+HLA-A*68:01^B*15:01", "HLA-A*03:01+HLA-A*03:03^B*15:01+B*15:15", c("A", "B"), homozygous_count = 2)
+```
+# This function below will serve as the basis for the other mismatch functions. This function will have to be replicated for GvH, then the other functions (bidirectional, number and TRUE/FALSE) will use the outputs from these functions.
+```{r}
+# A new HvG mismatch function to include handling of null alleles
+
+HLA_mismatched_alleles_HvG <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2) {
+  # Check for ambiguity
+  if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
+    stop("HLA_mismatch_HvG does not support ambiguous GL strings with | or /")
+  }
+
+  # Split GL strings by "^" to separate different loci
+  recip_alleles_list <- unlist(strsplit(GL_string_recip, "\\^"))
+  donor_alleles_list <- unlist(strsplit(GL_string_donor, "\\^"))
+
+  # Normalize loci names by removing "HLA-" prefix and any "*" characters
+  normalized_loci <- gsub("HLA-", "", loci)
+  
+  # Extract unique locus names present in recipient and donor data without asterisks (*)
+  available_loci_recip <- unique(gsub("\\*.*", "", recip_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
+  available_loci_donor <- unique(gsub("\\*.*", "", donor_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
+
+  # Check if all specified loci exist in both recipient and donor data
+  missing_loci_names <- setdiff(normalized_loci, intersect(available_loci_recip, available_loci_donor))
+  
+  if (length(missing_loci_names) > 0) {
+    stop(paste("Loci not found in both recipient and donor data:", paste(missing_loci_names, collapse = ", ")))
+  }
+  
+  # Iterate over each locus and corresponding allele strings from recipient and donor
+  mismatch_results <- map2(normalized_loci, seq_along(normalized_loci), ~{
+     locus_name <- .x
+     locus_index <- .y
+
+     # Pull out the allele list for each locus.
+     recip_alleles_str <- recip_alleles_list[locus_index]
+     donor_alleles_str <- donor_alleles_list[locus_index]
+     
+     # Check for homozygosity first.
+     recip_homozygous <- (length(unique(str_split(recip_alleles_str,"\\+")[[1]])) == 1)
+     donor_homozygous <- (length(unique(str_split(donor_alleles_str,"\\+")[[1]])) == 1)
+     
+     # Split the recipient and donor alleles and remove elements ending with 'n' or 'N'.
+     recip_alleles_split<-str_split(recip_alleles_str,"\\+") %>% 
+       map(discard, ~str_detect(., "[nN]$")) %>% 
+       first()
+     donor_alleles_split<-str_split(donor_alleles_str,"\\+") %>% 
+       map(discard, ~str_detect(., "[nN]$")) %>% 
+       first()
+     
+     # Find mismatched HvG alleles: present in the donor but not in the recipient
+     mismatched_alleles <- setdiff(donor_alleles_split, recip_alleles_split)
+     
+     # Duplicate the mismatch if it is homozygous
+     if (length(unique(mismatched_alleles)) == 1 && donor_homozygous) {
+	   mismatched_alleles <- rep(mismatched_alleles, homozygous_count)
+	   }
+
+	  # Create a string of mismatched alleles or 'NA' if no mismatches are found.
+    allele_mismatches_str <-
+      if (length(mismatched_alleles) > 0) {
+        paste0(locus_name, ":", paste(mismatched_alleles, collapse = "+"))
+      } else {
+        paste0(locus_name, ":NA")
+      }
+	 
+    return(allele_mismatches_str)
+	  })
+  
+  # Paste all loci's result back together.
+  paste(mismatch_results, collapse = ",")
+
+   
+}
+
+HLA_mismatched_alleles_HvG("HLA-A*02:01+HLA-A*68:01^HLA-B*58:01", "HLA-A*03:04^HLA-B*15:01", c("A", "B"), homozygous_count = 2)
 ```
