@@ -756,10 +756,8 @@ HLA_mismatched_alleles_HvG <- function(GL_string_recip, GL_string_donor, loci, h
     return(allele_mismatches_str)
 	  })
   
-  # Paste all loci's result back together.
+  # Paste all loci back together.
   paste(mismatch_results, collapse = ",")
-
-   
 }
 
 HLA_mismatched_alleles_HvG("HLA-A*02:01+HLA-A*68:01^HLA-B*58:01", "HLA-A*03:04^HLA-B*15:01", c("A", "B"), homozygous_count = 2)
