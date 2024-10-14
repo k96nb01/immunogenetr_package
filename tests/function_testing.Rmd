@@ -834,3 +834,21 @@ HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, h
 HLA_mismatched_alleles_GvH("HLA-A*02:01+HLA-A*03:04^HLA-B*58:01", "HLA-A*03:04^HLA-B*15:01", c("A", "B"), homozygous_count = 2)
 ```
 
+```{r}
+#Test how the mismatching functions work on real data.
+
+(test <- test4 
+ %>% mutate(gl_string = HLA_columns_to_GLstring(., c(mA1Cd.recipient:mDPB12cd.recipient), prefix_to_remove = "m", suffix_to_remove = "cd.recipient"))
+ %>% select(gl_string)
+ )
+
+(recips <- test %>% slice(1:5) %>% mutate(case = row_number(), .before = gl_string))
+
+(donors <- test %>% slice(6:10) %>% mutate(case = row_number(), .before = gl_string))
+
+# NOt sure why this isn't working, and the the error doesn't make sense to me. 
+(cases <- recips %>% left_join(donors, join_by(case), suffix = c(".recip", ".donor"))
+  %>% mutate(matching_GvH = HLA_mismatched_alleles_GvH(gl_string.recip, "HLA-A*03:04^HLA-B*15:01", c("A")))
+  )
+```
+
