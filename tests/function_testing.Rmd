@@ -696,7 +696,7 @@ HLA_mismatch_HvG_number("HLA-A*02:01+HLA-A*68:01^B*15:01", "HLA-A*03:01+HLA-A*03
 
 HLA_mismatched_alleles_HvG <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2) {
   # Check for ambiguity
-  if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
+  if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]"))) {
     stop("HLA_mismatch_HvG does not support ambiguous GL strings with | or /")
   }
 
@@ -766,7 +766,7 @@ HLA_mismatched_alleles_HvG("HLA-A*02:01+HLA-A*68:01^HLA-B*58:01", "HLA-A*03:04^H
 ```{r}
 HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2) {
   # Check for ambiguity
-  if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
+  if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]"))) {
     stop("HLA_mismatch_HvG does not support ambiguous GL strings with | or /")
   }
 
@@ -834,6 +834,8 @@ HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, h
 HLA_mismatched_alleles_GvH("HLA-A*02:01+HLA-A*03:04^HLA-B*58:01", "HLA-A*03:04^HLA-B*15:01", c("A", "B"), homozygous_count = 2)
 ```
 
+
+
 ```{r}
 #Test how the mismatching functions work on real data.
 
@@ -848,7 +850,7 @@ HLA_mismatched_alleles_GvH("HLA-A*02:01+HLA-A*03:04^HLA-B*58:01", "HLA-A*03:04^H
 
 # NOt sure why this isn't working, and the the error doesn't make sense to me. 
 (cases <- recips %>% left_join(donors, join_by(case), suffix = c(".recip", ".donor"))
-  %>% mutate(matching_GvH = HLA_mismatched_alleles_GvH(gl_string.recip, "HLA-A*03:04^HLA-B*15:01", c("A")))
+  %>% mutate(matching_GvH = HLA_mismatched_alleles_GvH(gl_string.recip, gl_string.donor, c("A")))
   )
 ```
 
