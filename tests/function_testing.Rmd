@@ -507,11 +507,13 @@ GLstring_expand_longer <- function(GL_string){
 GLstring_expand_longer(c("A*02:01", "A2"))
 ```
 # Below is a working function. Features that still need to be added:
-# 1. The ability to treat the DRB3, DRB4 and DRB5 loci as one locus, so mismatches are calculated between these three loci. I tried for a long time to get this to work with Copilot, but could not.
 # 2. If only one locus is passed to the function, then the output should only list the mismatched loci, and not have "HLA-A:" added to the beginning of the output. Outputs like "HLA-A:HLA-A*02:01,HLAB:HLA-B*57:01" should only happen if more than one locus was supplied to the function.
 # 3. If there are no mismatches, the function should output "NA" instead of a blank string.
 
+
 ```{r}
+# Working HLA_mismatched_alleles_GvH function, with handling of DRB3/4/5 loci.
+
 HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2) {
   # Ensure input vectors are of the same length
   if (length(GL_string_recip) != length(GL_string_donor)) {
@@ -529,12 +531,26 @@ HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, h
     recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
     donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
     
-    names(recip_alleles_list) <- map_chr(strsplit(recip_alleles_list, "\\*"), 1)
-    names(donor_alleles_list) <- map_chr(strsplit(donor_alleles_list, "\\*"), 1)
+    # Process DRB345 alleles to add them to a single locus
+    recip_alleles_list_DRB345 <- recip_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
+    recip_alleles_list_no_DRB345 <- recip_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
+    recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "HLA"))
+    
+    donor_alleles_list_DRB345 <- donor_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
+    donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
+    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "HLA"))
+    
+    # Set names for each locus
+    names(recip_alleles_list_processed) <- map_chr(strsplit(recip_alleles_list_processed, "\\*"), 1)
+    names(donor_alleles_list_processed) <- map_chr(strsplit(donor_alleles_list_processed, "\\*"), 1)
+    
+    # Modify the names if they start with DRB3, 4, or 5
+    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
+    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
     
     # Find which supplied loci are missing from recipient and donor typings
-    missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list))
-    missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list))
+    missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
+    missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
     
     if (length(missing_loci_from_recipient) > 0 || length(missing_loci_from_donor) > 0)     {
       stop(paste("Either the recipient and/or donor GL strings are missing these loci:", 
@@ -543,8 +559,8 @@ HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, h
     
     mismatch_results <- map(loci, function(locus_name) {
       # Pull out the allele list for each locus.
-      recip_alleles_str <- recip_alleles_list[locus_name]
-      donor_alleles_str <- donor_alleles_list[locus_name]
+      recip_alleles_str <- recip_alleles_list_processed[locus_name]
+      donor_alleles_str <- donor_alleles_list_processed[locus_name]
       
       if (is.null(recip_alleles_str) || is.null(donor_alleles_str)) {
         return(NULL)
@@ -583,6 +599,12 @@ HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, h
   return(results)
 }
 
+HLA_mismatched_alleles_GvH(
+  "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
+  "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
+  c("HLA-DQA1", "HLA-DRB1", "HLA-DRB3/4/5")
+  )
+
 (test_cases <- tribble(
   ~case, ~recip_type, ~donor_type,
   1,   "HLA-A*02:01+HLA-A*03:04^HLA-B*15:01^HLA-DRB3*01:01^HLA-DRB4*03:01", "HLA-A*02:01+HLA-A*03:04^HLA-B*15:02^HLA-DRB5*02:02",
@@ -592,4 +614,3 @@ HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, h
 
 test_cases %>% mutate(matching_GvH = HLA_mismatched_alleles_GvH(recip_type, donor_type, c("HLA-A", "HLA-B")))
 ```
-
