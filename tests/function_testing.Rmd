@@ -506,14 +506,9 @@ GLstring_expand_longer <- function(GL_string){
 
 GLstring_expand_longer(c("A*02:01", "A2"))
 ```
-# Below is a working function. Features that still need to be added:
-# 2. If only one locus is passed to the function, then the output should only list the mismatched loci, and not have "HLA-A:" added to the beginning of the output. Outputs like "HLA-A:HLA-A*02:01,HLAB:HLA-B*57:01" should only happen if more than one locus was supplied to the function.
-# 3. If there are no mismatches, the function should output "NA" instead of a blank string.
-
+# Below is a working function. 
 
 ```{r}
-# Working HLA_mismatched_alleles_GvH function, with handling of DRB3/4/5 loci.
-
 HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2) {
   # Ensure input vectors are of the same length
   if (length(GL_string_recip) != length(GL_string_donor)) {
@@ -583,16 +578,20 @@ HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, h
         if (length(mismatched_alleles) > 0) {
           paste0(locus_name, ":", paste(mismatched_alleles, collapse = "+"))
         } else {
-          NULL
+          paste0(locus_name, ":", "NA")
         }
       
       return(allele_mismatches_str)
     })
     
-    mismatch_results_clean <- Filter(Negate(is.null), mismatch_results)
+    result <- paste(mismatch_results , collapse = ",")
     
-    paste(mismatch_results_clean , collapse = ",")
+    if (length(loci) == 1) {
+    result %>% str_replace(str_c(loci, ":"), "") %>% na_if("NA")
+    } else {
+    return(result)
     }
+  }
   
   results <- map2_chr(GL_string_recip, GL_string_donor, process_pair)
   
@@ -614,3 +613,5 @@ HLA_mismatched_alleles_GvH(
 
 test_cases %>% mutate(matching_GvH = HLA_mismatched_alleles_GvH(recip_type, donor_type, c("HLA-A", "HLA-B")))
 ```
+
+
