@@ -506,187 +506,112 @@ GLstring_expand_longer <- function(GL_string){
 
 GLstring_expand_longer(c("A*02:01", "A2"))
 ```
+# Below is a working function. 
 
-# Starting here for Busra. All three of these functions below are working properly in my tests. Please add them to the function files and test some more.
 ```{r}
-# Updated HLA_mismatch_HvG function, with help from PennDnA (Penn's Microsoft copilot service).
-
-HLA_mismatch_HvG <- function(GL_string_recip, GL_string_donor, loci) {
+HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2) {
+  # Ensure input vectors are of the same length
+  if (length(GL_string_recip) != length(GL_string_donor)) {
+    stop("Recipient and donor GL strings must be of equal length")
+  }
+  
   # Check for ambiguity
-  if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
-    stop("HLA_mismatch_HvG does not support ambiguous GL strings with | or /")
+  if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]"))) {
+    stop("HLA_mismatch_HvG does not support ambiguous GL strings containing | or /")
   }
   
-  # Split GL strings by "^" to separate different loci
-  recip_alleles_list <- unlist(strsplit(GL_string_recip, "\\^"))
-  donor_alleles_list <- unlist(strsplit(GL_string_donor, "\\^"))
-
-  # Normalize loci names by removing "HLA-" prefix and any "*" characters
-  normalized_loci <- gsub("HLA-", "", loci)
-
-  # Extract unique locus names present in recipient and donor data without asterisks (*)
-  available_loci_recip <- unique(gsub("\\*.*", "", recip_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
-  available_loci_donor <- unique(gsub("\\*.*", "", donor_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
-
-  
-  # Check if all specified loci exist in both recipient and donor data
-  missing_loci_names <- setdiff(normalized_loci, intersect(available_loci_recip, available_loci_donor))
-  
-  if (length(missing_loci_names) > 0) {
-    stop(paste("Loci not found in both recipient and donor data:", paste(missing_loci_names, collapse = ", ")))
-  }
-
-   # Iterate over each locus and corresponding allele strings from recipient and donor
-   mismatch_results <- map2_chr(loci, seq_along(loci), ~{
-     locus_name <- .x
-     locus_index <- .y
-
-     # Extract the corresponding allele string for the current locus from the recipient and donor
-     recip_alleles_str <- recip_alleles_list[locus_index]
-     donor_alleles_str <- donor_alleles_list[locus_index]
-
-     # Split alleles by "+" to separate them if there's more than one
-     recip_alleles <- unlist(strsplit(recip_alleles_str, "\\+"))
-     donor_alleles <- unlist(strsplit(donor_alleles_str, "\\+"))
-
-     # Check if any donor alleles are not present in recipient alleles
-     mismatch <- any(!donor_alleles %in% recip_alleles)
-
-     # Return result as a string "Locus:Mismatch"
-     paste0(locus_name, ":", ifelse(mismatch, "TRUE", "FALSE"))
-   })
-
-   # Collapse all results into a single comma-separated string
-   result_string <- paste(mismatch_results, collapse = ", ")
-   
-   return(result_string)
-}
-
-
-HLA_mismatch_HvG("HLA-A*30:01^HLA-B*15:01+HLA-B*14:01", "HLA-A*30:01+HLA-A*02:01^HLA-B*15:01+HLA-B*14:01", c("HLA-A", "HLA-B"))
-```
-```{r}
-HLA_mismatch_HvG_alleles <- function(GL_string_recip, GL_string_donor, loci) {
-  # Check for ambiguity
-  if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
-    stop("HLA_mismatch_HvG does not support ambiguous GL strings with | or /")
-  }
-  
-  # Split GL strings by "^" to separate different loci
-  recip_alleles_list <- unlist(strsplit(GL_string_recip, "\\^"))
-  donor_alleles_list <- unlist(strsplit(GL_string_donor, "\\^"))
-
-  # Normalize loci names by removing "HLA-" prefix and any "*" characters
-  normalized_loci <- gsub("HLA-", "", loci)
-
-  # Extract unique locus names present in recipient and donor data without asterisks (*)
-  available_loci_recip <- unique(gsub("\\*.*", "", recip_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
-  available_loci_donor <- unique(gsub("\\*.*", "", donor_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
-
-  # Check if all specified loci exist in both recipient and donor data
-  missing_loci_names <- setdiff(normalized_loci, intersect(available_loci_recip, available_loci_donor))
-  
-  if (length(missing_loci_names) > 0) {
-    stop(paste("Loci not found in both recipient and donor data:", paste(missing_loci_names, collapse = ", ")))
-  }
-
-   # Iterate over each locus and corresponding allele strings from recipient and donor
-   mismatch_results <- map2_chr(loci, seq_along(loci), ~{
-     locus_name <- .x
-     locus_index <- .y
-
-     # Extract the corresponding allele string for the current locus from recipient and donor
-     recip_alleles_str <- recip_alleles_list[locus_index]
-     donor_alleles_str <- donor_alleles_list[locus_index]
-
-     # Split alleles by "+" to separate them if there's more than one allele per locus
-     recip_alleles <- unlist(strsplit(recip_alleles_str, "\\+"))
-     donor_alleles <- unlist(strsplit(donor_alleles_str, "\\+"))
-
-     # Find mismatched alleles: present in the donor but not in the recipient
-     mismatched_alleles <- setdiff(donor_alleles, recip_alleles)
-
-    # Create a string of mismatched alleles or 'NA' if no mismatches are found.
-    allele_mismatches_str <-
-      if (length(mismatched_alleles) > 0) {
-        paste0(locus_name, ":", paste(mismatched_alleles, collapse = "+"))
-      } else {
-        paste0(locus_name, ":NA")
+  # Function to process each pair of recipient/donor alleles
+  process_pair <- function(recip_str, donor_str) {
+    # Split GL strings by "^" to separate different loci
+    recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
+    donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
+    
+    # Process DRB345 alleles to add them to a single locus
+    recip_alleles_list_DRB345 <- recip_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
+    recip_alleles_list_no_DRB345 <- recip_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
+    recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "HLA"))
+    
+    donor_alleles_list_DRB345 <- donor_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
+    donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
+    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "HLA"))
+    
+    # Set names for each locus
+    names(recip_alleles_list_processed) <- map_chr(strsplit(recip_alleles_list_processed, "\\*"), 1)
+    names(donor_alleles_list_processed) <- map_chr(strsplit(donor_alleles_list_processed, "\\*"), 1)
+    
+    # Modify the names if they start with DRB3, 4, or 5
+    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
+    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
+    
+    # Find which supplied loci are missing from recipient and donor typings
+    missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
+    missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
+    
+    if (length(missing_loci_from_recipient) > 0 || length(missing_loci_from_donor) > 0)     {
+      stop(paste("Either the recipient and/or donor GL strings are missing these loci:", 
+                 paste(union(missing_loci_from_recipient, missing_loci_from_donor), collapse = ", ")))
+    }
+    
+    mismatch_results <- map(loci, function(locus_name) {
+      # Pull out the allele list for each locus.
+      recip_alleles_str <- recip_alleles_list_processed[locus_name]
+      donor_alleles_str <- donor_alleles_list_processed[locus_name]
+      
+      if (is.null(recip_alleles_str) || is.null(donor_alleles_str)) {
+        return(NULL)
       }
-
+      
+      # Check for homozygosity.
+      recip_homozygous <- length(unique(unlist(strsplit(recip_alleles_str,"\\+")))) == 1
+      
+      # Find mismatched HvG alleles: present in the recipient but not in the donor.
+      mismatched_alleles <- setdiff(unlist(strsplit(recip_alleles_str,"\\+")), 
+                                    unlist(strsplit(donor_alleles_str,"\\+")))
+      
+      # Duplicate the mismatch if it is homozygous.
+      if (recip_homozygous && !is.null(mismatched_alleles)) {
+        mismatched_alleles <- rep(mismatched_alleles, homozygous_count)
+      }
+      
+      # Create a string of mismatched alleles or 'NA' if no mismatches are found.
+      allele_mismatches_str <-
+        if (length(mismatched_alleles) > 0) {
+          paste0(locus_name, ":", paste(mismatched_alleles, collapse = "+"))
+        } else {
+          paste0(locus_name, ":", "NA")
+        }
+      
       return(allele_mismatches_str)
-   })
-
-   # Collapse all results into a single comma-separated string and return it
-   result_string <- paste(mismatch_results, collapse = ", ")
-   
-   return(result_string)
-}
-
-HLA_mismatch_HvG_alleles("HLA-A*02:01+HLA-A*30:01", "HLA-A*02:02+HLA-A*02:02", c("A"))
-```
-
-```{r}
-# HLA_mismatch_HvG_number function
-
-HLA_mismatch_HvG_number <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2) {
-  # Check for ambiguity
-  if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
-    stop("HLA_mismatch_HvG does not support ambiguous GL strings with | or /")
-  }
-
-  # Split GL strings by "^" to separate different loci
-  recip_alleles_list <- unlist(strsplit(GL_string_recip, "\\^"))
-  donor_alleles_list <- unlist(strsplit(GL_string_donor, "\\^"))
-
-  # Normalize loci names by removing "HLA-" prefix and any "*" characters
-  normalized_loci <- gsub("HLA-", "", loci)
-  
-  # Extract unique locus names present in recipient and donor data without asterisks (*)
-  available_loci_recip <- unique(gsub("\\*.*", "", recip_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
-  available_loci_donor <- unique(gsub("\\*.*", "", donor_alleles_list)) %>% str_replace_all(., "HLA[_-]?", "")
-
-  # Check if all specified loci exist in both recipient and donor data
-  missing_loci_names <- setdiff(normalized_loci, intersect(available_loci_recip, available_loci_donor))
-  
-  if (length(missing_loci_names) > 0) {
-    stop(paste("Loci not found in both recipient and donor data:", paste(missing_loci_names, collapse = ", ")))
+    })
+    
+    result <- paste(mismatch_results , collapse = ",")
+    
+    if (length(loci) == 1) {
+    result %>% str_replace(str_c(loci, ":"), "") %>% na_if("NA")
+    } else {
+    return(result)
+    }
   }
   
-  # Iterate over each locus and corresponding allele strings from recipient and donor
-  mismatch_results <- map2(normalized_loci, seq_along(normalized_loci), ~{
-     locus_name <- .x
-     locus_index <- .y
-
-     recip_alleles_str <- recip_alleles_list[locus_index]
-     donor_alleles_str <- donor_alleles_list[locus_index]
-
-     # Make sure there are two donor alleles for comparison by duplicating a single allele if necessary
-      donor_alleles_split<-str_split(donor_alleles_str,"\\+")
-	   if(length(donor_alleles_split[[1]]) == 1){
-       donor_allele<-rep(donor_alleles_split[[1]], homozygous_count)
-	   } else {
-	   donor_allele<-donor_alleles_split[[1]]
-	   }
-
-	 # Calculate mismatches	
-	 mismatch_count <-
-	   sum(!(donor_allele %in% recip_alleles_list))
-
-	 # Adjust mismatch count for homozygous donors if necessary
-	 if(homozygous_count == 1 && length(unique(donor_allele)) == 1) {
-       mismatch_count <- min(mismatch_count, homozygous_count)
-	 }
-
-	 # Create a string representation of mismatch count per locus
-	 paste0(locus_name, ":", ifelse(mismatch_count > 0,mismatch_count,"0"))
-
-	 })
-
-   result_string<-paste(mismatch_results,collapse=", ")
-
-   return(result_string)
+  results <- map2_chr(GL_string_recip, GL_string_donor, process_pair)
+  
+  return(results)
 }
 
-HLA_mismatch_HvG_number("HLA-A*02:01+HLA-A*68:01^B*15:01", "HLA-A*03:01+HLA-A*03:03^B*15:01+B*15:15", c("A", "B"), homozygous_count = 2)
+HLA_mismatched_alleles_GvH(
+  "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
+  "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
+  c("HLA-DQA1", "HLA-DRB1", "HLA-DRB3/4/5")
+  )
+
+(test_cases <- tribble(
+  ~case, ~recip_type, ~donor_type,
+  1,   "HLA-A*02:01+HLA-A*03:04^HLA-B*15:01^HLA-DRB3*01:01^HLA-DRB4*03:01", "HLA-A*02:01+HLA-A*03:04^HLA-B*15:02^HLA-DRB5*02:02",
+  2,   "HLA-A*02:01+HLA-A*30:02^HLA-B*15:01+HLA-B*14:03^HLA-DRB3*03:03", "HLA-A*02:17+HLA-A*32:01^HLA-B*15:01+HLA-B*14:03^HLA-DRB3*03:03",
+  3,   "HLA-A*11:01+HLA-A*23:01^HLA-B*15:01+HLA-B*14:03^HLA-DRB4*01:03", "HLA-A*03:01+HLA-A*68:02^HLA-B*15:01+HLA-B*14:03^HLA-DRB5*01:01"
+))
+
+test_cases %>% mutate(matching_GvH = HLA_mismatched_alleles_GvH(recip_type, donor_type, c("HLA-A", "HLA-B")))
 ```
+
+
