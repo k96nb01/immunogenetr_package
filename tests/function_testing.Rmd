@@ -22,6 +22,7 @@ library(purrr)
 (test2 <- read.csv("test2.csv"))
 (test3 <- read.csv("test3.csv"))
 (test4 <- read.csv("test4.csv"))
+(test5 <- readRDS("test5.rds"))
 ```
 
 ```{r}
@@ -647,6 +648,15 @@ test_cases %>% mutate(matching_GvH = HLA_mismatched_alleles(recip_type, donor_ty
 ```
 
 
+```{r}
+# Play around with some test data in serologic format
+
+(test5) # This is a common format for low-resolution typing. The columns A1Cd:dq2cd are in serologic nomenclature. Note that there are columns for "Bw", which is part of the B locus, but should be treated as a separate locus. Then, the columns mDQA11Cd:mDPB12cd are in molecular nomenclature.
+
+# Test out making a GL string from this low-resolution table.
+test5 %>% mutate(GL_string = HLA_columns_to_GLstring(., c(A1Cd:mDPB12cd), suffix_to_remove = "Cd", serologic = TRUE), .after = case)
+# This does not work as intended. The beginning of the GL string looks good ("HLA-A2^HLA-B7+HLA-B18"), but then the Bw typings are included in the B locus part of the string ("HLA-B7+HLA-B18+HLA-B6+HLA-B6). This part of the string should be "HLA-B7+HLA-B18^HLA-Bw6+HLA-Bw6". Also, using the `serologic = TRUE` argument in the function means that the end of the string improperly records the molecular nomencatlure ("HLA-DQA105:01:01+HLA-DQA104:01:01" should be "HLA-DQA1*05:01:01+HLA-DQA1*04:01:01"). Also, the DR and DQ typing is not correct: "HLA-DR117^HLA-DR28" should be "HLA-DR17^HLA-DR8". I think we need to update the HLA_columns_to_GLstring function to deal with serologic nomenclature properly.
+```
 
 
 
