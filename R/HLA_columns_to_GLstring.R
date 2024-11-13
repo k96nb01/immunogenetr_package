@@ -57,66 +57,76 @@
 #' @importFrom tidyselect all_of
 #' @importFrom cli format_error
 
-HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", serologic = FALSE){
-  # Set up prefix and suffix regex
+HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", serologic = FALSE) {
+  # Set up prefix and suffix regex to remove unwanted parts
   prefix_regex <- regex(str_c("^", str_escape(prefix_to_remove)), ignore_case = TRUE)
   suffix_regex <- regex(str_c(str_escape(suffix_to_remove), "$"), ignore_case = TRUE)
 
   # Identify the columns to modify
   col2mod <- names(select(data, {{HLA_typing_columns}}))
 
+  # Processing Step 1
   step1 <- data %>%
-    # Add a unique row identifier
     mutate(row_for_function = 1:nrow(.)) %>%
-    # pivoting longer to get each allele on a separate row.
     pivot_longer(cols = all_of(col2mod), names_to = "names", values_to = "allele") %>%
-    # Remove any prefixes or suffixes from locus names
-    mutate(trunctated_names = str_replace(names, prefix_regex, "")) %>%
-    mutate(trunctated_names = str_replace(trunctated_names, suffix_regex, "")) %>%
-    # Use the HLA_validate function to clean up the typing, and remove any blank values.
+    # Remove prefixes and suffixes from column names
+    mutate(truncated_names = str_replace(names, prefix_regex, ""),
+           truncated_names = str_replace(truncated_names, suffix_regex, "")) %>%
+    # Validate alleles and remove blanks
     mutate(allele = HLA_validate(allele)) %>%
-    # Remove any blank (now NA) typing values.
     filter(!is.na(allele)) %>%
-    # Determine the locus from the column names
+    # Determine locus name using extended logic
     mutate(locus_from_name = case_when(
-      str_detect(trunctated_names, "[Dd]") ~ str_c("HLA-", str_to_upper(str_extract(trunctated_names, "[Dd][PpQqRr]?[AaBb]?[:digit:]?"))),  #If the column was named "DRB345", for example, then all of the locus names will be "DRB3." Will have to extract names from allele to determine which locus.
-      str_detect(trunctated_names, regex("TAP", ignore_case = TRUE)) ~ str_to_upper(str_extract(trunctated_names, "TAP[12]")),
-      str_detect(trunctated_names, regex("HFE", ignore_case = TRUE)) ~ "HFE",
-      str_detect(trunctated_names, regex("MIC", ignore_case = TRUE)) ~ str_to_upper(str_extract(trunctated_names, "MIC[AB]")),
-      str_detect(trunctated_names, "(?<![LlQqPpRrCcTt])[Aa]") ~ "HLA-A",
-      str_detect(trunctated_names, "(?<![QqPpRrCc])[Bb]") ~ "HLA-B",
-      str_detect(trunctated_names, "(?<![QqPpRrIi])[Cc]") ~ str_c("HLA-", str_to_upper(str_extract(trunctated_names, "[Cc][Ww]?"))),
-      str_detect(trunctated_names, "[EFGHJKLNPSTUVWYefghjklnpstuvwy]") ~ str_c("HLA-", str_to_upper(str_extract(trunctated_names, "[EFGHJKLNPSTUVWYefghjklnpstuvwy]"))),
-      .default = "unknown"
+      str_detect(truncated_names, regex("^[Aa]([0-9]*)?$", ignore_case = TRUE)) ~ "HLA-A",  # Handle A locus
+      str_detect(truncated_names, regex("^[Bb]([0-9]*)?$", ignore_case = TRUE)) ~ "HLA-B",  # Handle B locus
+      str_detect(truncated_names, regex("^Bw([0-9]*)?$", ignore_case = TRUE)) ~ "HLA-Bw",  # Handle Bw separately from B locus
+      str_detect(truncated_names, regex("^[Cc][Ww]?([0-9]*)?$", ignore_case = TRUE)) ~ "HLA-Cw",  # Handle Cw locus
+      str_detect(truncated_names, regex("^[Dd][Rr][Ww]?([0-9]*)?$", ignore_case = TRUE)) ~ "HLA-DR",  # Handle DR locus
+      str_detect(truncated_names, regex("^[Dd][Qq]([0-9]*)?$", ignore_case = TRUE)) ~ "HLA-DQ",  # Corrected for DQ locus in serologic typing
+      str_detect(truncated_names, regex("^mDQA1[12]?([0-9]*)?$", ignore_case = TRUE)) ~ "HLA-DQA1",  # Molecular DQA1
+      str_detect(truncated_names, regex("^mDPA1[12]?([0-9]*)?$", ignore_case = TRUE)) ~ "HLA-DPA1",  # Molecular DPA1
+      str_detect(truncated_names, regex("^mDPB1[12]?([0-9]*)?$", ignore_case = TRUE)) ~ "HLA-DPB1",  # Molecular DPB1
+      TRUE ~ "unknown"
     )) %>%
-    # Rename any "CW" properly
+    # Rename "CW" to "Cw" for standardization
     mutate(locus_from_name = str_replace(locus_from_name, "HLA-CW", "HLA-Cw")) %>%
-    # Determine the DRB locus from the allele
+    # Handle the final locus name for high-resolution DRB alleles
     mutate(DRB_locus = if_else(
       str_detect(locus_from_name, "DRB"), str_c("HLA-DRB", str_extract(allele, "[1345](?=\\*)")), NA_character_
     )) %>%
-    # Determine the final locus name from the two columns
+    # Determine the final locus name
     mutate(final_locus = coalesce(DRB_locus, locus_from_name)) %>%
-    # Remove any info before the asterisk from the allele field
-    mutate(allele = str_replace(allele, ".+\\*", ""))
+    # Handle serologic typing but skip for molecular loci
+    mutate(allele = if_else(
+      serologic & !str_detect(final_locus, "DQA1|DQB|DPA1|DPB1|DQ"),  # Avoid modifying molecular notations
+      str_replace(allele, ".+\\*", ""),  # Remove prefix before asterisk for serologic types
+      allele
+    )) %>%
+    # Correct the molecular notation for DQA1, DPA1, DPB1 loci when serologic = TRUE
+    mutate(allele = if_else(
+      str_detect(final_locus, "DQA1|DPA1|DPB1"),
+      str_replace(allele, "(\\d+):(\\d+):(\\d+)", "*\\1:\\2:\\3"),  # Ensure molecular format with '*'
+      allele
+    ))
 
   # Set up error detection for any loci that could not be determined
   error_table <- step1 %>% filter(locus_from_name == "unknown")
   error_column_names <- error_table %>% select(names) %>% distinct() %>% dplyr::pull(names)
 
-  # Error code
   if (nrow(error_table) != 0) {
-    abort(format_error("The  column(s) {error_column_names} could not be parsed to determine HLA loci."))
+    # Print the columns that caused the error to assist in debugging
+    print(glue::glue("Columns that could not be parsed: {paste(error_column_names, collapse = ', ')}"))
+    abort(format_error("The column(s) {paste(error_column_names, collapse = ', ')} could not be parsed to determine HLA loci."))
   }
 
   # Assemble the final type
-  if (serologic == TRUE){
-    step2 <- step1 %>% mutate(final_type = str_glue("{final_locus}{allele}", .na = ""))
-  } else {
-    step2 <- step1 %>% mutate(final_type = str_glue("{final_locus}*{allele}", .na = ""))
-  }
+  step2 <- step1 %>%
+    mutate(final_type = str_glue("{final_locus}{allele}")) %>%
+    # Group alleles within the same locus
+    summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c(row_for_function, locus_from_name)) %>%
+    # Assemble GL string with each locus separated by "^"
+    summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = c(row_for_function))
 
-  # Assemble the GL string
-  step2 %>% summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c(row_for_function, locus_from_name, DRB_locus)) %>%
-    summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = c(row_for_function)) %>% dplyr::pull(GL_string)
+  # Return GL Strings
+  return(step2 %>% dplyr::pull(GL_string))
 }
