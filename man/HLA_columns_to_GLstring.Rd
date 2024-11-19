@@ -8,8 +8,7 @@ HLA_columns_to_GLstring(
   data,
   HLA_typing_columns,
   prefix_to_remove = "",
-  suffix_to_remove = "",
-  serologic = FALSE
+  suffix_to_remove = ""
 )
 }
 \arguments{
@@ -24,9 +23,6 @@ columns named "mDRB11Cd" and "mDRB12Cd" should use the `prefix_to_remove` value 
 
 \item{suffix_to_remove}{An optional string of characters to remove from the
 locus names. Using the example above, the `suffix_to_remove` value will be "Cd".}
-
-\item{serologic}{Whether the final type should be formatted in serologic resolution;
-molecular resolution is the default.}
 }
 \value{
 A list of GL strings in the order of the original data frame.
