@@ -724,7 +724,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
 HLA_mismatch_base(
   "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
   "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
-  c("HLA-A", "HLA-DRB1"),
+  c("HLA-A", "HLA-DRB1", "HLA-DRB3/4/5"),
   direction = "GvH"
   )
 
@@ -756,60 +756,51 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
   direction <- match.arg(direction, valid_directions)
   
   if (direction == "HvG"){
-    # If only a single locus was selected in the arguments, output without starting with the locus name followed by an equal sign.
-    if (length(loci) == 1) {
-      mismatches <- tibble(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction = "HvG"))  %>% 
-      rename(mismatches = 1) %>% 
-      separate_wider_delim(mismatches, delim = "+", names = c("one", "two"), too_few = "align_start") %>% 
-      rowwise() %>% 
-      mutate(mismatches = sum(!is.na(one), !is.na(two))) %>% 
-      ungroup() %>% 
-      pull(mismatches)
+    mismatch_string <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction, homozygous_count)
+    
+    # Split the string into loci parts
+  loci_parts <- str_split(mismatch_string, ", ")[[1]]
+  
+  # Use map to iterate over each locus part and count alleles
+  allele_counts <- map_chr(loci_parts, function(locus_part) {
+    parts <- str_split(locus_part, "=")[[1]]
+    locus <- parts[1]
+    alleles <- str_split(parts[2], "\\+")[[1]]
+    
+    # Check for NA and count alleles accordingly
+    if (alleles != "NA") {
+      count <- 0
     } else {
-      # For cases where multiple loci were called.
-      mismatches <- tibble(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction = "HvG")) %>% 
-      rename(mismatches = 1) %>% 
-      separate_longer_delim(mismatches, delim = ", ") %>% 
-      separate_wider_delim(mismatches, delim = "=", names = c("locus", "mismatches"), too_few = "align_start") %>% 
-      separate_wider_delim(mismatches, delim = "+", names = c("one", "two"), too_few = "align_start") %>% 
-      mutate(across(everything(), ~ na_if(., "NA"))) %>% 
-      rowwise() %>% 
-      mutate(mismatches = sum(!is.na(one), !is.na(two))) %>% 
-      ungroup() %>% 
-      mutate(mismatches = str_c(locus, "=", mismatches)) %>% 
-      summarize(mismatches= str_flatten(mismatches, collapse = ", ")) %>% 
-      pull(mismatches)
+      count <- sum(!is.na(alleles))
     }
+    
+    # Return a string with the locus and allele count
+    paste(locus, count, sep = "=")
+  })
+  
+  # Collapse the results into a single comma-separated string
+  return(str_c(allele_counts, collapse = ", "))
   }
   
-  return(mismatches)
+  
   
 }
 
-
+# This works properly:
 HLA_mismatch_number(
   "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
-  "HLA-A*03:01+HLA-A*30:02^HLA-DRB3*03:01",
+  "HLA-A*03:02+HLA-A*74:01^HLA-DRB3*03:01",
   c("HLA-A", "HLA-DRB3/4/5"),
   direction = "HvG"
   )
 
+# But this gives an error:
 HLA_mismatch_number(
   "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
-  "HLA-A*03:01+HLA-A*30:02^HLA-DRB3*03:01",
-  c("HLA-A"),
+  "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
+  c("HLA-A", "HLA-DRB3/4/5"),
   direction = "HvG"
   )
+
+# Also, will need to update the function if a single locus is supplied.
 ```
-
-
- 
-
-
-
-
-
-
-  
-
-  
