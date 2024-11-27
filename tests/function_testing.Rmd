@@ -697,9 +697,9 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
       # Create a string of mismatched alleles or 'NA' if no mismatches are found.
       allele_mismatches_str <-
         if (length(mismatched_alleles) > 0) {
-          paste0(locus_name, ":", paste(mismatched_alleles, collapse = "+"))
+          paste0(locus_name, "=", paste(mismatched_alleles, collapse = "+"))
         } else {
-          paste0(locus_name, ":", "NA")
+          paste0(locus_name, "=", "NA")
         }
       
       return(allele_mismatches_str)
@@ -721,7 +721,12 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
 
 
 
-
+HLA_mismatch_base(
+  "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
+  "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
+  c("HLA-A", "HLA-DRB1"),
+  direction = "GvH"
+  )
 
 
 HLA_mismatch_base(
@@ -731,17 +736,6 @@ HLA_mismatch_base(
   c("HLA-A", "HLA-Cw","HLA-DR51/52/53", "HLA-DPB1"),
   direction = "HvG"
   )
-```
-HLA_mismatched_alleles(
-  "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
-  "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
-  c("HLA-A", "HLA-DRB1"),
-  direction = "GvH"
-  )
-  
-# This is an example of a GL string with mixed serologic and molecular nomenclature, for which the function will need to be updated to handle properly.
-# Note that in serologic nomenclature, the DRB3/4/5 loci all start with DR5: DRB3 = DR52, DRB4 = DR53, and DRB5 = DR51.
-
 
 (test_cases <- tribble(
   ~case, ~recip_type, ~donor_type,
@@ -750,7 +744,14 @@ HLA_mismatched_alleles(
   3,   "HLA-A*11:01+HLA-A*23:01^HLA-B*15:01+HLA-B*14:03", "HLA-A*03:01+HLA-A*68:02^HLA-B*15:01+HLA-B*14:03"
 ))
 
-test_cases %>% mutate(matching_GvH = HLA_mismatched_alleles(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "HvG"))
+test_cases %>% mutate(matching_GvH = HLA_mismatch_base(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "GvH"))
+```
+
+
+
+
+
+
   
   
 
