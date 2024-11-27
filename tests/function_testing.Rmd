@@ -507,179 +507,6 @@ GLstring_expand_longer <- function(GL_string){
 
 GLstring_expand_longer(c("A*02:01", "A2"))
 ```
-# Below is a working mismatch function, which will serve as the basis for all other mismatching and matching functions. 
-
-```{r}
-HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "Bidirectional"), homozygous_count = 2) {
-  # Ensure input vectors are of the same length
-  if (length(GL_string_recip) != length(GL_string_donor)) {
-    stop("Recipient and donor GL strings must be of equal length")
-  }
-  
-  # Check for ambiguity
-  if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]") )) {
-    stop("The matching/mismatching functions do not support ambiguous GL strings containing | or /. Process your GL strings to result in unambiguous genotypes before using these functions.")
-  }
-  
-  # Function to process each pair of recipient/donor alleles
-  process_pair <- function(recip_str, donor_str) {
-    # Split GL strings by "^" to separate different loci
-    recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
-    donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
-    
-    # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
-    recip_alleles_list_DRB345 <- recip_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
-    recip_alleles_list_no_DRB345 <- recip_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
-    
-    donor_alleles_list_DRB345 <- donor_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
-    donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
-
-    # Set names for each locus
-    names(recip_alleles_list_processed) <- map_chr(
-      recip_alleles_list_processed,
-      ~ ifelse(str_detect(.x, "\\*"), # Molecular nomenclature
-               strsplit(.x, "\\*")[[1]][1],
-               str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
-    )
-    names(donor_alleles_list_processed) <- map_chr(
-      donor_alleles_list_processed,
-      ~ ifelse(str_detect(.x, "\\*"), # Molecular nomenclature
-               strsplit(.x, "\\*")[[1]][1],
-               str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
-    )
-    
-    # Modify the names if they start with DRB3, 4, 5
-    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
-    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
-    
-    # Modify the names for DR51, DR52, DR53 to treat them as a single locus
-    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
-    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
-
-    # Aggregate DR51/52/53 alleles under the single locus "HLA-DR51/52/53"
-    if ("HLA-DR51/52/53" %in% loci) {
-      recip_alleles_list_processed["HLA-DR51/52/53"] <- recip_alleles_list %>%
-        keep(str_detect(., "HLA-DR5[123]")) %>%
-        paste(collapse = "+")
-      donor_alleles_list_processed["HLA-DR51/52/53"] <- donor_alleles_list %>%
-        keep(str_detect(., "HLA-DR5[123]")) %>%
-        paste(collapse = "+")
-    }
-
-    # Find which supplied loci are missing from recipient and donor genotypes
-    missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
-    missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
-    
-    if (length(missing_loci_from_recipient) > 0 || length(missing_loci_from_donor) > 0) {
-      stop(paste("Either the recipient and/or donor GL strings are missing these loci:", 
-                 paste(union(missing_loci_from_recipient, missing_loci_from_donor), collapse = ", ")))
-    }
-    
-    # Mismatch results calculation
-    mismatch_results <- map(loci, function(locus_name) {
-      # Pull out the allele list for each locus.
-      recip_alleles_str <- recip_alleles_list_processed[locus_name]
-      donor_alleles_str <- donor_alleles_list_processed[locus_name]
-      
-      if (is.null(recip_alleles_str) || is.null(donor_alleles_str)) {
-        return(NULL)
-      }
-      
-      # Identify mismatched alleles based on direction
-      mismatched_alleles <- c()
-      
-      if (direction == "GvH") {
-        # Mismatches present in the recipient but not in the donor
-        mismatched_alleles <- setdiff(unlist(strsplit(recip_alleles_str,"\\+")), 
-                                      unlist(strsplit(donor_alleles_str,"\\+")))
-      } else if (direction == "HvG") {
-        # Mismatches present in the donor but not in the recipient
-        mismatched_alleles <- setdiff(unlist(strsplit(donor_alleles_str,"\\+")), 
-                                      unlist(strsplit(recip_alleles_str,"\\+")))
-      } else if (direction == "Bidirectional") {
-        # Bidirectional: Mismatches from recipient not in donor OR donor not in recipient
-        mismatched_alleles_gvh <- setdiff(unlist(strsplit(recip_alleles_str, "\\+")), 
-                                          unlist(strsplit(donor_alleles_str, "\\+")))
-        mismatched_alleles_hvg <- setdiff(unlist(strsplit(donor_alleles_str, "\\+")), 
-                                          unlist(strsplit(recip_alleles_str, "\\+")))
-        mismatched_alleles <- unique(c(mismatched_alleles_gvh, mismatched_alleles_hvg))
-      } else {
-        stop("Direction must either be 'GvH', 'HvG', or 'Bidirectional'.")
-      }
-      
-      # Create a string of mismatched alleles or 'NA' if no mismatches are found.
-      allele_mismatches_str <-
-        if (length(mismatched_alleles) > 0) {
-          paste0(locus_name, ":", paste(mismatched_alleles, collapse = "+"))
-        } else {
-          paste0(locus_name, ":", "NA")
-        }
-      
-      return(allele_mismatches_str)
-    })
-    
-    result <- paste(mismatch_results, collapse = ", ")
-    
-    # If only a single locus was selected in the arguments, output without starting with the locus name followed by a colon.
-    if (length(loci) == 1) {
-      result %>% str_replace(str_c(loci, ":"), "") %>% na_if("NA")
-    } else {
-      return(result)
-    }
-  }
-  
-  # Return final result by applying the GL strings to the process_pair function defined above.
-  map2_chr(GL_string_recip, GL_string_donor, process_pair)
-}
-
-
-
-
-HLA_mismatched_alleles(
-  "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
-  "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
-  c("HLA-A", "HLA-DRB1", "HLA-DRB3/4/5"),
-  direction = "GvH"
-  )
-
-# This is an example of a GL string with mixed serologic and molecular nomenclature, for which the function will need to be updated to handle properly.
-# Note that in serologic nomenclature, the DRB3/4/5 loci all start with DR5: DRB3 = DR52, DRB4 = DR53, and DRB5 = DR51.
-HLA_mismatched_alleles(
-  "HLA-A2+HLA-A68^HLA-DR1+HLA-DR17^HLA-DR52^HLA-DPB1*04:01", 
-  "HLA-A3+HLA-A69^HLA-DR4+HLA-DR17^HLA-DR52+HLA-DR53^HLA-DPB1*04:01+HLA-DPB1*04:02",
-  # function works when "HLA-DR51/52/53" is removed
-  c("HLA-A", "HLA-DR","HLA-DR51/52/53", "HLA-DPB1"),
-  direction = "HvG"
-  )
-
-(test_cases <- tribble(
-  ~case, ~recip_type, ~donor_type,
-  1,   "HLA-A*02:01+HLA-A*03:04^HLA-B*15:01^HLA-DRB3*01:01", "HLA-A*02:01+HLA-A*03:04^HLA-B*15:02",
-  2,   "HLA-A*02:01+HLA-A*30:02^HLA-B*15:01+HLA-B*14:03", "HLA-A*02:17+HLA-A*32:01^HLA-B*15:01+HLA-B*14:03",
-  3,   "HLA-A*11:01+HLA-A*23:01^HLA-B*15:01+HLA-B*14:03", "HLA-A*03:01+HLA-A*68:02^HLA-B*15:01+HLA-B*14:03"
-))
-
-test_cases %>% mutate(matching_GvH = HLA_mismatched_alleles(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "HvG"))
-```
-
-
-```{r}
-# Play around with some test data in serologic format
-
-(test5) # This is a common format for low-resolution typing. The columns A1Cd:dq2cd are in serologic nomenclature. Note that there are columns for "Bw", which is part of the B locus, but should be treated as a separate locus. Then, the columns mDQA11Cd:mDPB12cd are in molecular nomenclature.
-
-# Test out making a GL string from this low-resolution table.
-output <- test5 %>% mutate(GL_string = HLA_columns_to_GLstring(., c(A1Cd:mDPB12cd), suffix_to_remove = "Cd", serologic = TRUE), .after = case)
-
-print(output)
-# This does not work as intended. The beginning of the GL string looks good ("HLA-A2^HLA-B7+HLA-B18"), but then the Bw typings are included in the B locus part of the string ("HLA-B7+HLA-B18+HLA-B6+HLA-B6). This part of the string should be "HLA-B7+HLA-B18^HLA-Bw6+HLA-Bw6". Also, using the `serologic = TRUE` argument in the function means that the end of the string improperly records the molecular nomencatlure ("HLA-DQA105:01:01+HLA-DQA104:01:01" should be "HLA-DQA1*05:01:01+HLA-DQA1*04:01:01"). Also, the DR and DQ typing is not correct: "HLA-DR117^HLA-DR28" should be "HLA-DR17^HLA-DR8". I think we need to update the HLA_columns_to_GLstring function to deal with serologic nomenclature properly. The GL string output for the first column should ultimately look like this:
-
-# "HLA-A2^HLA-B7+HLA-B18^HLA-Bw6+HLA-Bw6^HLA-Cw7+HLA-Cw5^HLA-DR17+HLA-DR8^HLA-DR52^HLA-DQ2+HLA-DQ4^HLA-DQA1*05:01:01+HLA-DQA1*04:01:01^HLA-DPA1*01:03:01^HLA-DPB1*02:02:01+HLA-DPB1*03:01:01"
-
-
-```
 
 ```{r}
 # Work on the HLA_columns_to_GLstring function some more.
@@ -772,7 +599,165 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   
 ```
 
+# Below is a working mismatch function, which will serve as the basis for all other mismatching and matching functions. 
 
+```{r}
+HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "Bidirectional"), homozygous_count = 2) {
+  # Ensure input vectors are of the same length - each input should be a single GL string.
+  if (length(GL_string_recip) != length(GL_string_donor)) {
+    stop("Recipient and donor GL strings must be of equal length")
+  }
+  
+  # Check for ambiguity
+  if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]") )) {
+    stop("The matching/mismatching functions do not support ambiguous GL strings containing | or /. Process your GL strings to result in unambiguous genotypes before using these functions.")
+  }
+  
+  # Function to process each pair of recipient/donor alleles
+  process_pair <- function(recip_str, donor_str) {
+    # Split GL strings by "^" to separate different loci
+    recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
+    donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
+    
+    # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
+    recip_alleles_list_DRB345 <- recip_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
+    recip_alleles_list_no_DRB345 <- recip_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
+    recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
+    
+    donor_alleles_list_DRB345 <- donor_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
+    donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
+    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
+
+    # Set names for each locus
+    names(recip_alleles_list_processed) <- map_chr(
+      recip_alleles_list_processed,
+      ~ if_else(str_detect(.x, "\\*"), # Molecular nomenclature
+               strsplit(.x, "\\*")[[1]][1],
+               str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
+    )
+    names(donor_alleles_list_processed) <- map_chr(
+      donor_alleles_list_processed,
+      ~ if_else(str_detect(.x, "\\*"), # Molecular nomenclature
+               strsplit(.x, "\\*")[[1]][1],
+               str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
+    )
+    
+    # Modify the names if they start with DRB3, 4, 5
+    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
+    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
+    
+    # Modify the names for DR51, DR52, DR53 to treat them as a single locus
+    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
+    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
+
+    # Aggregate DR51/52/53 alleles under the single locus "HLA-DR51/52/53"
+    if ("HLA-DR51/52/53" %in% loci) {
+      recip_alleles_list_processed["HLA-DR51/52/53"] <- recip_alleles_list %>%
+        keep(str_detect(., "HLA-DR5[123]")) %>%
+        paste(collapse = "+")
+      donor_alleles_list_processed["HLA-DR51/52/53"] <- donor_alleles_list %>%
+        keep(str_detect(., "HLA-DR5[123]")) %>%
+        paste(collapse = "+")
+    }
+
+    # Find which supplied loci are missing from recipient and donor genotypes
+    missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
+    missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
+    
+    if (length(missing_loci_from_recipient) > 0 || length(missing_loci_from_donor) > 0) {
+      stop(paste("Either the recipient and/or donor GL strings are missing these loci:", 
+                 paste(union(missing_loci_from_recipient, missing_loci_from_donor), collapse = ", ")))
+    }
+    
+    # Mismatch results calculation
+    mismatch_results <- map(loci, function(locus_name) {
+      # Pull out the allele list for each locus.
+      recip_alleles_str <- recip_alleles_list_processed[locus_name]
+      donor_alleles_str <- donor_alleles_list_processed[locus_name]
+      
+      if (is.null(recip_alleles_str) || is.null(donor_alleles_str)) {
+        return(NULL)
+      }
+      
+      # Identify mismatched alleles based on direction
+      mismatched_alleles <- c()
+      
+      if (direction == "GvH") {
+        # Mismatches present in the recipient but not in the donor
+        mismatched_alleles <- setdiff(unlist(strsplit(recip_alleles_str,"\\+")), 
+                                      unlist(strsplit(donor_alleles_str,"\\+")))
+      } else if (direction == "HvG") {
+        # Mismatches present in the donor but not in the recipient
+        mismatched_alleles <- setdiff(unlist(strsplit(donor_alleles_str,"\\+")), 
+                                      unlist(strsplit(recip_alleles_str,"\\+")))
+      } else if (direction == "Bidirectional") {
+        # Bidirectional: Mismatches from recipient not in donor OR donor not in recipient
+        mismatched_alleles_gvh <- setdiff(unlist(strsplit(recip_alleles_str, "\\+")), 
+                                          unlist(strsplit(donor_alleles_str, "\\+")))
+        mismatched_alleles_hvg <- setdiff(unlist(strsplit(donor_alleles_str, "\\+")), 
+                                          unlist(strsplit(recip_alleles_str, "\\+")))
+        mismatched_alleles <- unique(c(mismatched_alleles_gvh, mismatched_alleles_hvg))
+      } else {
+        stop("Direction must either be 'GvH', 'HvG', or 'Bidirectional'.")
+      }
+      
+      # Create a string of mismatched alleles or 'NA' if no mismatches are found.
+      allele_mismatches_str <-
+        if (length(mismatched_alleles) > 0) {
+          paste0(locus_name, ":", paste(mismatched_alleles, collapse = "+"))
+        } else {
+          paste0(locus_name, ":", "NA")
+        }
+      
+      return(allele_mismatches_str)
+    })
+    
+    result <- paste(mismatch_results, collapse = ", ")
+    
+    # If only a single locus was selected in the arguments, output without starting with the locus name followed by a colon.
+    if (length(loci) == 1) {
+      result %>% str_replace(str_c(loci, ":"), "") %>% na_if("NA")
+    } else {
+      return(result)
+    }
+  }
+  
+  # Return final result by applying the GL strings to the process_pair function defined above.
+  map2_chr(GL_string_recip, GL_string_donor, process_pair)
+}
+
+
+
+
+
+
+HLA_mismatched_alleles(
+  "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52^HLA-DPB1*04:01", 
+  "HLA-A3+HLA-A69^HLA-Cw10+HLA-Cw9^HLA-DR4+HLA-DR17^HLA-DR52+HLA-DR53^HLA-DPB1*04:01+HLA-DPB1*04:02",
+  # function works when "HLA-DR51/52/53" is removed
+  c("HLA-A", "HLA-Cw","HLA-DR51/52/53", "HLA-DPB1"),
+  direction = "HvG"
+  )
+```
+HLA_mismatched_alleles(
+  "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
+  "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
+  c("HLA-A", "HLA-DRB1"),
+  direction = "GvH"
+  )
+  
+# This is an example of a GL string with mixed serologic and molecular nomenclature, for which the function will need to be updated to handle properly.
+# Note that in serologic nomenclature, the DRB3/4/5 loci all start with DR5: DRB3 = DR52, DRB4 = DR53, and DRB5 = DR51.
+
+
+(test_cases <- tribble(
+  ~case, ~recip_type, ~donor_type,
+  1,   "HLA-A*02:01+HLA-A*03:04^HLA-B*15:01^HLA-DRB3*01:01", "HLA-A*02:01+HLA-A*03:04^HLA-B*15:02",
+  2,   "HLA-A*02:01+HLA-A*30:02^HLA-B*15:01+HLA-B*14:03", "HLA-A*02:17+HLA-A*32:01^HLA-B*15:01+HLA-B*14:03",
+  3,   "HLA-A*11:01+HLA-A*23:01^HLA-B*15:01+HLA-B*14:03", "HLA-A*03:01+HLA-A*68:02^HLA-B*15:01+HLA-B*14:03"
+))
+
+test_cases %>% mutate(matching_GvH = HLA_mismatched_alleles(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "HvG"))
   
   
 
