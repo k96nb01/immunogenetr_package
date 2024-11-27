@@ -536,15 +536,6 @@ HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direc
     donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
     donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
 
-    # Process DR51/52/53 alleles to add them to a single locus "HLA-DR51/52/53"
-    recip_alleles_list_DR51_53 <- recip_alleles_list %>% keep(str_detect(., "HLA-DR5[1-3]")) %>% paste(collapse = "+")
-    recip_alleles_list_no_DR51_53 <- recip_alleles_list_processed %>% keep(!str_detect(., "HLA-DR5[1-3]"))
-    recip_alleles_list_processed <- recip_alleles_list_no_DR51_53 %>% append(recip_alleles_list_DR51_53) %>% keep(~ str_detect(.x, "[:graph:]") )
-    
-    donor_alleles_list_DR51_53 <- donor_alleles_list %>% keep(str_detect(., "HLA-DR5[1-3]")) %>% paste(collapse = "+")
-    donor_alleles_list_no_DR51_53 <- donor_alleles_list_processed %>% keep(!str_detect(., "HLA-DR5[1-3]"))
-    donor_alleles_list_processed <- donor_alleles_list_no_DR51_53 %>% append(donor_alleles_list_DR51_53) %>% keep(~ str_detect(.x, "[:graph:]") )
-    
     # Set names for each locus
     names(recip_alleles_list_processed) <- map_chr(
       recip_alleles_list_processed,
@@ -562,11 +553,21 @@ HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direc
     # Modify the names if they start with DRB3, 4, 5
     names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
     names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
-
-    # Modify the names if they start with DR51, 52, 53
-    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[1-3]"), ~ "HLA-DR51/52/53")
-    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[1-3]"), ~ "HLA-DR51/52/53")
     
+    # Modify the names for DR51, DR52, DR53 to treat them as a single locus
+    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
+    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
+
+    # Aggregate DR51/52/53 alleles under the single locus "HLA-DR51/52/53"
+    if ("HLA-DR51/52/53" %in% loci) {
+      recip_alleles_list_processed["HLA-DR51/52/53"] <- recip_alleles_list %>%
+        keep(str_detect(., "HLA-DR5[123]")) %>%
+        paste(collapse = "+")
+      donor_alleles_list_processed["HLA-DR51/52/53"] <- donor_alleles_list %>%
+        keep(str_detect(., "HLA-DR5[123]")) %>%
+        paste(collapse = "+")
+    }
+
     # Find which supplied loci are missing from recipient and donor genotypes
     missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
     missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
@@ -634,6 +635,8 @@ HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direc
 }
 
 
+
+
 HLA_mismatched_alleles(
   "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
   "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
@@ -647,8 +650,8 @@ HLA_mismatched_alleles(
   "HLA-A2+HLA-A68^HLA-DR1+HLA-DR17^HLA-DR52^HLA-DPB1*04:01", 
   "HLA-A3+HLA-A69^HLA-DR4+HLA-DR17^HLA-DR52+HLA-DR53^HLA-DPB1*04:01+HLA-DPB1*04:02",
   # function works when "HLA-DR51/52/53" is removed
-  c("HLA-A", "HLA-DR", "HLA-DR51/52/53","HLA-DPB1"),
-  direction = "GvH"
+  c("HLA-A", "HLA-DR","HLA-DR51/52/53", "HLA-DPB1"),
+  direction = "HvG"
   )
 
 (test_cases <- tribble(
