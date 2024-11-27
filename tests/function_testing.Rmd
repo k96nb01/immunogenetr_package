@@ -602,7 +602,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 # Below is a working mismatch function, which will serve as the basis for all other mismatching and matching functions. 
 
 ```{r}
-HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "Bidirectional"), homozygous_count = 2) {
+HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH"), homozygous_count = 2) {
   # Ensure input vectors are of the same length - each input should be a single GL string.
   if (length(GL_string_recip) != length(GL_string_donor)) {
     stop("Recipient and donor GL strings must be of equal length")
@@ -690,15 +690,8 @@ HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direc
         # Mismatches present in the donor but not in the recipient
         mismatched_alleles <- setdiff(unlist(strsplit(donor_alleles_str,"\\+")), 
                                       unlist(strsplit(recip_alleles_str,"\\+")))
-      } else if (direction == "Bidirectional") {
-        # Bidirectional: Mismatches from recipient not in donor OR donor not in recipient
-        mismatched_alleles_gvh <- setdiff(unlist(strsplit(recip_alleles_str, "\\+")), 
-                                          unlist(strsplit(donor_alleles_str, "\\+")))
-        mismatched_alleles_hvg <- setdiff(unlist(strsplit(donor_alleles_str, "\\+")), 
-                                          unlist(strsplit(recip_alleles_str, "\\+")))
-        mismatched_alleles <- unique(c(mismatched_alleles_gvh, mismatched_alleles_hvg))
       } else {
-        stop("Direction must either be 'GvH', 'HvG', or 'Bidirectional'.")
+        stop("Direction must either be 'GvH', or 'HvG'.")
       }
       
       # Create a string of mismatched alleles or 'NA' if no mismatches are found.
@@ -731,7 +724,7 @@ HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direc
 
 
 
-HLA_mismatched_alleles(
+HLA_mismatch_base(
   "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52^HLA-DPB1*04:01", 
   "HLA-A3+HLA-A69^HLA-Cw10+HLA-Cw9^HLA-DR4+HLA-DR17^HLA-DR52+HLA-DR53^HLA-DPB1*04:01+HLA-DPB1*04:02",
   # function works when "HLA-DR51/52/53" is removed
