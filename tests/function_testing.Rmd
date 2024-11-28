@@ -782,7 +782,15 @@ HLA_mismatch_number(
   direction = "HvG"
   )
 
-# But this gives an error (should be fixed now)
+# And so does this:
+HLA_mismatch_number(
+  "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
+  "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
+  c("HLA-A", "HLA-DRB3/4/5"),
+  direction = "HvG"
+  )
+
+# This looks good:
 HLA_mismatch_number(
   "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
   "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
@@ -790,5 +798,13 @@ HLA_mismatch_number(
   direction = "GvH"
   )
 
-# Also, will need to update the function if a single locus is supplied.
+# Single locus does not appear to be working (this should ouput "2", but instead outputs "HLA-A*03:01+HLA-A*74:01=NA")
+HLA_mismatch_number(
+  "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
+  "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
+  "HLA-A",
+  direction = "GvH"
+  )
+
+# We should add an output for bidirectional, which should be the max of the GvH and the HvG.
 ```
