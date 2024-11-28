@@ -751,39 +751,27 @@ test_cases %>% mutate(matching_GvH = HLA_mismatch_base(recip_type, donor_type, c
 
 ```{r}
 # Work on creating derivative mismatch functions
-HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "bidirectional"), homozygous_count = 2){
-  valid_directions <- c("HvG", "GvH", "bidirectional")
-  direction <- match.arg(direction, valid_directions)
-  
-  if (direction == "HvG"){
+HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "bidirectional"), homozygous_count = 2) {
+  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
+  if (!is.list(loci) && length(loci) == 1) {
+    loci <- list(loci)
+  }
+  if (direction %in% c("HvG", "GvH")) {
     mismatch_string <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction, homozygous_count)
     
-    # Split the string into loci parts
-  loci_parts <- str_split(mismatch_string, ", ")[[1]]
-  
-  # Use map to iterate over each locus part and count alleles
-  allele_counts <- map_chr(loci_parts, function(locus_part) {
-    parts <- str_split(locus_part, "=")[[1]]
-    locus <- parts[1]
-    alleles <- str_split(parts[2], "\\+")[[1]]
+    # Count mismatches for each locus
+    loci_parts <- str_split(mismatch_string, ", ")[[1]]
+    allele_counts <- map_chr(loci_parts, ~ {
+      parts <- str_split(.x, "=")[[1]]
+      locus <- parts[1]
+      count <- ifelse(parts[2] == "NA", 0, length(str_split(parts[2], "\\+")[[1]]))
+      paste(locus, count, sep = "=")
+    })
     
-    # Check for NA and count alleles accordingly
-    if (alleles != "NA") {
-      count <- 0
-    } else {
-      count <- sum(!is.na(alleles))
-    }
-    
-    # Return a string with the locus and allele count
-    paste(locus, count, sep = "=")
-  })
-  
-  # Collapse the results into a single comma-separated string
-  return(str_c(allele_counts, collapse = ", "))
+    return(str_c(allele_counts, collapse = ", "))
+  } else {
+    stop("Direction must be 'HvG' or 'GvH'")
   }
-  
-  
-  
 }
 
 # This works properly:
@@ -794,12 +782,12 @@ HLA_mismatch_number(
   direction = "HvG"
   )
 
-# But this gives an error:
+# But this gives an error (should be fixed now)
 HLA_mismatch_number(
   "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
   "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
   c("HLA-A", "HLA-DRB3/4/5"),
-  direction = "HvG"
+  direction = "GvH"
   )
 
 # Also, will need to update the function if a single locus is supplied.
