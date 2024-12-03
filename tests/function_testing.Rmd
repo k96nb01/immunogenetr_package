@@ -747,6 +747,20 @@ HLA_mismatch_base(
 test_cases %>% mutate(matching_GvH = HLA_mismatch_base(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "GvH"))
 ```
 
+```{r}
+HLA_mismatch_base(
+  "HLA-A*02:01N+HLA-A*02:01N",
+  "HLA-A*68:01+HLA-A*68:01",
+  "HLA-A",
+  direction = "GvH",
+  homozygous_count = 2
+)
+
+# Null alleles (ending in N) should never be output as a mismatch.
+# The homozygous count argument is not used.
+```
+
+
 
 
 ```{r}
