@@ -1,6 +1,5 @@
 ---
 title: "Function tests"
-output: html_notebook
 ---
 
 ```{r}
