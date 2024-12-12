@@ -46,8 +46,6 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = 
     # Separate HLA prefix if available
     separate_wider_delim(value, delim = "-", names = c("prefix", "rest"), too_few = "align_end") %>%
     separate_wider_delim(rest, delim = "*", names = c("gene", "molecular_type"), too_few = "align_start") %>%
-    mutate(sero_type = str_extract(gene, "[:digit:]+$"), .after = molecular_type) %>%
-    mutate(gene = str_replace(gene, "[:digit:]+$", "")) %>%
     # Separate molecular fields
     separate_wider_delim(molecular_type, delim = ":", names = c("one", "two", "three", "four"), too_few = "align_start") %>%
     # Keep only numbers in each field, in case there were non-standard suffixes.
@@ -55,13 +53,13 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = 
 
   # Delete fields for truncating and reunite the alleles
   if (fields == 1) {
-    trunctated <- alleles %>% select(-four, -three, -two) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(gene, gene, one, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+    trunctated <- alleles %>% select(-four, -three, -two) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(gene, gene, one, sep = "*", na.rm = TRUE)
   } else if (fields == 2) {
-    trunctated <- alleles %>% select(-four, -three) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:two, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+    trunctated <- alleles %>% select(-four, -three) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:two, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE)
   } else if (fields == 3) {
-    trunctated <- alleles %>% select(-four) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:three, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+    trunctated <- alleles %>% select(-four) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:three, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE)
   } else {
-    trunctated <- alleles %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:four, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+    trunctated <- alleles %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:four, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE)
   }
 
   # Retain suffix if desired
