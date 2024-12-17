@@ -902,7 +902,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
         return(NULL)
       }
       
-      # Identify mismatched alleles based on direction and exclude null alleles
+      # Identify mismatched alleles based on direction.
       mismatched_alleles <- c()
       
       if (direction == "GvH") {
@@ -917,8 +917,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
         stop("Direction must either be 'GvH', or 'HvG'.")
       }
       
-      # Filter out null alleles from mismatched alleles.
-      mismatched_alleles <- mismatched_alleles[!str_detect(mismatched_alleles, "[Nn]$")]
+      
       
       # Create a string of mismatched alleles or 'NA' if no mismatches are found.
       allele_mismatches_str <-
@@ -946,32 +945,56 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
 }
 
 HLA_mismatch_base(
-  "HLA-A*03:01+HLA-A*74:01N^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02N^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
-  "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
-  c("HLA-A", "HLA-DRB1", "HLA-DRB3/4/5"),
-  direction = "GvH"
+  "HLA-A*03:02+HLA-A*03:01", 
+  "HLA-A*03:02+HLA-A*30:02",
+  c("HLA-A"),
+  direction = "GvH", 
+  homozygous_count = 2
   )
 
-HLA_mismatch_base(
-  "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52^HLA-DPB1*04:01", 
-  "HLA-A3+HLA-A69^HLA-Cw10+HLA-Cw9^HLA-DR4+HLA-DR17^HLA-DR52+HLA-DR53N^HLA-DPB1*04:01+HLA-DPB1*04:02",
-  # function works when "HLA-DR51/52/53" is removed
-  c("HLA-A", "HLA-Cw","HLA-DR51/52/53", "HLA-DPB1"),
-  direction = "HvG"
-  )
 ```
 
 
+```{r}
+recip_str <- "HLA-A*03:01^HLA-DRB3*03:01^HLA-DRB5*02:21"
+donor_str <- "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21"
+
+# Process the GL string inputs to remove null alleles, and to duplicate alleles if only one remains.
+  preprocess_GL_string <- function(GL_string, homozygous_count) {
+  # Split GL string into alleles
+  alleles <- str_split(GL_string, "\\+", simplify = TRUE)
+  
+  # Remove null alleles
+  non_null_alleles <- alleles[!str_detect(alleles, "[Nn]$")]
+    
+  # Filter out empty strings resulting from removal of null alleles
+  non_null_alleles <- non_null_alleles[non_null_alleles != ""]
+  
+  # Duplicate single allele if homozygous_count is set to 2
+  if (length(non_null_alleles) == 1 && homozygous_count == 2) {
+    non_null_alleles <- rep(non_null_alleles, times = homozygous_count)
+  }
+  
+  return(str_c(non_null_alleles, collapse = "+"))
+  }
+
+# Split GL strings by "^" to separate different loci
+    recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
+    donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
+    
+    # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
+    recip_alleles_list_DRB345 <- recip_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
+    recip_alleles_list_no_DRB345 <- recip_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
+    (recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") ))
+    (recip_alleles_list_processed_nulls <- map_chr(recip_alleles_list_processed, preprocess_GL_string, 2))
+        
+        
+    donor_alleles_list_DRB345 <- donor_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
+    donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
+    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
+    
+    # I think this is working as intended. Will have to incorporate into the main function.
+```
 
 
-
-
-(test_cases <- tribble(
-  ~case, ~recip_type, ~donor_type,
-  1,   "HLA-A*02:01+HLA-A*03:04^HLA-B*15:01^HLA-DRB3*01:01", "HLA-A*02:01+HLA-A*03:04^HLA-B*15:02",
-  2,   "HLA-A*02:01+HLA-A*30:02^HLA-B*15:01+HLA-B*14:03", "HLA-A*02:17+HLA-A*32:01^HLA-B*15:01+HLA-B*14:03",
-  3,   "HLA-A*11:01+HLA-A*23:01^HLA-B*15:01+HLA-B*14:03", "HLA-A*03:01+HLA-A*68:02^HLA-B*15:01+HLA-B*14:03"
-))
-
-test_cases %>% mutate(matching_GvH = HLA_mismatch_base(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "GvH"))
 
