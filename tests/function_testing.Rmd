@@ -762,15 +762,26 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
   map2_chr(GL_string_recip, GL_string_donor, process_pair)
 }
 
+# This works as intended:
 HLA_mismatch_base(
-  "HLA-A2+HLA-A68", 
-  "HLA-A3",
+  "HLA-A*03:01+HLA-A*68:01", 
+  "HLA-A*03:99N+HLA-A*03:08",
   c("HLA-A"),
   direction = "HvG", 
   homozygous_count = 2
   )
 
-
+# This does not gives and error:
+# This works as intended:
+HLA_mismatch_base(
+  "HLA-A*03:01+HLA-A*68:01", 
+  "HLA-A*03:99N",
+  c("HLA-A"),
+  direction = "HvG", 
+  homozygous_count = 2
+  )
+# The output should be "NA", since both alleles are null, and they are never mismatches.
+```
 
 HLA_mismatch_base(
   "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
@@ -796,7 +807,6 @@ HLA_mismatch_base(
 ))
 
 test_cases %>% mutate(matching_GvH = HLA_mismatch_base(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "GvH"))
-```
 
 
 ```{r}
