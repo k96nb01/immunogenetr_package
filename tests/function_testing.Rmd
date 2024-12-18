@@ -601,6 +601,8 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 # Below is a working mismatch function, which will serve as the basis for all other mismatching and matching functions. 
 
 ```{r}
+# Update the base mismatch function.
+
 HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH"), homozygous_count = 2) {
   # Ensure input vectors are of the same length - each input should be a single GL string.
   if (length(GL_string_recip) != length(GL_string_donor)) {
@@ -614,19 +616,47 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
   
   # Function to process each pair of recipient/donor alleles
   process_pair <- function(recip_str, donor_str) {
-    # Split GL strings by "^" to separate different loci
+    
+  # Process the GL string inputs to remove null alleles, and to duplicate alleles if only one remains.
+  preprocess_GL_string <- function(GL_string, homozygous_count) {
+  # Split GL string into alleles
+  alleles <- str_split(GL_string, "\\+", simplify = TRUE)
+  
+  # Remove null alleles
+  non_null_alleles <- alleles[!str_detect(alleles, "[Nn]$")]
+    
+  # Filter out empty strings resulting from removal of null alleles
+  non_null_alleles <- non_null_alleles[non_null_alleles != ""]
+  
+  # Duplicate single allele if homozygous_count is set to 2
+  if (length(non_null_alleles) == 1 && homozygous_count == 2) {
+    non_null_alleles <- rep(non_null_alleles, times = homozygous_count)
+  }
+  
+  # Delete the second allele if two of the same alleles were included in the GL string and homozygous_count is set to 1
+  if (length(non_null_alleles) == 2 && non_null_alleles[1] == non_null_alleles[2] && homozygous_count == 1) {
+    non_null_alleles <- non_null_alleles[1]
+  }
+  
+  return(str_c(non_null_alleles, collapse = "+"))
+  }
+
+  # Split GL strings by "^" to separate different loci
     recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
     donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
     
     # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
     recip_alleles_list_DRB345 <- recip_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
     recip_alleles_list_no_DRB345 <- recip_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
-    
+    recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]"))
+    recip_alleles_list_processed <- map_chr(recip_alleles_list_processed, preprocess_GL_string, homozygous_count)
+        
+        
     donor_alleles_list_DRB345 <- donor_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
     donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
-
+    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]"))
+    donor_alleles_list_processed <- map_chr(donor_alleles_list_processed, preprocess_GL_string, homozygous_count)
+    
     # Set names for each locus
     names(recip_alleles_list_processed) <- map_chr(
       recip_alleles_list_processed,
@@ -678,18 +708,21 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
         return(NULL)
       }
       
-      # Identify mismatched alleles based on direction
+      # Identify mismatched alleles based on direction.
       mismatched_alleles <- c()
       
       if (direction == "GvH") {
         # Mismatches present in the recipient but not in the donor
-        mismatched_alleles <- setdiff(unlist(strsplit(recip_alleles_str,"\\+")), 
-                                      unlist(strsplit(donor_alleles_str,"\\+")))
-      } else if (direction == "HvG") {
+        mismatched_allele_1 <- setdiff(unlist(strsplit(recip_alleles_str,"\\+"))[1], unlist(strsplit(donor_alleles_str,"\\+")))
+        mismatched_allele_2 <- setdiff(unlist(strsplit(recip_alleles_str,"\\+"))[2], unlist(strsplit(donor_alleles_str,"\\+")))
+        mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
+        
+        } else if (direction == "HvG") {
         # Mismatches present in the donor but not in the recipient
-        mismatched_alleles <- setdiff(unlist(strsplit(donor_alleles_str,"\\+")), 
-                                      unlist(strsplit(recip_alleles_str,"\\+")))
-      } else {
+        mismatched_allele_1 <- setdiff(unlist(strsplit(donor_alleles_str,"\\+"))[1], unlist(strsplit(recip_alleles_str,"\\+")))
+        mismatched_allele_2 <- setdiff(unlist(strsplit(donor_alleles_str,"\\+"))[2], unlist(strsplit(recip_alleles_str,"\\+")))
+        mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
+        } else {
         stop("Direction must either be 'GvH', or 'HvG'.")
       }
       
@@ -718,6 +751,14 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
   map2_chr(GL_string_recip, GL_string_donor, process_pair)
 }
 
+HLA_mismatch_base(
+  "HLA-A2+HLA-A68", 
+  "HLA-A3",
+  c("HLA-A"),
+  direction = "HvG", 
+  homozygous_count = 2
+  )
+
 
 
 HLA_mismatch_base(
@@ -745,21 +786,6 @@ HLA_mismatch_base(
 
 test_cases %>% mutate(matching_GvH = HLA_mismatch_base(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "GvH"))
 ```
-
-```{r}
-HLA_mismatch_base(
-  "HLA-A*02:01N+HLA-A*02:01N",
-  "HLA-A*68:01+HLA-A*68:01",
-  "HLA-A",
-  direction = "GvH",
-  homozygous_count = 2
-)
-
-# Null alleles (ending in N) should never be output as a mismatch.
-# The homozygous count argument is not used.
-```
-
-
 
 
 ```{r}
@@ -822,179 +848,8 @@ HLA_mismatch_number(
 # We should add an output for bidirectional, which should be the max of the GvH and the HvG.
 ```
 
-```{r}
-# Update the base mismatch function.
-
-HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH"), homozygous_count = 2) {
-  # Ensure input vectors are of the same length - each input should be a single GL string.
-  if (length(GL_string_recip) != length(GL_string_donor)) {
-    stop("Recipient and donor GL strings must be of equal length")
-  }
-  
-  # Check for ambiguity
-  if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]") )) {
-    stop("The matching/mismatching functions do not support ambiguous GL strings containing | or /. Process your GL strings to result in unambiguous genotypes before using these functions.")
-  }
-  
-  # Function to process each pair of recipient/donor alleles
-  process_pair <- function(recip_str, donor_str) {
-    # Split GL strings by "^" to separate different loci
-    recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
-    donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
-    
-    # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
-    recip_alleles_list_DRB345 <- recip_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
-    recip_alleles_list_no_DRB345 <- recip_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
-    
-    donor_alleles_list_DRB345 <- donor_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
-    donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
-
-    # Set names for each locus
-    names(recip_alleles_list_processed) <- map_chr(
-      recip_alleles_list_processed,
-      ~ if_else(str_detect(.x, "\\*"), # Molecular nomenclature
-               strsplit(.x, "\\*")[[1]][1],
-               str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
-    )
-    names(donor_alleles_list_processed) <- map_chr(
-      donor_alleles_list_processed,
-      ~ if_else(str_detect(.x, "\\*"), # Molecular nomenclature
-               strsplit(.x, "\\*")[[1]][1],
-               str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
-    )
-    
-    # Modify the names if they start with DRB3, 4, 5
-    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
-    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
-    
-    # Modify the names for DR51, DR52, DR53 to treat them as a single locus
-    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
-    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
-
-    # Aggregate DR51/52/53 alleles under the single locus "HLA-DR51/52/53"
-    if ("HLA-DR51/52/53" %in% loci) {
-      recip_alleles_list_processed["HLA-DR51/52/53"] <- recip_alleles_list %>%
-        keep(str_detect(., "HLA-DR5[123]")) %>%
-        paste(collapse = "+")
-      donor_alleles_list_processed["HLA-DR51/52/53"] <- donor_alleles_list %>%
-        keep(str_detect(., "HLA-DR5[123]")) %>%
-        paste(collapse = "+")
-    }
-
-    # Find which supplied loci are missing from recipient and donor genotypes
-    missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
-    missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
-    
-    if (length(missing_loci_from_recipient) > 0 || length(missing_loci_from_donor) > 0) {
-      stop(paste("Either the recipient and/or donor GL strings are missing these loci:", 
-                 paste(union(missing_loci_from_recipient, missing_loci_from_donor), collapse = ", ")))
-    }
-    
-    # Mismatch results calculation
-    mismatch_results <- map(loci, function(locus_name) {
-      # Pull out the allele list for each locus.
-      recip_alleles_str <- recip_alleles_list_processed[locus_name]
-      donor_alleles_str <- donor_alleles_list_processed[locus_name]
-      
-      if (is.null(recip_alleles_str) || is.null(donor_alleles_str)) {
-        return(NULL)
-      }
-      
-      # Identify mismatched alleles based on direction.
-      mismatched_alleles <- c()
-      
-      if (direction == "GvH") {
-        # Mismatches present in the recipient but not in the donor
-        mismatched_alleles <- setdiff(unlist(strsplit(recip_alleles_str,"\\+")), 
-                                      unlist(strsplit(donor_alleles_str,"\\+")))
-      } else if (direction == "HvG") {
-        # Mismatches present in the donor but not in the recipient
-        mismatched_alleles <- setdiff(unlist(strsplit(donor_alleles_str,"\\+")), 
-                                      unlist(strsplit(recip_alleles_str,"\\+")))
-      } else {
-        stop("Direction must either be 'GvH', or 'HvG'.")
-      }
-      
-      
-      
-      # Create a string of mismatched alleles or 'NA' if no mismatches are found.
-      allele_mismatches_str <-
-        if (length(mismatched_alleles) > 0) {
-          paste0(locus_name, "=", paste(mismatched_alleles, collapse = "+"))
-        } else {
-          paste0(locus_name, "=", "NA")
-        }
-      
-      return(allele_mismatches_str)
-    })
-    
-    result <- paste(mismatch_results, collapse = ", ")
-    
-    # If only a single locus was selected in the arguments, output without starting with the locus name followed by an equal sign.
-    if (length(loci) == 1) {
-      result %>% str_replace(str_c(loci, "="), "") %>% na_if("NA")
-    } else {
-      return(result)
-    }
-  }
-  
-  # Return final result by applying the GL strings to the process_pair function defined above.
-  map2_chr(GL_string_recip, GL_string_donor, process_pair)
-}
-
-HLA_mismatch_base(
-  "HLA-A*03:02+HLA-A*03:01", 
-  "HLA-A*03:02+HLA-A*30:02",
-  c("HLA-A"),
-  direction = "GvH", 
-  homozygous_count = 2
-  )
-
-```
 
 
-```{r}
-recip_str <- "HLA-A*03:01^HLA-DRB3*03:01^HLA-DRB5*02:21"
-donor_str <- "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21"
-
-# Process the GL string inputs to remove null alleles, and to duplicate alleles if only one remains.
-  preprocess_GL_string <- function(GL_string, homozygous_count) {
-  # Split GL string into alleles
-  alleles <- str_split(GL_string, "\\+", simplify = TRUE)
-  
-  # Remove null alleles
-  non_null_alleles <- alleles[!str_detect(alleles, "[Nn]$")]
-    
-  # Filter out empty strings resulting from removal of null alleles
-  non_null_alleles <- non_null_alleles[non_null_alleles != ""]
-  
-  # Duplicate single allele if homozygous_count is set to 2
-  if (length(non_null_alleles) == 1 && homozygous_count == 2) {
-    non_null_alleles <- rep(non_null_alleles, times = homozygous_count)
-  }
-  
-  return(str_c(non_null_alleles, collapse = "+"))
-  }
-
-# Split GL strings by "^" to separate different loci
-    recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
-    donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
-    
-    # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
-    recip_alleles_list_DRB345 <- recip_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
-    recip_alleles_list_no_DRB345 <- recip_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    (recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") ))
-    (recip_alleles_list_processed_nulls <- map_chr(recip_alleles_list_processed, preprocess_GL_string, 2))
-        
-        
-    donor_alleles_list_DRB345 <- donor_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
-    donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]") )
-    
-    # I think this is working as intended. Will have to incorporate into the main function.
-```
 
 
 
