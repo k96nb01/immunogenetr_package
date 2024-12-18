@@ -601,7 +601,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 # Below is a working mismatch function, which will serve as the basis for all other mismatching and matching functions. 
 
 ```{r}
-# Update the base mismatch function.
+# Base mismatch function.
 
 HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH"), homozygous_count = 2) {
   # Ensure input vectors are of the same length - each input should be a single GL string.
@@ -645,17 +645,28 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
     recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
     donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
     
+    # Function to process the alleles strings.
+    process_alleles <- function(alleles_list, homozygous_count) {
     # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
-    recip_alleles_list_DRB345 <- recip_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
-    recip_alleles_list_no_DRB345 <- recip_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    recip_alleles_list_processed <- recip_alleles_list_no_DRB345 %>% append(recip_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]"))
-    recip_alleles_list_processed <- map_chr(recip_alleles_list_processed, preprocess_GL_string, homozygous_count)
-        
-        
-    donor_alleles_list_DRB345 <- donor_alleles_list %>% keep(str_detect(., "HLA-DRB[345]")) %>% paste(collapse = "+")
-    donor_alleles_list_no_DRB345 <- donor_alleles_list %>% keep(!str_detect(., "HLA-DRB[345]"))
-    donor_alleles_list_processed <- donor_alleles_list_no_DRB345 %>% append(donor_alleles_list_DRB345) %>% keep(~ str_detect(.x, "[:graph:]"))
-    donor_alleles_list_processed <- map_chr(donor_alleles_list_processed, preprocess_GL_string, homozygous_count)
+    alleles_list_DRB345 <- alleles_list %>%
+    keep(str_detect(., "HLA-DRB[345]")) %>%
+    paste(collapse = "+")
+  
+    # Remove DRB345 alleles from the original list
+    alleles_list_no_DRB345 <- alleles_list %>% 
+    keep(!str_detect(., "HLA-DRB[345]"))
+  
+    # Combine lists and filter out empty strings
+    alleles_list_processed <- c(alleles_list_no_DRB345, alleles_list_DRB345) %>%
+    keep(~ str_detect(.x, "[:graph:]"))
+  
+    # Apply preprocessing to each allele string
+    map_chr(alleles_list_processed, preprocess_GL_string, homozygous_count)
+    }
+    
+    # Process recipient and donor allele strings:
+    recip_alleles_list_processed <- process_alleles(recip_alleles_list, homozygous_count)
+    donor_alleles_list_processed <- process_alleles(donor_alleles_list, homozygous_count)
     
     # Set names for each locus
     names(recip_alleles_list_processed) <- map_chr(
