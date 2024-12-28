@@ -33,7 +33,7 @@ library(purrr)
   2, "2", "3", "3", "2",
   3, "01:01", NA, "01:01", "01:01",
   4, "01:02:06", NA, NA, "01:02:06"
-  ))
+))
 
 test %>% HLA_column_repair()
 test %>% HLA_column_repair(format = "tidyverse", asterisk = FALSE)
@@ -47,14 +47,14 @@ test %>% HLA_column_repair(format = "R", asterisk = FALSE)
 HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE) {
   # Split the input GL string into individual alleles
   alleles <- strsplit(data, "\\^")[[1]]
-
+  
   # Initialize an empty vector to store truncated alleles
   truncated_alleles <- vector("character", length(alleles))
-
+  
   # Loop through each allele to apply truncation
   for (i in seq_along(alleles)) {
     allele <- alleles[i]
-
+    
     # Extract fields based on the number of fields specified
     A <- if (fields == 3) {
       str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
@@ -65,10 +65,10 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE) {
     } else {
       str_extract(allele, "(HLA-)?([:alnum:]{0,4})(\\*)?[:digit:]{1,4}:?[:digit:]{0,4}:?[:digit:]{0,4}:?[:digit:]{0,4}")
     }
-
+    
     # Extract any WHO-recognized suffixes
     B <- replace_na(str_extract(allele, "[LSCAQNlscaqn]$"), "")
-
+    
     # Glue truncated typing and suffixes if indicated
     if (keep_suffix == TRUE) {
       truncated_alleles[i] <- na_if(str_c({A}, {B}, sep = ""), "NA")
@@ -76,14 +76,14 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE) {
       truncated_alleles[i] <- A
     }
   }
-
+  
   # Join the truncated alleles back into a single string
   truncated_string <- paste(truncated_alleles, collapse = "^")
-
+  
   return(truncated_string)
 }
 
-  
+
 
 
 # A function to take HLA typing data spread across different columns, as is often found in wild-caught data, and transform it to a GL string.
@@ -131,22 +131,22 @@ HLA_columns_to_GLstring <- function(data, case_column, HLA_typing_columns, prefi
   # Set up error detection for any loci that could not be determined
   error_table <- step1 %>% filter(locus_from_name == "unknown")
   error_column_names <- error_table %>% select(names) %>% distinct() %>% dplyr::pull(names)
-
+  
   # Error code
   if (nrow(error_table) != 0) {
-  abort(format_error("The  column(s) {error_column_names} could not be parsed to determine HLA loci."))
+    abort(format_error("The  column(s) {error_column_names} could not be parsed to determine HLA loci."))
   }
-
+  
   # Assemble the final type
-    if (serologic == TRUE){
-      step2 <- step1 %>% mutate(final_type = str_glue("{final_locus}{allele}", .na = ""))
-    } else {
-      step2 <- step1 %>% mutate(final_type = str_glue("{final_locus}*{allele}", .na = ""))
-    }
+  if (serologic == TRUE){
+    step2 <- step1 %>% mutate(final_type = str_glue("{final_locus}{allele}", .na = ""))
+  } else {
+    step2 <- step1 %>% mutate(final_type = str_glue("{final_locus}*{allele}", .na = ""))
+  }
   
   # Assemble the GL string
-    step2 %>% summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c({{case_column}}, locus_from_name, DRB_locus)) %>% 
-      summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = c({{case_column}})) %>% dplyr::pull(GL_string)
+  step2 %>% summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c({{case_column}}, locus_from_name, DRB_locus)) %>% 
+    summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = c({{case_column}})) %>% dplyr::pull(GL_string)
 }
 
 typing <- "A*01:01:01:02N^B*07:02:01:01Q^C*04:01:01:01A"
@@ -163,7 +163,7 @@ HLA_truncate(typing, fields = 2, keep_suffix = TRUE)
   2, "2", "3", "53", "blank", "10", "blank",
   3, "2", NA, "51", "51", "3", NA,
   4, "68", NA, NA, "53", "5", "17"
-  ))
+))
 
 (test_b <- tribble(
   ~case, ~"A1", ~"A2", ~"DRBX1", ~"DRBX2", ~"E1", ~"E2", ~"MICB1", ~"MICA2", ~"TAP11", ~"TAP22", ~"HFE1", ~"HFE2", ~"S1",
@@ -171,16 +171,16 @@ HLA_truncate(typing, fields = 2, keep_suffix = TRUE)
   2, "02:02", "03:01", "4*02:01", "blank", "03:01", "blank", "001:02", "002:01", "01:03", "blank", "001:01", "missing", NA,
   3, "68:02", NA, "3*02:02", "4*03:01N", "04:01", NA, "001:01", "blank", "05:01", NA, "004", NA, "blank",
   4, "11:01", NA, NA, "4*03", "01:01", "05:01", "002:03", NA, "06:01", "01:01", "003", NA, "0101"
-  ))
+))
 
 (test4 %>% mutate(GL_string = HLA_columns_to_GLstring(., patient, c(mA1Cd.recipient:mDPB12cd.recipient), prefix_to_remove = "m", suffix_to_remove = "Cd.recipient")))
 (test1 %>% mutate(GL_string = HLA_columns_to_GLstring(., patient, c(A1:DPB1_2)))
   %>% select(patient, DRB345_1:DRB345_2, GL_string)
-  )
+)
 (test_a %>% mutate(GL_string = HLA_columns_to_GLstring(., case, c(a1:cw2), serologic = TRUE)))
 (test_b %>% mutate(GL_string = HLA_columns_to_GLstring(., case, c(A1:S1))))
 ```
- 
+
 
 ```{r}
 str_view("HLA-DRB3", "DRB")
@@ -249,10 +249,10 @@ print(HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, c("A", "DQB1", "
 ```{r}
 # Test GLstring_genes and GLstring_genes_expanded
 GLstring_genes <- tibble(GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01") %>%
-    GLstring_genes("GL_string")
+  GLstring_genes("GL_string")
 
 GLstring_genes_expanded <- tibble(GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01") %>%
-    GLstring_genes_expanded("GL_string")
+  GLstring_genes_expanded("GL_string")
 
 print(GLstring_genes)
 print(GLstring_genes_expanded)
@@ -265,38 +265,38 @@ HLA_mismatch_number_HvG <- function(GL_string_recip, GL_string_donor, loci) {
   if (str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]")) {
     stop("HLA_mismatch_number_HvG does not support ambiguous GL strings that contain the delimiters | or /")
   }
-
+  
   # Normalize the loci input
   loci <- gsub("HLA_", "", loci)  # Remove HLA_ if present
   loci <- gsub("HLA-", "", loci)  # Remove HLA- if present
-
+  
   # Process recipient and donor GL strings
   recip_data <- tibble(GL_string = GL_string_recip) %>%
     GLstring_genes_expanded("GL_string")
   donor_data <- tibble(GL_string = GL_string_donor) %>%
     GLstring_genes_expanded("GL_string")
-
+  
   # Initialize a list to store mismatch counts for each locus
   mismatch_counts <- list()
-
+  
   # Check mismatch for each locus
   for (locus in loci) {
     # Check if the specified locus exists in both datasets
     if (!(locus %in% names(recip_data)) | !(locus %in% names(donor_data))) {
       stop(paste("Locus", locus, "not found in both recipient and donor data."))
     }
-
+    
     # Extract unique entries for the specified locus from recipient and donor data
     recip_locus_entries <- recip_data %>% pull({{ locus }}) %>% na.omit() %>% unique()
     donor_locus_entries <- donor_data %>% pull({{ locus }}) %>% na.omit() %>% unique()
-
+    
     # Identify mismatched alleles
     mismatches <- donor_locus_entries[!donor_locus_entries %in% recip_locus_entries]
-
+    
     # Store the number of mismatches
     mismatch_counts[[locus]] <- length(mismatches)
   }
-
+  
   # Return result
   if (length(loci) == 1) {
     return(mismatch_counts[[loci]])
@@ -338,7 +338,7 @@ HLA_truncate("HLA-A*01:02v")
 HLA_truncate("blank")
 ```
 
-  
+
 ```{r}
 GL_string_recip <- "HLA-A*29:02+HLA-A*30:02"
 GL_string_donor <- "HLA-A*03:01+HLA-A*30:01"
@@ -372,49 +372,49 @@ HLA_validate("blank")
 # read_HML function
 
 read_HML <- function(HML_file){
-# Validate input
+  # Validate input
   if (!file.exists(HML_file)) {
     stop("The file does not exist:", HML_file)
   }  
   
-# Load the HML file 
-HML <- tryCatch({
+  # Load the HML file 
+  HML <- tryCatch({
     read_xml(HML_file)
   }, error = function(e){
     stop("Failed to read HML; check that file is in compliant HML format.")
   })
-
-# Filter for all the children in the HML file that represent a sample
-samples <- xml_find_all(HML, ".//d1:sample")
-
-# Get sample number and GL strings for each sample
-GL_strings <- map(samples, function(node){
-   # Get sample ID 
-   sampleID <-  xml_attr(node, "id")
-   # Get GL strings 
-   glstring <- xml_text(xml_find_all(node, ".//d1:glstring"))  
-   # Combine to a tibble
-   tibble(sampleID, glstring)
-}) 
-
-# Combine to a single tibble.
-combined <- bind_rows(GL_strings)
-   
-# Some implementations of HML put the same locus in multiple nodes; this combines them with "+" to form a compliant GL string
-reduced <- combined %>% 
-  mutate(locus = str_extract(glstring, "[^//*]+")) %>% 
-  mutate(glstring = paste0(glstring, collapse = "+"), .by = c(sampleID, locus)) %>% 
-  # Clean up values
-  distinct(sampleID, glstring, locus) %>% 
-  filter(!is.na(sampleID) & !is.na(glstring)) %>% 
-  select(-locus) 
-
-# Combine to a single GL string per sample
+  
+  # Filter for all the children in the HML file that represent a sample
+  samples <- xml_find_all(HML, ".//d1:sample")
+  
+  # Get sample number and GL strings for each sample
+  GL_strings <- map(samples, function(node){
+    # Get sample ID 
+    sampleID <-  xml_attr(node, "id")
+    # Get GL strings 
+    glstring <- xml_text(xml_find_all(node, ".//d1:glstring"))  
+    # Combine to a tibble
+    tibble(sampleID, glstring)
+  }) 
+  
+  # Combine to a single tibble.
+  combined <- bind_rows(GL_strings)
+  
+  # Some implementations of HML put the same locus in multiple nodes; this combines them with "+" to form a compliant GL string
+  reduced <- combined %>% 
+    mutate(locus = str_extract(glstring, "[^//*]+")) %>% 
+    mutate(glstring = paste0(glstring, collapse = "+"), .by = c(sampleID, locus)) %>% 
+    # Clean up values
+    distinct(sampleID, glstring, locus) %>% 
+    filter(!is.na(sampleID) & !is.na(glstring)) %>% 
+    select(-locus) 
+  
+  # Combine to a single GL string per sample
   summarise(reduced, GL_string = str_flatten(glstring, collapse = "^"), .by = sampleID)
   
   
   
- }
+}
 
 read_HML("HML_1.hml")
 read_HML("HML_2.hml")
@@ -426,48 +426,48 @@ read_HML("test1.csv")
 
 HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = FALSE) {
   # Expand the GL string
-    alleles <- GLstring_expand_longer(data) %>%
-      # Extract any WHO-recognized suffixes
-      mutate(suffix = replace_na(str_extract(value, "(?<=[:digit:])[LSCAQNlscaqn]$"), "")) %>%
-      # Extract any P or G group designation
-      mutate(GP = replace_na(str_extract(value, "(?<=[:digit:])[PGpg]$"), "")) %>%
-      # Separate HLA prefix if available
-      separate_wider_delim(value, delim = "-", names = c("prefix", "rest"), too_few = "align_end") %>% 
-      separate_wider_delim(rest, delim = "*", names = c("gene", "molecular_type"), too_few = "align_start") %>% 
-      mutate(sero_type = str_extract(gene, "[:digit:]+$"), .after = molecular_type) %>% 
-      mutate(gene = str_replace(gene, "[:digit:]+$", "")) %>%
-      # Separate molecular fields
-      separate_wider_delim(molecular_type, delim = ":", names = c("one", "two", "three", "four"), too_few = "align_start") %>%
-      # Keep only numbers in each field, in case there were non-standard suffixes.
-      mutate(across(one:four, ~str_extract(., "[:digit:]+")))
-
-    # Delete fields for truncating and reunite the alleles
-    if (fields == 1) {
-      trunctated <- alleles %>% select(-four, -three, -two) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(gene, gene, one, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
-    } else if (fields == 2) {
-      trunctated <- alleles %>% select(-four, -three) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:two, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
-    } else if (fields == 3) {
-      trunctated <- alleles %>% select(-four) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:three, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
-    } else {
-      trunctated <- alleles %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:four, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
-    }
-    
-    # Retain suffix if desired
-    if (keep_suffix) {
-      with_suffix <- trunctated %>% unite(gene, gene, suffix, sep = "", na.rm = TRUE)
-    } else {
-      with_suffix <- trunctated %>% select(-suffix)
-    }
-    # Retain P/G group designation if desired
-    if (keep_G_P_group) {
-      with_g_p <- with_suffix %>% unite(gene, gene, GP, sep = "", na.rm = TRUE)
-    } else {
-      with_g_p <- with_suffix %>% select(-GP)
-    }
-
-    # Combine everything back to a GL string.
-    final <- with_g_p %>% rename(value = gene) %>% ambiguity_table_to_GLstring()
-    return(final)
+  alleles <- GLstring_expand_longer(data) %>%
+    # Extract any WHO-recognized suffixes
+    mutate(suffix = replace_na(str_extract(value, "(?<=[:digit:])[LSCAQNlscaqn]$"), "")) %>%
+    # Extract any P or G group designation
+    mutate(GP = replace_na(str_extract(value, "(?<=[:digit:])[PGpg]$"), "")) %>%
+    # Separate HLA prefix if available
+    separate_wider_delim(value, delim = "-", names = c("prefix", "rest"), too_few = "align_end") %>% 
+    separate_wider_delim(rest, delim = "*", names = c("gene", "molecular_type"), too_few = "align_start") %>% 
+    mutate(sero_type = str_extract(gene, "[:digit:]+$"), .after = molecular_type) %>% 
+    mutate(gene = str_replace(gene, "[:digit:]+$", "")) %>%
+    # Separate molecular fields
+    separate_wider_delim(molecular_type, delim = ":", names = c("one", "two", "three", "four"), too_few = "align_start") %>%
+    # Keep only numbers in each field, in case there were non-standard suffixes.
+    mutate(across(one:four, ~str_extract(., "[:digit:]+")))
+  
+  # Delete fields for truncating and reunite the alleles
+  if (fields == 1) {
+    trunctated <- alleles %>% select(-four, -three, -two) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(gene, gene, one, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+  } else if (fields == 2) {
+    trunctated <- alleles %>% select(-four, -three) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:two, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+  } else if (fields == 3) {
+    trunctated <- alleles %>% select(-four) %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:three, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+  } else {
+    trunctated <- alleles %>% unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>% unite(code, one:four, sep = ":", na.rm = TRUE) %>% mutate(code = na_if(code, "")) %>% unite(gene, gene, code, sep = "*", na.rm = TRUE) %>% unite(gene, gene:sero_type, sep = "", na.rm = TRUE)
+  }
+  
+  # Retain suffix if desired
+  if (keep_suffix) {
+    with_suffix <- trunctated %>% unite(gene, gene, suffix, sep = "", na.rm = TRUE)
+  } else {
+    with_suffix <- trunctated %>% select(-suffix)
+  }
+  # Retain P/G group designation if desired
+  if (keep_G_P_group) {
+    with_g_p <- with_suffix %>% unite(gene, gene, GP, sep = "", na.rm = TRUE)
+  } else {
+    with_g_p <- with_suffix %>% select(-GP)
+  }
+  
+  # Combine everything back to a GL string.
+  final <- with_g_p %>% rename(value = gene) %>% ambiguity_table_to_GLstring()
+  return(final)
 }
 
 HLA_truncate(c("A2", "HLA-A*68:01:02N", "DQA01", "DP4", "DR51"), fields = 2)
@@ -514,10 +514,10 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   # Set up prefix and suffix regex to remove unwanted parts
   prefix_regex <- regex(str_c("^", str_escape(prefix_to_remove)), ignore_case = TRUE)
   suffix_regex <- regex(str_c(str_escape(suffix_to_remove), "$"), ignore_case = TRUE)
-
+  
   # Identify the columns to modify
   col2mod <- names(select(data, {{HLA_typing_columns}}))
-
+  
   # Processing Step 1
   step1 <- data %>%
     mutate(row_for_function = 1:nrow(.)) %>%
@@ -569,13 +569,13 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   # Set up error detection for any loci that could not be determined
   error_table <- step1 %>% filter(locus_from_name == "unknown")
   error_column_names <- error_table %>% select(names) %>% distinct() %>% dplyr::pull(names)
-
+  
   if (nrow(error_table) != 0) {
     # Print the columns that caused the error to assist in debugging
     print(glue::glue("Columns that could not be parsed: {paste(error_column_names, collapse = ', ')}"))
     abort(format_error("The column(s) {paste(error_column_names, collapse = ', ')} could not be parsed to determine HLA loci."))
   }
-    
+  
   # Assemble the final type
   step2 <- step1 %>%
     mutate(final_type = if_else(
@@ -587,7 +587,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c(row_for_function, locus_from_name, DRB345)) %>% 
     # Assemble GL string with each locus separated by "^"
     summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = row_for_function) 
-
+  
   # Return GL Strings
   return(step2 %>% dplyr::pull(GL_string))
 }
@@ -595,14 +595,12 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 (test5 %>% mutate(GL_string = HLA_columns_to_GLstring(., c(A1Cd:mDPB12cd), prefix_to_remove = "m", suffix_to_remove = "Cd")))
 (test4 %>% mutate(GL_string = HLA_columns_to_GLstring(., c(mA1Cd.recipient:mDPB12cd.recipient), prefix_to_remove = "m", suffix_to_remove = "Cd.recipient")))
 (test3 %>% mutate(GL_string = HLA_columns_to_GLstring(., c(HLA.A:HLA.DPB1), prefix_to_remove = "HLA.")))  
-  
+
 ```
 
 # Below is a working mismatch function, which will serve as the basis for all other mismatching and matching functions. 
 
 ```{r}
-# Base mismatch function.
-
 HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH"), homozygous_count = 2) {
   # Ensure input vectors are of the same length - each input should be a single GL string.
   if (length(GL_string_recip) != length(GL_string_donor)) {
@@ -614,54 +612,43 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
     stop("The matching/mismatching functions do not support ambiguous GL strings containing | or /. Process your GL strings to result in unambiguous genotypes before using these functions.")
   }
   
+  # Function to preprocess GL strings: handle null alleles and homozygosity
+  preprocess_GL_string <- function(GL_string, homozygous_count) {
+    # Split GL string into alleles
+    alleles <- str_split(GL_string, "\\+", simplify = TRUE)
+    
+    # Handle homozygosity
+    if (length(alleles) == 1 && homozygous_count == 2) {
+      alleles <- rep(alleles, times = homozygous_count)
+    }
+    
+    # Return processed alleles as a single GL string
+    return(str_c(alleles, collapse = "+"))
+  }
+  
   # Function to process each pair of recipient/donor alleles
   process_pair <- function(recip_str, donor_str) {
-    
-  # Process the GL string inputs to remove null alleles, and to duplicate alleles if only one remains.
-  preprocess_GL_string <- function(GL_string, homozygous_count) {
-  # Split GL string into alleles
-  alleles <- str_split(GL_string, "\\+", simplify = TRUE)
-  
-  # Remove null alleles
-  non_null_alleles <- alleles[!str_detect(alleles, "[Nn]$")]
-    
-  # Filter out empty strings resulting from removal of null alleles
-  non_null_alleles <- non_null_alleles[non_null_alleles != ""]
-  
-  # Duplicate single allele if homozygous_count is set to 2
-  if (length(non_null_alleles) == 1 && homozygous_count == 2) {
-    non_null_alleles <- rep(non_null_alleles, times = homozygous_count)
-  }
-  
-  # Delete the second allele if two of the same alleles were included in the GL string and homozygous_count is set to 1
-  if (length(non_null_alleles) == 2 && non_null_alleles[1] == non_null_alleles[2] && homozygous_count == 1) {
-    non_null_alleles <- non_null_alleles[1]
-  }
-  
-  return(str_c(non_null_alleles, collapse = "+"))
-  }
-
-  # Split GL strings by "^" to separate different loci
+    # Split GL strings by "^" to separate loci
     recip_alleles_list <- unlist(strsplit(recip_str, "\\^"))
     donor_alleles_list <- unlist(strsplit(donor_str, "\\^"))
     
     # Function to process the alleles strings.
     process_alleles <- function(alleles_list, homozygous_count) {
-    # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
-    alleles_list_DRB345 <- alleles_list %>%
-    keep(str_detect(., "HLA-DRB[345]")) %>%
-    paste(collapse = "+")
-  
-    # Remove DRB345 alleles from the original list
-    alleles_list_no_DRB345 <- alleles_list %>% 
-    keep(!str_detect(., "HLA-DRB[345]"))
-  
-    # Combine lists and filter out empty strings
-    alleles_list_processed <- c(alleles_list_no_DRB345, alleles_list_DRB345) %>%
-    keep(~ str_detect(.x, "[:graph:]"))
-  
-    # Apply preprocessing to each allele string
-    map_chr(alleles_list_processed, preprocess_GL_string, homozygous_count)
+      # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
+      alleles_list_DRB345 <- alleles_list %>%
+        keep(str_detect(., "HLA-DRB[345]")) %>%
+        paste(collapse = "+")
+      
+      # Remove DRB345 alleles from the original list
+      alleles_list_no_DRB345 <- alleles_list %>% 
+        keep(!str_detect(., "HLA-DRB[345]"))
+      
+      # Combine lists and preprocess each allele string
+      alleles_list_processed <- c(alleles_list_no_DRB345, alleles_list_DRB345) %>%
+        keep(~ str_detect(.x, "[:graph:]")) %>%
+        map_chr(preprocess_GL_string, homozygous_count)
+      
+      return(alleles_list_processed)
     }
     
     # Process recipient and donor allele strings:
@@ -672,14 +659,14 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
     names(recip_alleles_list_processed) <- map_chr(
       recip_alleles_list_processed,
       ~ if_else(str_detect(.x, "\\*"), # Molecular nomenclature
-               strsplit(.x, "\\*")[[1]][1],
-               str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
+                strsplit(.x, "\\*")[[1]][1],
+                str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
     )
     names(donor_alleles_list_processed) <- map_chr(
       donor_alleles_list_processed,
       ~ if_else(str_detect(.x, "\\*"), # Molecular nomenclature
-               strsplit(.x, "\\*")[[1]][1],
-               str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
+                strsplit(.x, "\\*")[[1]][1],
+                str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
     )
     
     # Modify the names if they start with DRB3, 4, 5
@@ -699,15 +686,6 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
         keep(str_detect(., "HLA-DR5[123]")) %>%
         paste(collapse = "+")
     }
-
-    # Find which supplied loci are missing from recipient and donor genotypes
-    missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
-    missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
-    
-    if (length(missing_loci_from_recipient) > 0 || length(missing_loci_from_donor) > 0) {
-      stop(paste("Either the recipient and/or donor GL strings are missing these loci:", 
-                 paste(union(missing_loci_from_recipient, missing_loci_from_donor), collapse = ", ")))
-    }
     
     # Mismatch results calculation
     mismatch_results <- map(loci, function(locus_name) {
@@ -715,35 +693,31 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
       recip_alleles_str <- recip_alleles_list_processed[locus_name]
       donor_alleles_str <- donor_alleles_list_processed[locus_name]
       
-      if (is.null(recip_alleles_str) || is.null(donor_alleles_str)) {
-        return(NULL)
+      # Handle null alleles: if all alleles are null, return "NA"
+      recip_valid <- unlist(strsplit(recip_alleles_str, "\\+"))
+      donor_valid <- unlist(strsplit(donor_alleles_str, "\\+"))
+      recip_valid <- recip_valid[!str_detect(recip_valid, "[Nn]$")]
+      donor_valid <- donor_valid[!str_detect(donor_valid, "[Nn]$")]
+      
+      if (length(recip_valid) == 0 && length(donor_valid) == 0) {
+        return(paste0(locus_name, "=NA"))
       }
       
-      # Identify mismatched alleles based on direction.
-      mismatched_alleles <- c()
-      
-      if (direction == "GvH") {
-        # Mismatches present in the recipient but not in the donor
-        mismatched_allele_1 <- setdiff(unlist(strsplit(recip_alleles_str,"\\+"))[1], unlist(strsplit(donor_alleles_str,"\\+")))
-        mismatched_allele_2 <- setdiff(unlist(strsplit(recip_alleles_str,"\\+"))[2], unlist(strsplit(donor_alleles_str,"\\+")))
-        mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
-        
-        } else if (direction == "HvG") {
-        # Mismatches present in the donor but not in the recipient
-        mismatched_allele_1 <- setdiff(unlist(strsplit(donor_alleles_str,"\\+"))[1], unlist(strsplit(recip_alleles_str,"\\+")))
-        mismatched_allele_2 <- setdiff(unlist(strsplit(donor_alleles_str,"\\+"))[2], unlist(strsplit(recip_alleles_str,"\\+")))
-        mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
-        } else {
+      # Identify mismatched alleles based on direction
+      mismatched_alleles <- if (direction == "GvH") {
+        setdiff(recip_valid, donor_valid)
+      } else if (direction == "HvG") {
+        setdiff(donor_valid, recip_valid)
+      } else {
         stop("Direction must either be 'GvH', or 'HvG'.")
       }
       
-      # Create a string of mismatched alleles or 'NA' if no mismatches are found.
-      allele_mismatches_str <-
-        if (length(mismatched_alleles) > 0) {
-          paste0(locus_name, "=", paste(mismatched_alleles, collapse = "+"))
-        } else {
-          paste0(locus_name, "=", "NA")
-        }
+      # Create a string of mismatched alleles or 'NA' if no mismatches are found
+      allele_mismatches_str <- if (length(mismatched_alleles) > 0) {
+        paste0(locus_name, "=", paste(mismatched_alleles, collapse = "+"))
+      } else {
+        paste0(locus_name, "=NA")
+      }
       
       return(allele_mismatches_str)
     })
@@ -762,6 +736,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
   map2_chr(GL_string_recip, GL_string_donor, process_pair)
 }
 
+
 # This works as intended:
 HLA_mismatch_base(
   "HLA-A*03:01+HLA-A*68:01", 
@@ -769,27 +744,14 @@ HLA_mismatch_base(
   c("HLA-A"),
   direction = "HvG", 
   homozygous_count = 2
-  )
-
-# This does not gives and error:
-# This works as intended:
-HLA_mismatch_base(
-  "HLA-A*03:01+HLA-A*68:01", 
-  "HLA-A*03:99N",
-  c("HLA-A"),
-  direction = "HvG", 
-  homozygous_count = 2
-  )
-# The output should be "NA", since both alleles are null, and they are never mismatches.
-```
+)
 
 HLA_mismatch_base(
   "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*03:01^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", 
   "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01",
   c("HLA-A", "HLA-DRB1", "HLA-DRB3/4/5"),
   direction = "GvH"
-  )
-
+)
 
 HLA_mismatch_base(
   "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52^HLA-DPB1*04:01", 
@@ -797,7 +759,7 @@ HLA_mismatch_base(
   # function works when "HLA-DR51/52/53" is removed
   c("HLA-A", "HLA-Cw","HLA-DR51/52/53", "HLA-DPB1"),
   direction = "HvG"
-  )
+)
 
 (test_cases <- tribble(
   ~case, ~recip_type, ~donor_type,
@@ -806,7 +768,17 @@ HLA_mismatch_base(
   3,   "HLA-A*11:01+HLA-A*23:01^HLA-B*15:01+HLA-B*14:03", "HLA-A*03:01+HLA-A*68:02^HLA-B*15:01+HLA-B*14:03"
 ))
 
-test_cases %>% mutate(matching_GvH = HLA_mismatch_base(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "GvH"))
+HLA_mismatch_base(
+  "HLA-A*03:01+HLA-A*68:01", 
+  "HLA-A*03:99N",
+  c("HLA-A"),
+  direction = "HvG", 
+  homozygous_count = 2
+)
+# The output should be "NA", since both alleles are null, and they are never mismatches.
+```
+
+
 
 
 ```{r}
@@ -840,7 +812,7 @@ HLA_mismatch_number(
   "HLA-A*03:02+HLA-A*74:01^HLA-DRB3*03:01",
   c("HLA-A", "HLA-DRB3/4/5"),
   direction = "HvG"
-  )
+)
 
 # And so does this:
 HLA_mismatch_number(
@@ -848,7 +820,7 @@ HLA_mismatch_number(
   "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
   c("HLA-A", "HLA-DRB3/4/5"),
   direction = "HvG"
-  )
+)
 
 # This looks good:
 HLA_mismatch_number(
@@ -856,7 +828,7 @@ HLA_mismatch_number(
   "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
   c("HLA-A", "HLA-DRB3/4/5"),
   direction = "GvH"
-  )
+)
 
 # Single locus does not appear to be working (this should ouput "2", but instead outputs "HLA-A*03:01+HLA-A*74:01=NA")
 HLA_mismatch_number(
@@ -864,7 +836,7 @@ HLA_mismatch_number(
   "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
   "HLA-A",
   direction = "GvH"
-  )
+)
 
 # We should add an output for bidirectional, which should be the max of the GvH and the HvG.
 ```
