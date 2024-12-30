@@ -676,7 +676,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
     # Modify the names for DR51, DR52, DR53 to treat them as a single locus
     names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
     names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
-
+    
     # Aggregate DR51/52/53 alleles under the single locus "HLA-DR51/52/53"
     if ("HLA-DR51/52/53" %in% loci) {
       recip_alleles_list_processed["HLA-DR51/52/53"] <- recip_alleles_list %>%
@@ -685,6 +685,15 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
       donor_alleles_list_processed["HLA-DR51/52/53"] <- donor_alleles_list %>%
         keep(str_detect(., "HLA-DR5[123]")) %>%
         paste(collapse = "+")
+    }
+    
+    # Find which supplied loci are missing from recipient and donor genotypes
+    missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
+    missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
+    
+    if (length(missing_loci_from_recipient) > 0 || length(missing_loci_from_donor) > 0) {
+      stop(paste("Either the recipient and/or donor GL strings are missing these loci:", 
+                 paste(union(missing_loci_from_recipient, missing_loci_from_donor), collapse = ", ")))
     }
     
     # Mismatch results calculation
