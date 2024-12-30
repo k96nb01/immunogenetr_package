@@ -712,21 +712,28 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
         return(paste0(locus_name, "=NA"))
       }
       
-      # Identify mismatched alleles based on direction
-      mismatched_alleles <- if (direction == "GvH") {
-        setdiff(recip_valid, donor_valid)
+      if (direction == "GvH") {
+        # Mismatches present in the recipient but not in the donor
+        mismatched_allele_1 <- setdiff(unlist(strsplit(recip_valid,"\\+"))[1], unlist(strsplit(donor_valid,"\\+")))
+        mismatched_allele_2 <- setdiff(unlist(strsplit(recip_valid,"\\+"))[2], unlist(strsplit(donor_valid,"\\+")))
+        mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
       } else if (direction == "HvG") {
-        setdiff(donor_valid, recip_valid)
+        # Mismatches present in the donor but not in the recipient
+        mismatched_allele_1 <- setdiff(unlist(strsplit(donor_valid,"\\+"))[1], unlist(strsplit(recip_valid,"\\+")))
+        mismatched_allele_2 <- setdiff(unlist(strsplit(donor_valid,"\\+"))[2], unlist(strsplit(recip_valid,"\\+")))
+        mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
       } else {
         stop("Direction must either be 'GvH', or 'HvG'.")
       }
       
-      # Create a string of mismatched alleles or 'NA' if no mismatches are found
-      allele_mismatches_str <- if (length(mismatched_alleles) > 0) {
-        paste0(locus_name, "=", paste(mismatched_alleles, collapse = "+"))
-      } else {
-        paste0(locus_name, "=NA")
-      }
+      
+      # Create a string of mismatched alleles or 'NA' if no mismatches are found.
+      allele_mismatches_str <-
+        if (length(mismatched_alleles) > 0) {
+          paste0(locus_name, "=", paste(mismatched_alleles, collapse = "+"))
+        } else {
+          paste0(locus_name, "=", "NA")
+        }
       
       return(allele_mismatches_str)
     })
