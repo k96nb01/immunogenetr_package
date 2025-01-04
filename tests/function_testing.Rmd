@@ -818,7 +818,7 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
   # Helper function to format mismatch counts for loci
   format_output <- function(counts, loci) {
     if (length(loci) == 1) {
-      return(paste0(loci, "=", counts))
+      return(counts)
     } else {
       return(paste(paste0(loci, "=", counts), collapse = ", "))
     }
@@ -880,7 +880,7 @@ HLA_mismatch_number(
   direction = "bidirectional"
 )
 
-# Single locus does not appear to be working (this should ouput "2", but instead outputs "HLA-A*03:01+HLA-A*74:01=NA")
+# Single locus does not appear to be working (this should output "2", but instead outputs "HLA-A*03:01+HLA-A*74:01=NA")
 HLA_mismatch_number(
   "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
   "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
