@@ -835,12 +835,12 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
   
   # Handle directions
   if (direction == "HvG") {
-    return(format_output(mismatch_count_HvG, loci))
+    return(as.integer(format_output(mismatch_count_HvG, loci)))
   } else if (direction == "GvH") {
-    return(format_output(mismatch_count_GvH, loci))
+    return(as.integer(format_output(mismatch_count_GvH, loci)))
   } else if (direction == "bidirectional") {
     max_counts <- pmax(mismatch_count_HvG, mismatch_count_GvH, na.rm = TRUE)
-    return(format_output(max_counts, loci))
+    return(as.integer(format_output(max_counts, loci)))
   }
   
   stop("Invalid direction") # This should not be reached due to match.arg
