@@ -617,19 +617,19 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
     # Split GL string into alleles
     alleles <- str_split(GL_string, "\\+", simplify = TRUE)
     
-    # Remove null alleles
-  non_null_alleles <- alleles[!str_detect(alleles, "[Nn]$")]
-    
-  # Filter out empty strings resulting from removal of null alleles
-  non_null_alleles <- non_null_alleles[non_null_alleles != ""]
-    
     # Handle homozygosity
-    if (length(non_null_alleles) == 1 && homozygous_count == 2) {
-      alleles <- rep(non_null_alleles, times = homozygous_count)
+    if (length(alleles) == 1 && homozygous_count == 2) {
+      alleles <- rep(alleles, times = homozygous_count)
     }
     
+    # Remove null alleles
+    non_null_alleles <- alleles[!str_detect(alleles, "[Nn]$")]
+    
+    # Filter out empty strings resulting from removal of null alleles
+    non_null_alleles <- non_null_alleles[non_null_alleles != ""]
+    
     # Return processed alleles as a single GL string
-    return(str_c(alleles, collapse = "+"))
+    return(str_c(non_null_alleles, collapse = "+"))
   }
   
   # Function to process each pair of recipient/donor alleles
