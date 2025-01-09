@@ -15,11 +15,11 @@ library(purrr)
 
 ```{r}
 
-A <- "HLA-A*02:01"
-B <- "HLA-A*68:01"
+A <- "HLA-A*01:01"
+B <- "HLA-A*02:05"
 C <- "HLA-A*24:02"
-D <- "HLA-A*69:01"
-N <- "HLA-A*01:11N"
+D <- "HLA-A*31:03"
+N <- "HLA-A*68:11N"
 b <- "bidirectional"
 
 join <- function(a, b) {
@@ -137,13 +137,13 @@ identical(HLA_mismatch_number(join(A, A), join(B, B), "HLA-A", b), 2L)
 identical(HLA_mismatch_number(join(A, A), join(N, B), "HLA-A", "GvH"), 2L)
 ########################################################################################################################
 identical(HLA_mismatch_number(join(A, A), join(N, B), "HLA-A", "HvG"), 2L) 
-print(HLA_mismatch_number(join(A, A), join(N, B), "HLA-A", "HvG"))
+
 ########################################################################################################################
 identical(HLA_mismatch_number(join(A, A), join(N, B), "HLA-A", b), 2L)
 
 ########################################################################################################################
 identical(HLA_mismatch_number(join(N, A), join(B, B), "HLA-A", "GvH"), 2L) 
-print(HLA_mismatch_number(join(N, A), join(B, B), "HLA-A", "GvH"))
+
 ########################################################################################################################
 identical(HLA_mismatch_number(join(N, A), join(B, B), "HLA-A", "HvG"), 2L)
 identical(HLA_mismatch_number(join(N, A), join(B, B), "HLA-A", b), 2L)
@@ -160,7 +160,7 @@ identical(HLA_mismatch_number(join(A, A), join(B, C), "HLA-A", b), 2L)
 
 ########################################################################################################################
 identical(HLA_mismatch_number(join(N, A), join(B, C), "HLA-A", "GvH"), 2L) 
-print(HLA_mismatch_number(join(N, A), join(B, C), "HLA-A", "GvH"))
+
 ########################################################################################################################
 identical(HLA_mismatch_number(join(N, A), join(B, C), "HLA-A", "HvG"), 2L)
 identical(HLA_mismatch_number(join(N, A), join(B, C), "HLA-A", b), 2L)
@@ -172,7 +172,7 @@ identical(HLA_mismatch_number(join(A, B), join(C, C), "HLA-A", b), 2L)
 identical(HLA_mismatch_number(join(A, B), join(N, C), "HLA-A", "GvH"), 2L)
 ########################################################################################################################
 identical(HLA_mismatch_number(join(A, B), join(N, C), "HLA-A", "HvG"), 2L) 
-print(HLA_mismatch_number(join(A, B), join(N, C), "HLA-A", "HvG"))
+
 ########################################################################################################################
 identical(HLA_mismatch_number(join(A, B), join(N, C), "HLA-A", b), 2L)
 
@@ -183,51 +183,18 @@ identical(HLA_mismatch_number(join(A, B), join(C, D), "HLA-A", b), 2L)
 
 ```
 
-```{r}
-HLA_mismatch_number("HLA-A*02:01+HLA-A*02:01", "HLA-A*02:99N+HLA-A*68:01", "HLA-A", "HvG")
-HLA_mismatch_number("HLA-A*02:99N+HLA-A*02:01", "HLA-A*68:01+HLA-A*68:01", "HLA-A", "HvG")
-HLA_mismatch_number("HLA-A*02:99N+HLA-A*02:01", "HLA-A*68:01+HLA-A*24:02", "HLA-A", "HvG")
-HLA_mismatch_number("HLA-A*02:01+HLA-A*68:01", "HLA-A*02:99N+HLA-A*24:02", "HLA-A", "HvG")
+A,B - N,C - HvG
+Matches: 0
+Mismatches: 1 (if we don't count null as mismatch)
+Matches + Mismatches != 2, so add 1 to Mismatches to get 2.
 
-HLA_mismatch_base("HLA-A*01:11N+HLA-A*01:11N", "HLA-A*01:11N+HLA-A*02:01", "HLA-A", "HvG")
+N,N - N,A - HvG
+Matches: 1 (if we count null as a match)
+Mismatches: 1 (if we don't count null as mismatch)
+Matches + Mismatches = 2, so return mismatches.
 
-identical(HLA_mismatch_number(join(N, N), join(N, A), "HLA-A", "HvG"), 1L)#
-identical(HLA_mismatch_number(join(N, N), join(N, A), "HLA-A", b), 1L)
-```
+# Step 1: determine matches, including nulls.
+# Step 2: determine mismatches, excluding nulls.
+# Step 3: count matches + mismatches.
+# Step 4: if matches + mismatches < 2, add 1 until it equals 2.
 
-```{r}
-# Function to preprocess GL strings: handle null alleles and homozygosity
-  preprocess_GL_string <- function(GL_string, homozygous_count) {
-    # Split GL string into alleles
-    alleles <- str_split(GL_string, "\\+", simplify = TRUE)
-    
-    # Handle homozygosity
-    if (length(alleles) == 1 && homozygous_count == 2) {
-      alleles <- rep(alleles, times = homozygous_count)
-    }
-    
-    # Remove null alleles
-    non_null_alleles <- alleles[!str_detect(alleles, "[Nn]$")]
-    
-    # Filter out empty strings resulting from removal of null alleles
-    non_null_alleles <- non_null_alleles[non_null_alleles != ""]
-    
-    # Return processed alleles as a single GL string
-    #return(str_c(non_null_alleles, collapse = "+"))
-    return(non_null_alleles)
-  }
-
-preprocess_GL_string("HLA-A*01:11N+HLA-A*01:11N", 2)
-```
-
-
-1.	HLA_mismatch_number(join(A, A), join(N, B), "HLA-A", "HvG")
-2.	HLA_mismatch_number(join(N, A), join(B, B), "HLA-A", "GvH")
-3.	HLA_mismatch_number(join(N, A), join(B, C), "HLA-A", "GvH")
-4.	HLA_mismatch_number(join(A, B), join(N, C), "HLA-A", "HvG")
-
-A <- "HLA-A*02:01"
-B <- "HLA-A*68:01"
-C <- "HLA-A*24:02"
-D <- "HLA-A*69:01"
-N <- "HLA-A*02:99N"
