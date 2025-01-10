@@ -22,7 +22,13 @@
 #' HLA_type %>% HLA_column_repair(format = "tidyverse")
 #'
 #' @export
-#' @importFrom dplyr "%>%"
+#'
+#' @importFrom dplyr rename_with
+#' @importFrom dplyr %>%
+#' @importFrom dplyr starts_with
+#' @importFrom stringr str_replace
+#' @importFrom rlang abort
+
 
 HLA_column_repair <- function(data, format = "tidyverse", asterisk = FALSE) {
   # Step 1: turn "HLA-A" to "HLA_A" or vice versa.

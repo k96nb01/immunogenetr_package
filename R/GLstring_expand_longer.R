@@ -29,8 +29,6 @@
 #' @importFrom dplyr %>%
 #' @importFrom tidyr separate_longer_delim
 #' @importFrom tibble as_tibble
-#' @importFrom stringr str_extract
-
 
 GLstring_expand_longer <- function(GL_string){
   as_tibble(GL_string) %>%

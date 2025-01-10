@@ -19,13 +19,12 @@
 #'
 #' @export
 #'
-#' @importFrom dplyr select
-#' @importFrom dplyr rename
 #' @importFrom dplyr mutate
 #' @importFrom dplyr %>%
-#' @importFrom tidyr separate_longer_delim
+#' @importFrom tidyr pivot_longer
+#' @importFrom tidyr separate_rows
 #' @importFrom tidyr pivot_wider
-#' @importFrom stringr str_extract
+#' @importFrom tidyr unnest
 
 GLstring_genes_expanded <- function(data, gl_string) {
   data %>%

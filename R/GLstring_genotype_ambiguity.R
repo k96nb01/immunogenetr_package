@@ -29,18 +29,16 @@
 #' @export
 #'
 #' @importFrom dplyr select
-#' @importFrom dplyr rename
 #' @importFrom dplyr mutate
 #' @importFrom dplyr across
 #' @importFrom dplyr summarize
 #' @importFrom dplyr %>%
+#' @importFrom dplyr contains
+#' @importFrom dplyr na_if
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_extract
 #' @importFrom stringr str_replace_all
 #' @importFrom stringr str_replace
-#' @importFrom stringr str_c
-#' @importFrom dplyr na_if
-#' @importFrom dplyr contains
 #' @importFrom rlang abort
 
 

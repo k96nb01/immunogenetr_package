@@ -27,10 +27,9 @@
 #'
 #' @importFrom dplyr mutate
 #' @importFrom dplyr across
+#' @importFrom dplyr select
 #' @importFrom dplyr %>%
 #' @importFrom stringr str_extract
-#' @importFrom stringr str_replace
-#' @importFrom stringr str_c
 #' @importFrom tidyr replace_na
 #' @importFrom dplyr na_if
 #' @importFrom tidyr separate_wider_delim

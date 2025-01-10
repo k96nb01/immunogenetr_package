@@ -34,7 +34,6 @@
 #' @export
 #'
 #' @importFrom dplyr mutate
-#' @importFrom dplyr across
 #' @importFrom dplyr %>%
 #' @importFrom dplyr select
 #' @importFrom dplyr case_when
@@ -44,16 +43,19 @@
 #' @importFrom dplyr distinct
 #' @importFrom dplyr pull
 #' @importFrom dplyr summarise
+#' @importFrom glue glue
+#' @importFrom stringr regex
 #' @importFrom stringr str_c
 #' @importFrom stringr str_escape
+#' @importFrom stringr str_extract
 #' @importFrom stringr str_replace
 #' @importFrom stringr str_detect
-#' @importFrom stringr str_to_upper
 #' @importFrom stringr str_glue
 #' @importFrom stringr str_flatten
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyselect all_of
 #' @importFrom cli format_error
+#' @importFrom rlang abort
 
 HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "") {
   # Set up prefix and suffix regex to remove unwanted parts

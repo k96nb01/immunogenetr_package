@@ -825,42 +825,56 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
   # Helper function to count mismatches per locus
   count_mismatches <- function(mismatch_string) {
     if (is.na(mismatch_string) || mismatch_string == "NA") {
-      return(0)
+      return(0L)
     }
     alleles <- unlist(strsplit(mismatch_string, "\\+"))
-    return(length(alleles))
+    return(as.integer(length(alleles)))
   }
   
-  # Helper function to format mismatch counts for loci
-  format_output <- function(counts, loci) {
+  # Calculate mismatch counts for each locus
+  calculate_mismatch_counts <- function(mismatch_result, loci) {
     if (length(loci) == 1) {
-      return(counts)
+      return(as.integer(count_mismatches(mismatch_result)))
     } else {
-      return(paste(paste0(loci, "=", counts), collapse = ", "))
+      # Split the result by loci and count mismatches for each
+      locus_mismatches <- strsplit(mismatch_result, ", ")[[1]]
+      counts <- sapply(locus_mismatches, function(x) {
+        locus_parts <- strsplit(x, "=")[[1]]
+        if (length(locus_parts) == 2) {
+          count_mismatches(locus_parts[2])
+        } else {
+          0
+        }
+      })
+      names(counts) <- loci
+      # Format the output for multiple loci
+      return(paste(paste0(names(counts), "=", counts), collapse = ", "))
     }
   }
   
-  # Calculate mismatch counts for both directions
-  if (length(loci) == 1) {
-    mismatch_count_HvG <- count_mismatches(mismatch_HvG)
-    mismatch_count_GvH <- count_mismatches(mismatch_GvH)
-  } else {
-    mismatch_count_HvG <- sapply(strsplit(mismatch_HvG, ", ")[[1]], function(x) count_mismatches(strsplit(x, "=")[[1]][2]))
-    mismatch_count_GvH <- sapply(strsplit(mismatch_GvH, ", ")[[1]], function(x) count_mismatches(strsplit(x, "=")[[1]][2]))
-  }
+  # Process mismatch counts for both directions
+  mismatch_count_HvG <- calculate_mismatch_counts(mismatch_HvG, loci)
+  mismatch_count_GvH <- calculate_mismatch_counts(mismatch_GvH, loci)
   
   # Handle directions
   if (direction == "HvG") {
-    return(as.integer(format_output(mismatch_count_HvG, loci)))
+    return(mismatch_count_HvG)
   } else if (direction == "GvH") {
-    return(as.integer(format_output(mismatch_count_GvH, loci)))
+    return(mismatch_count_GvH)
   } else if (direction == "bidirectional") {
-    max_counts <- pmax(mismatch_count_HvG, mismatch_count_GvH, na.rm = TRUE)
-    return(as.integer(format_output(max_counts, loci)))
+    if (length(loci) == 1) {
+      return(as.integer(max(mismatch_count_HvG, mismatch_count_GvH, na.rm = TRUE)))
+    } else {
+      HvG_counts <- sapply(strsplit(mismatch_count_HvG, ", ")[[1]], function(x) as.integer(strsplit(x, "=")[[1]][2]))
+      GvH_counts <- sapply(strsplit(mismatch_count_GvH, ", ")[[1]], function(x) as.integer(strsplit(x, "=")[[1]][2]))
+      max_counts <- pmax(HvG_counts, GvH_counts, na.rm = TRUE)
+      return(paste(paste0(loci, "=", max_counts), collapse = ", "))
+    }
   }
   
   stop("Invalid direction") # This should not be reached due to match.arg
 }
+
 
 
 
@@ -869,7 +883,7 @@ HLA_mismatch_number(
   "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
   "HLA-A*03:02+HLA-A*74:01^HLA-DRB3*03:01",
   c("HLA-A", "HLA-DRB3/4/5"),
-  direction = "HvG"
+  direction = "bidirectional"
 )
 
 # And so does this:
@@ -877,7 +891,7 @@ HLA_mismatch_number(
   "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
   "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
   c("HLA-A", "HLA-DRB3/4/5"),
-  direction = "HvG"
+  direction = "bidirectional"
 )
 
 # This looks good:
@@ -885,7 +899,7 @@ HLA_mismatch_number(
   "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
   "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
   c("HLA-A", "HLA-DRB3/4/5"),
-  direction = "HvG"
+  direction = "GvH"
 )
 
 # test bidirectional 
@@ -896,7 +910,6 @@ HLA_mismatch_number(
   direction = "bidirectional"
 )
 
-# Single locus does not appear to be working (this should output "2", but instead outputs "HLA-A*03:01+HLA-A*74:01=NA")
 HLA_mismatch_number(
   "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
   "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01",
@@ -914,7 +927,63 @@ HLA_mismatch_number(
 ```
 
 
+```{r}
 
+HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "bidirectional"), homozygous_count = 2) {
+  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
+
+  # Helper function to determine logical results
+  mismatch_to_logical <- function(mismatch_number) {
+    if (length(loci) == 1) {
+      return(mismatch_number != 0)
+    } else {
+      # Convert mismatch counts to logicals for multiple loci
+      locus_results <- strsplit(mismatch_number, ", ")[[1]]
+      logical_results <- sapply(locus_results, function(x) {
+        locus_parts <- strsplit(x, "=")[[1]]
+        if (length(locus_parts) == 2) {
+          locus_name <- locus_parts[1]
+          mismatch_count <- as.integer(locus_parts[2])
+          return(paste0(locus_name, "=", mismatch_count != 0))
+        } else {
+          return(paste0(x, "=FALSE"))
+        }
+      })
+      return(paste(logical_results, collapse = ", "))
+    }
+  }
+
+  # Get mismatch counts using HLA_mismatch_number
+  mismatch_counts <- HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction, homozygous_count)
+
+  # Convert mismatch counts to logical results
+  logical_results <- mismatch_to_logical(mismatch_counts)
+
+  return(logical_results)
+}
+
+HLA_mismatch_logical(
+  "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21", 
+  "HLA-A*03:01^HLA-DRB3*03:01",
+  c("HLA-A"),
+  direction = "HvG"
+)
+
+HLA_mismatch_logical(
+  "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01+HLA-DRB3*04:01",
+  "HLA-A*03:02^HLA-DRB3*03:01",
+  "HLA-DRB3/4/5",
+  direction = "bidirectional"
+)
+
+HLA_mismatch_logical(
+  "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01+HLA-DRB3*04:01",
+  "HLA-A*03:02^HLA-DRB3*03:01",
+  c("HLA-A", "HLA-DRB3/4/5"),
+  direction = "bidirectional"
+)
+
+```
 
 
 
