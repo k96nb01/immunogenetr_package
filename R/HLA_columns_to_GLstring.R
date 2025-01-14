@@ -71,7 +71,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     # pivoting longer to get each allele on a separate row.
     pivot_longer(cols = all_of(col2mod), names_to = "names", values_to = "allele") %>%
     # Determine if typing is serologic by presence of ":" in allele.
-    mutate(molecular = str_detect(allele, ":")) %>%
+    mutate(molecular = str_detect(allele, ":") | str_detect(allele, "^0") | str_detect(names, "(DQA1)|(DPB1)|(DPA1)")) %>%
     # Remove prefixes and suffixes from column names
     mutate(truncated_names = str_replace(names, prefix_regex, ""),
            truncated_names = str_replace(truncated_names, suffix_regex, "")) %>%
@@ -98,20 +98,33 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
       str_detect(truncated_names, regex("^DPB1[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-DPB1",  # Molecular DPB1
       TRUE ~ "unknown"
     )) %>%
+    # Determine serologic locus names
+    mutate(serologic_name = case_when(
+      locus_from_name == "HLA-A" ~ "HLA-A",
+      locus_from_name == "HLA-B" ~ "HLA-B",
+      locus_from_name == "HLA-Bw" ~ "HLA-Bw",
+      str_detect(locus_from_name, "HLA-C[Ww]?") ~ "HLA-Cw",
+      str_detect(locus_from_name, "DR") ~ "HLA-DR",
+      locus_from_name == "HLA-DQA1" ~ "HLA-DQA",
+      str_detect(locus_from_name, "HLA-DQ") ~ "HLA-DQ",
+      locus_from_name == "HLA-DPA1" ~ "HLA-DPA",
+      locus_from_name == "HLA-DPB1" ~ "HLA-DP",
+      TRUE ~ "unknown"
+    )) %>%
     # Determine if the DR typing is one of the DR51/52/53 loci
     mutate(DRB345 = if_else(str_detect(allele, "^5") & locus_from_name == "HLA-DR", TRUE, FALSE)) %>%
     # Handle the final locus name for high-resolution DRB alleles
     mutate(DRB_locus = if_else(
       str_detect(locus_from_name, "DRB"), str_c("HLA-DRB", str_extract(allele, "[1345](?=\\*)")), NA_character_
     )) %>%
-    # Determine the final locus name
-    mutate(final_locus = coalesce(DRB_locus, locus_from_name)) %>%
+    # Determine the final molecular locus name
+    mutate(molecular_locus = coalesce(DRB_locus, locus_from_name)) %>%
     # Record "XX" if there is no typing at any of the selected loci.
-    mutate(allele = if(all(is.na(allele))) "XX" else allele, .by = c(row_for_function, final_locus)) %>%
+    mutate(allele = if(all(is.na(allele))) "XX" else allele, .by = c(row_for_function, molecular_locus)) %>%
     # Remove any blank values
     filter(!is.na(allele)) %>%
     # Remove any "XX" values from the DRB3/4/5 loci
-    filter(!(allele == "XX" & str_detect(final_locus, "DRB[345]")))
+    filter(!(allele == "XX" & str_detect(molecular_locus, "DRB[345]")))
 
   # Set up error detection for any loci that could not be determined
   error_table <- step1 %>% filter(locus_from_name == "unknown")
@@ -127,8 +140,8 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   step2 <- step1 %>%
     mutate(final_type = if_else(
       molecular,
-      str_glue("{final_locus}*{allele}"),
-      str_glue("{final_locus}{allele}")
+      str_glue("{molecular_locus}*{allele}"),
+      str_glue("{serologic_name}{allele}")
     )) %>%
     # Group alleles within the same locus
     summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c(row_for_function, locus_from_name, DRB345)) %>%
