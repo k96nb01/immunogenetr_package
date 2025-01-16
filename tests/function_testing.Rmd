@@ -814,13 +814,6 @@ HLA_mismatch_base(
   direction = "HvG"
 )
 
-(test_cases <- tribble(
-  ~case, ~recip_type, ~donor_type,
-  1,   "HLA-A*02:01+HLA-A*03:04^HLA-B*15:01^HLA-DRB3*01:01", "HLA-A*02:01+HLA-A*03:04^HLA-B*15:02",
-  2,   "HLA-A*02:01+HLA-A*30:02^HLA-B*15:01+HLA-B*14:03", "HLA-A*02:17+HLA-A*32:01^HLA-B*15:01+HLA-B*14:03",
-  3,   "HLA-A*11:01+HLA-A*23:01^HLA-B*15:01+HLA-B*14:03", "HLA-A*03:01+HLA-A*68:02^HLA-B*15:01+HLA-B*14:03"
-))
-
 HLA_mismatch_base(
   "HLA-A*03:01+HLA-A*68:01", 
   "HLA-A*03:99N",
@@ -828,6 +821,15 @@ HLA_mismatch_base(
   direction = "HvG", 
   homozygous_count = 2
 )
+
+(test_cases <- tribble(
+  ~case, ~recip_type, ~donor_type,
+  1,   "HLA-A*02:01+HLA-A*03:04^HLA-B*15:01^HLA-DRB3*01:01", "HLA-A*02:01+HLA-A*03:04^HLA-B*15:02",
+  2,   "HLA-A*02:01+HLA-A*30:02^HLA-B*15:01+HLA-B*14:03", "HLA-A*02:17+HLA-A*32:01^HLA-B*15:01+HLA-B*14:03",
+  3,   "HLA-A*11:01+HLA-A*23:01^HLA-B*15:01+HLA-B*14:03", "HLA-A*03:01+HLA-A*68:02^HLA-B*15:01+HLA-B*14:03"
+))
+
+test_cases %>% mutate(mismatch = HLA_mismatch_base(recip_type, donor_type, c("HLA-A"), direction = "HvG", homozygous_count = 2))
 
 
 ```
@@ -945,6 +947,14 @@ HLA_mismatch_number(
   "HLA-DRB3/4/5",
   direction = "bidirectional"
 )
+
+# This works:
+test_cases %>% mutate(mismatch = HLA_mismatch_number(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "bidirectional", homozygous_count = 2))
+
+# But this does not:
+test_cases %>% mutate(mismatch = HLA_mismatch_number(recip_type, donor_type, c("HLA-A"), direction = "bidirectional", homozygous_count = 2))
+
+# Not sure why having only one locus causes an error.
 
 ```
 
