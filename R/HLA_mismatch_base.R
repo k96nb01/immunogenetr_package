@@ -66,6 +66,9 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
     # Split GL string into alleles
     alleles <- str_split(GL_string, "\\+", simplify = TRUE)
 
+    # Replace any allele that ends with "N" with "NullN".
+    alleles <- str_replace(alleles, "(?<=HLA-[:alnum:]{1,4}\\*).+N$", "XXN")
+
     # Handle homozygosity
     if (length(alleles) == 1 && homozygous_count == 2) {
       alleles <- rep(alleles, times = homozygous_count)
