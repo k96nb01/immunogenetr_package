@@ -1021,6 +1021,11 @@ HLA_mismatch_logical(
   direction = "bidirectional"
 )
 
+# This works:
+test_cases %>% mutate(mismatch = HLA_mismatch_logical(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "bidirectional", homozygous_count = 2))
+
+# And now this works, too.:
+test_cases %>% mutate(mismatch = HLA_mismatch_logical(recip_type, donor_type, c("HLA-A"), direction = "bidirectional", homozygous_count = 2))
 ```
 
 
