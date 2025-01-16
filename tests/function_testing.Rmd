@@ -959,10 +959,8 @@ HLA_mismatch_number(
 # This works:
 test_cases %>% mutate(mismatch = HLA_mismatch_number(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "bidirectional", homozygous_count = 2))
 
-# But this does not:
+# And now this works, too.:
 test_cases %>% mutate(mismatch = HLA_mismatch_number(recip_type, donor_type, c("HLA-A"), direction = "bidirectional", homozygous_count = 2))
-
-# Not sure why having only one locus causes an error.
 
 ```
 
