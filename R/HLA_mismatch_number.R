@@ -63,7 +63,7 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
   # Calculate mismatch counts for each locus
   calculate_mismatch_counts <- function(mismatch_result, loci) {
     if (length(loci) == 1) {
-      return(as.integer(count_mismatches(mismatch_result)))
+      map_int(mismatch_result, count_mismatches)
     } else {
       # Split the result by loci and count mismatches for each
       locus_mismatches <- strsplit(mismatch_result, ", ")[[1]]
