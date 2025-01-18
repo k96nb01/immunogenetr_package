@@ -78,7 +78,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     # Use the HLA_validate function to clean up the typing
     mutate(allele = HLA_validate(allele)) %>%
     # Remove any prefixes in alleles
-    HLA_prefix_remove(allele) %>%
+    mutate(allele = HLA_prefix_remove(allele)) %>%
     # Determine locus name using extended logic
     mutate(locus_from_name = case_when(
       str_detect(truncated_names, regex("^A[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-A",  # Handle A locus
