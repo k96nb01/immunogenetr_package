@@ -1,6 +1,6 @@
 Package: immunogenetr
 Type: Package
-Title: Data wrangling for HLA data. 
+Title: Data Wrangling for HLA Data
 Version: 0.1.0
 Authors@R: c(
     person("Nicholas", "Brown", email = "nicholas.brown@pennmedicine.upenn.edu", role = c("cre","aut")),
@@ -16,3 +16,4 @@ RoxygenNote: 7.3.2
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Imports: cli, dplyr, glue, purrr, rlang, stringr, tibble, tidyr, tidyselect, xml2

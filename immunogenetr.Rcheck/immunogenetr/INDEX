@@ -1,0 +1,9 @@
+GLstring_gene_copies_combine
+                        GLstring_gene_copies_combine
+HLA_column_repair       HLA_column_repair
+HLA_mismatch_logical    HLA_mismatch_logical
+HLA_mismatch_number     HLA_mismatch_number
+HLA_prefix_add          HLA_prefix_add
+HLA_validate            HLA_validate
+ambiguity_table_to_GLstring
+                        ambiguity_table_to_GLstring

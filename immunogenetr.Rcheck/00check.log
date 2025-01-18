@@ -1,0 +1,188 @@
+* using log directory ‘/Users/busra/Documents/busra/codes/immunogenetr/immunogenetr/immunogenetr.Rcheck’
+* using R version 4.4.1 (2024-06-14)
+* using platform: aarch64-apple-darwin20
+* R was compiled by
+    Apple clang version 14.0.0 (clang-1400.0.29.202)
+    GNU Fortran (GCC) 12.2.0
+* running under: macOS Sonoma 14.3
+* using session charset: UTF-8
+* using option ‘--as-cran’
+* checking for file ‘immunogenetr/DESCRIPTION’ ... OK
+* checking extension type ... Package
+* this is package ‘immunogenetr’ version ‘0.1.0’
+* package encoding: UTF-8
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: ‘Nicholas Brown <nicholas.brown@pennmedicine.upenn.edu>’
+
+New submission
+
+Non-FOSS package license (GPL-3 # Should probably think about this.)
+* checking package namespace information ... OK
+* checking package dependencies ... OK
+* checking if this is a source package ... OK
+* checking if there is a namespace ... OK
+* checking for executable files ... OK
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘immunogenetr’ can be installed ... OK
+* checking installed package size ... OK
+* checking package directory ... OK
+* checking for future file timestamps ... OK
+* checking DESCRIPTION meta-information ... WARNING
+Non-standard license specification:
+  GPL-3 # Should probably think about this.
+Standardizable: FALSE
+* checking top-level files ... NOTE
+Non-standard files/directories found at top level:
+  ‘immunogenetr_overview.html’ ‘immunogenetr_overview.qmd’
+  ‘immunogenetr_overview_files’ ‘navigate’
+* checking for left-over files ... OK
+* checking index information ... OK
+* checking package subdirectories ... OK
+* checking code files for non-ASCII characters ... OK
+* checking R files for syntax errors ... OK
+* checking whether the package can be loaded ... OK
+* checking whether the package can be loaded with stated dependencies ... OK
+* checking whether the package can be unloaded cleanly ... OK
+* checking whether the namespace can be loaded with stated dependencies ... OK
+* checking whether the namespace can be unloaded cleanly ... OK
+* checking use of S3 registration ... OK
+* checking dependencies in R code ... OK
+* checking S3 generic/method consistency ... OK
+* checking replacement functions ... OK
+* checking foreign function calls ... OK
+* checking R code for possible problems ... OK
+* checking Rd files ... OK
+* checking Rd metadata ... OK
+* checking Rd line widths ... OK
+* checking Rd cross-references ... OK
+* checking for missing documentation entries ... OK
+* checking for code/documentation mismatches ... OK
+* checking Rd \usage sections ... OK
+* checking Rd contents ... OK
+* checking for unstated dependencies in examples ... OK
+* checking examples ... ERROR
+Running examples in ‘immunogenetr-Ex.R’ failed
+The error most likely occurred in:
+
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: GLstring_gene_copies_combine
+> ### Title: GLstring_gene_copies_combine
+> ### Aliases: GLstring_gene_copies_combine
+> 
+> ### ** Examples
+> 
+> HLA_type <- tibble(
++   sample = c("sample1", "sample2"),
++   HLA_A1 = c("HLA-A*01:01", "HLA-A*02:01"),
++   HLA_A2 = c("HLA-A*01:02", "HLA-A*02:02"),
++   stringsAsFactors = FALSE
++   )
+Error in tibble(sample = c("sample1", "sample2"), HLA_A1 = c("HLA-A*01:01",  : 
+  could not find function "tibble"
+Execution halted
+* checking for unstated dependencies in ‘tests’ ... WARNING
+'library' or 'require' call not declared from: ‘tidyverse’
+* checking tests ... ERROR
+  Running ‘simple_test.R’
+  Running ‘testthat.R’
+Running the tests in ‘tests/simple_test.R’ failed.
+Last 13 lines of output:
+  > library(tidyverse)
+  ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+  ✔ dplyr     1.1.4     ✔ readr     2.1.5
+  ✔ forcats   1.0.0     ✔ stringr   1.5.1
+  ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+  ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+  ✔ purrr     1.0.2     
+  ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+  ✖ dplyr::filter() masks stats::filter()
+  ✖ dplyr::lag()    masks stats::lag()
+  ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+  > 
+  > test <- read_csv("tests/test3.csv")
+  Error: 'tests/test3.csv' does not exist in current working directory ('/Users/busra/Documents/busra/codes/immunogenetr/immunogenetr/immunogenetr.Rcheck/tests').
+  Execution halted
+Running the tests in ‘tests/testthat.R’ failed.
+Last 13 lines of output:
+  > # * https://r-pkgs.org/testing-design.html#sec-tests-files-overview
+  > # * https://testthat.r-lib.org/articles/special-files.html
+  > 
+  > library(testthat)
+  > library(immunogenetr)
+  > 
+  > test_check("immunogenetr")
+  Error in `test_dir()`:
+  ! No test files found
+  Backtrace:
+      ▆
+   1. └─testthat::test_check("immunogenetr")
+   2.   └─testthat::test_dir("testthat", package = package, reporter = reporter, ..., load_package = "installed")
+   3.     └─rlang::abort("No test files found")
+  Execution halted
+* checking PDF version of manual ... OK
+* checking HTML version of manual ... NOTE
+Found the following HTML validation problems:
+GLstring_gene_copies_combine.html:15:44 (GLstring_gene_copies_combine.Rd:5): Error: <main> is not recognized!
+GLstring_gene_copies_combine.html:15:44 (GLstring_gene_copies_combine.Rd:5): Warning: discarding unexpected <main>
+GLstring_gene_copies_combine.html:74:1 (GLstring_gene_copies_combine.Rd:35): Warning: discarding unexpected </main>
+GLstring_gene_copies_combine.html:4:1 (GLstring_gene_copies_combine.Rd:5): Warning: <link> inserting "type" attribute
+GLstring_gene_copies_combine.html:12:1 (GLstring_gene_copies_combine.Rd:5): Warning: <script> proprietary attribute "onload"
+GLstring_gene_copies_combine.html:12:1 (GLstring_gene_copies_combine.Rd:5): Warning: <script> inserting "type" attribute
+GLstring_gene_copies_combine.html:17:1 (GLstring_gene_copies_combine.Rd:5): Warning: <table> lacks "summary" attribute
+GLstring_gene_copies_combine.html:36:1 (GLstring_gene_copies_combine.Rd:10): Warning: <table> lacks "summary" attribute
+GLstring_gene_copies_combine.html:37:14 (GLstring_gene_copies_combine.Rd:10): Warning: <code> attribute "id" has invalid value ".data"
+HLA_column_repair.html:15:44 (HLA_column_repair.Rd:5): Error: <main> is not recognized!
+HLA_column_repair.html:15:44 (HLA_column_repair.Rd:5): Warning: discarding unexpected <main>
+HLA_column_repair.html:73:1 (HLA_column_repair.Rd:34): Warning: discarding unexpected </main>
+HLA_column_repair.html:4:1 (HLA_column_repair.Rd:5): Warning: <link> inserting "type" attribute
+HLA_column_repair.html:12:1 (HLA_column_repair.Rd:5): Warning: <script> proprietary attribute "onload"
+HLA_column_repair.html:12:1 (HLA_column_repair.Rd:5): Warning: <script> inserting "type" attribute
+HLA_column_repair.html:17:1 (HLA_column_repair.Rd:5): Warning: <table> lacks "summary" attribute
+HLA_column_repair.html:40:1 (HLA_column_repair.Rd:10): Warning: <table> lacks "summary" attribute
+HLA_mismatch_logical.html:15:44 (HLA_mismatch_logical.Rd:5): Error: <main> is not recognized!
+HLA_mismatch_logical.html:15:44 (HLA_mismatch_logical.Rd:5): Warning: discarding unexpected <main>
+HLA_mismatch_logical.html:95:1 (HLA_mismatch_logical.Rd:52): Warning: discarding unexpected </main>
+HLA_mismatch_logical.html:4:1 (HLA_mismatch_logical.Rd:5): Warning: <link> inserting "type" attribute
+HLA_mismatch_logical.html:12:1 (HLA_mismatch_logical.Rd:5): Warning: <script> proprietary attribute "onload"
+HLA_mismatch_logical.html:12:1 (HLA_mismatch_logical.Rd:5): Warning: <script> inserting "type" attribute
+HLA_mismatch_logical.html:17:1 (HLA_mismatch_logical.Rd:5): Warning: <table> lacks "summary" attribute
+HLA_mismatch_logical.html:43:1 (HLA_mismatch_logical.Rd:16): Warning: <table> lacks "summary" attribute
+HLA_mismatch_number.html:15:44 (HLA_mismatch_number.Rd:5): Error: <main> is not recognized!
+HLA_mismatch_number.html:15:44 (HLA_mismatch_number.Rd:5): Warning: discarding unexpected <main>
+HLA_mismatch_number.html:105:1 (HLA_mismatch_number.Rd:62): Warning: discarding unexpected </main>
+HLA_mismatch_number.html:4:1 (HLA_mismatch_number.Rd:5): Warning: <link> inserting "type" attribute
+HLA_mismatch_number.html:12:1 (HLA_mismatch_number.Rd:5): Warning: <script> proprietary attribute "onload"
+HLA_mismatch_number.html:12:1 (HLA_mismatch_number.Rd:5): Warning: <script> inserting "type" attribute
+HLA_mismatch_number.html:17:1 (HLA_mismatch_number.Rd:5): Warning: <table> lacks "summary" attribute
+HLA_mismatch_number.html:43:1 (HLA_mismatch_number.Rd:16): Warning: <table> lacks "summary" attribute
+HLA_prefix_add.html:15:44 (HLA_prefix_add.Rd:5): Error: <main> is not recognized!
+HLA_prefix_add.html:15:44 (HLA_prefix_add.Rd:5): Warning: discarding unexpected <main>
+HLA_prefix_add.html:75:1 (HLA_prefix_add.Rd:36): Warning: discarding unexpected </main>
+HLA_prefix_add.html:4:1 (HLA_prefix_add.Rd:5): Warning: <link> inserting "type" attribute
+HLA_prefix_add.html:12:1 (HLA_prefix_add.Rd:5): Warning: <script> proprietary attribute "onload"
+HLA_prefix_add.html:12:1 (HLA_prefix_add.Rd:5): Warning: <script> inserting "type" attribute
+HLA_prefix_add.html:17:1 (HLA_prefix_add.Rd:5): Warning: <table> lacks "summary" attribute
+HLA_prefix_add.html:36:1 (HLA_prefix_add.Rd:10): Warning: <table> lacks "summary" attribute
+HLA_prefix_add.html:37:14 (HLA_prefix_add.Rd:10): Warning: <code> attribute "id" has invalid value ".data"
+HLA_validate.html:15:44 (HLA_validate.Rd:5): Error: <main> is not recognized!
+HLA_validate.html:15:44 (HLA_validate.Rd:5): Warning: discarding unexpected <main>
+HLA_validate.html:72:1 (HLA_validate.Rd:37): Warning: discarding unexpected </main>
+HLA_validate.html:4:1 (HLA_validate.Rd:5): Warning: <link> inserting "type" attribute
+HLA_validate.html:12:1 (HLA_validate.Rd:5): Warning: <script> proprietary attribute "onload"
+HLA_validate.html:12:1 (HLA_validate.Rd:5): Warning: <script> inserting "type" attribute
+HLA_validate.html:17:1 (HLA_validate.Rd:5): Warning: <table> lacks "summary" attribute
+HLA_validate.html:40:1 (HLA_validate.Rd:10): Warning: <table> lacks "summary" attribute
+ambiguity_table_to_GLstring.html:15:44 (ambiguity_table_to_GLstring.Rd:5): Error: <main> is not recognized!
+ambiguity_table_to_GLstring.html:15:44 (ambiguity_table_to_GLstring.Rd:5): Warning: discarding unexpected <main>
+ambiguity_table_to_GLstring.html:74:1 (ambiguity_table_to_GLstring.Rd:39): Warning: discarding unexpected </main>
+ambiguity_table_to_GLstring.html:4:1 (ambiguity_table_to_GLstring.Rd:5): Warning: <link> inserting "type" attribute
+ambiguity_table_to_GLstring.html:12:1 (ambiguity_table_to_GLstring.Rd:5): Warning: <script> proprietary attribute "onload"
+ambiguity_table_to_GLstring.html:12:1 (ambiguity_table_to_GLstring.Rd:5): Warning: <script> inserting "type" attribute
+ambiguity_table_to_GLstring.html:17:1 (ambiguity_table_to_GLstring.Rd:5): Warning: <table> lacks "summary" attribute
+ambiguity_table_to_GLstring.html:37:1 (ambiguity_table_to_GLstring.Rd:10): Warning: <table> lacks "summary" attribute
+* checking for non-standard things in the check directory ... OK
+* checking for detritus in the temp directory ... OK
+* DONE
+Status: 2 ERRORs, 2 WARNINGs, 3 NOTEs
