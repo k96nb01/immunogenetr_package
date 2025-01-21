@@ -73,6 +73,8 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
     # Handle homozygosity
     if (length(alleles) == 1 && homozygous_count == 2) {
       alleles <- rep(alleles, times = homozygous_count)
+    } else if (length(alleles) == 2 && alleles[1] == alleles[2] && homozygous_count == 1) {
+      alleles <- alleles[1]
     }
 
     # Return processed alleles as a single GL string
