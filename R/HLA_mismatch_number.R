@@ -2,7 +2,7 @@
 #'
 #' @description Calculates the number of mismatched HLA alleles between a
 #' recipient and a donor across specified loci. Supports mismatch calculations
-#' for host-vs-graft (HvG), graft-vs-host (GvH), or bidirectional mismatches.
+#' for host-vs-graft (HvG), graft-vs-host (GvH), or bidirectional.
 #'
 #' @param GL_string_recip A GL strings representing the recipient's HLA genotypes.
 #' @param GL_string_donor A GL strings representing the donor's HLA genotypes.
@@ -11,14 +11,17 @@
 #' @param direction A character string indicating the direction of mismatch.
 #' Options are "HvG" (host vs. graft), "GvH" (graft vs. host), or
 #' "bidirectional" (max of "HvG" and "GvH").
-#' @param homozygous_count An integer specifying how to handle homozygosity.
-#' Defaults to 2, where homozygous alleles are treated as duplicated for
-#' mismatch calculations. Can be specified to be 1, in which case homozygous
-#' alleles are treated as single occurrences without duplication.
+#' @param homozygous_count An integer specifying how to count homozygous mismatches.
+#' Defaults to 2, where homozygous mismatches are treated as two mismatches,
+#' regardless if one or two alleles are supplied in the GL string (in cases
+#' where one allele is supplied, it is duplicated by the function). If
+#' specified as 1, homozygous mismatches are only counted once, regardless of
+#' whether one or two alleles are supplied in the GL string (in cases where
+#' two alleles are supplied, the second identical allele is deleted).
 #'
 #' @return An integer value or a character string:
 #' - If `loci` includes only one locus, the function returns an integer
-#'mismatch count for that locus.
+#' mismatch count for that locus.
 #' - If `loci` includes multiple loci, the function returns a character
 #' string in the format "Locus1=Count1, Locus2=Count2, ...".
 #'
