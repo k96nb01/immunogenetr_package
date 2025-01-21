@@ -958,14 +958,14 @@ HLA_mismatch_number(
   direction = "bidirectional"
 )
 
-# This works:
+# This works, but doesn't give the correct output:
 test_cases %>% mutate(mismatch = HLA_mismatch_number(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "bidirectional", homozygous_count = 2))
 
-# And now this works, too.:
+# Same as above:
 test_cases %>% mutate(mismatch = HLA_mismatch_number(recip_type, donor_type, c("HLA-A"), direction = "bidirectional", homozygous_count = 2))
 
 ```
-
+ 
 
 ```{r}
 
@@ -1031,4 +1031,97 @@ test_cases %>% mutate(mismatch = HLA_mismatch_logical(recip_type, donor_type, c(
 ```
 
 
+```{r}
+# Rewrite HLA_mismatch_number from scratch
+HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "bidirectional"), homozygous_count = 2){
+  # Code to determine mismatch numbers if a single locus was supplied.
+  if (length(loci) == 1) {
+  # Determine mismatches for both directions.  
+  HvG <- replace_na(str_count(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count), "(\\+|$)"), 0) # The regex matches the end of the string or a "+".
+  GvH <- replace_na(str_count(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count), "(\\+|$)"), 0)
+  # Make a tibble with the results and determine bidirectional mismatch.
+  MM_table <- tibble(HvG, GvH) %>% 
+    mutate(bidirectional = pmax(HvG, GvH, na.rm = TRUE))
+  # Return the result based on the direction argument.
+  if (direction == "HvG"){
+    return(MM_table$HvG)
+  } else if (direction == "GvH"){
+    return(MM_table$GvH)
+  } else if (direction == "bidirectional"){
+    return(MM_table$bidirectional)
+  }
+  } else {
+    # Code to determine mismatch numbers if multiple loci were supplied.
+    # Determine mismatches for both directions.  
+    HvG_table <- tibble("HvG" = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)) %>% 
+      # Add a row number to combine data at the end.
+      mutate(case = row_number()) %>% 
+      # Separate the loci.
+      separate_longer_delim(HvG, delim = ", ") %>% 
+      separate_wider_delim(HvG, delim = "=", names = c("locus", "mismatches")) %>% 
+      # Recode NA values to ensure accurate matching.
+      mutate(mismatches = na_if(mismatches, "NA")) %>%
+      # Count number of mismatches.
+      mutate(HvG_number = replace_na(str_count(mismatches, "(\\+|$)"), 0)) %>%
+      # Clean up table.
+      select(-mismatches)
+      
+    GvH_table <- tibble("GvH" = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)) %>% 
+      # Add a row number to combine data at the end.
+      mutate(case = row_number()) %>%
+      # Separate the loci.
+      separate_longer_delim(GvH, delim = ", ") %>% 
+      separate_wider_delim(GvH, delim = "=", names = c("locus", "mismatches")) %>% 
+      # Recode NA values to ensure accurate matching.
+      mutate(mismatches = na_if(mismatches, "NA")) %>% 
+      # Count number of mismatches.
+      mutate(GvH_number = replace_na(str_count(mismatches, "(\\+|$)"), 0)) %>% 
+      # Clean up table.
+      select(-mismatches) 
+    
+    # Join the GvH and HvG tables 
+    MM_table <- HvG_table %>% left_join(GvH_table, join_by(locus, case)) %>% 
+      # Calculate bidirectional mismatch number.
+      mutate(bidirectional = pmax(HvG_number, GvH_number, na.rm = TRUE))  
+    
+    # Return appropriate direction.
+      # HvG
+      if (direction == "HvG") {
+        MM_table <- MM_table %>% 
+          select(locus, case, HvG_number) %>% 
+          unite(locus, HvG_number, col = "MM", sep = "=") %>% 
+          summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
+      # GvH
+      } else if (direction == "GvH") {
+        MM_table <- MM_table %>% 
+          select(locus, case, GvH_number) %>% 
+          unite(locus, GvH_number, col = "MM", sep = "=") %>% 
+          summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
+      # Bidirectional
+      } else if (direction == "bidirectional") {
+        MM_table <- MM_table %>% 
+          select(locus, case, bidirectional) %>% 
+          unite(locus, bidirectional, col = "MM", sep = "=") %>% 
+          summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
+      }
+    #   
+    return(MM_table$MM)
+    }
+}
+
+
+# This works properly:
+HLA_mismatch_number(
+  "HLA-A*02:01+HLA-A*03:04^HLA-B*15:01^HLA-DRB3*01:01", 
+  "HLA-A*02:03+HLA-A*32:01^HLA-B*15:01+HLA-B*14:03",
+  c("HLA-A"),
+  direction = "bidirectional"
+)
+
+# This works:
+test_cases %>% mutate(mismatch = HLA_mismatch_number(recip_type, donor_type, c("HLA-A", "HLA-B"), direction = "HvG", homozygous_count = 2))
+
+# This works, too:
+test_cases %>% mutate(mismatch = HLA_mismatch_number(recip_type, donor_type, c("HLA-A"), direction = "HvG", homozygous_count = 2))
+```
 
