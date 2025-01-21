@@ -49,8 +49,6 @@
 #' @importFrom purrr modify_if
 #'
 
-globalVariables(c(".", "process_alleles"))
-
 HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH"), homozygous_count = 2) {
   # Ensure input vectors are of the same length - each input should be a single GL string.
   if (length(GL_string_recip) != length(GL_string_donor)) {
@@ -73,6 +71,8 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
     # Handle homozygosity
     if (length(alleles) == 1 && homozygous_count == 2) {
       alleles <- rep(alleles, times = homozygous_count)
+    } else if (length(alleles) == 2 && alleles[1] == alleles[2] && homozygous_count == 1) {
+      alleles <- alleles[1]
     }
 
     # Return processed alleles as a single GL string
@@ -219,3 +219,6 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction 
   # Return final result by applying the GL strings to the process_pair function defined above.
   map2_chr(GL_string_recip, GL_string_donor, process_pair)
 }
+
+globalVariables(c(".", "process_alleles"))
+

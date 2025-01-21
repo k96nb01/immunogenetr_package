@@ -41,7 +41,6 @@
 #' @importFrom stringr str_replace
 #' @importFrom rlang abort
 
-globalVariables(c("X", "Y", ".", "ends_with"))
 
 GLstring_genotype_ambiguity <- function(.data, columns, keep_ambiguities = FALSE) {
   # Identify the columns to modify
@@ -75,3 +74,5 @@ GLstring_genotype_ambiguity <- function(.data, columns, keep_ambiguities = FALSE
     { if (keep_ambiguities) . else select(., -contains("ambiguity")) }
 
 }
+
+globalVariables(c("X", "Y", ".", "ends_with"))

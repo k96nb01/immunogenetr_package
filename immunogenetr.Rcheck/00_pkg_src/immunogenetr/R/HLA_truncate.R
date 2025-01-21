@@ -35,8 +35,6 @@
 #' @importFrom tidyr separate_wider_delim
 #' @importFrom tidyr unite
 
-globalVariables(c("rest", "molecular_type", "one", "four", "three",
-                  "two", "gene", "prefix", "code", "suffix", "GP"))
 
 HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = FALSE) {
   # Expand the GL string
@@ -81,3 +79,7 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = 
   final <- with_g_p %>% rename(value = gene) %>% ambiguity_table_to_GLstring()
   return(final)
 }
+
+
+globalVariables(c("rest", "molecular_type", "one", "four", "three",
+                  "two", "gene", "prefix", "code", "suffix", "GP"))

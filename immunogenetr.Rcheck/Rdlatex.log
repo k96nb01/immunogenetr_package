@@ -1,5 +1,5 @@
 Hmm ... looks like a package
-Converting parsed Rd's to LaTeX 
+Converting parsed Rd's to LaTeX .
 Creating pdf output from LaTeX ...
 
 This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex)
@@ -81,18 +81,34 @@ No file Rd2.toc.
 [1{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/l
 ocal/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/local/texlive/20
 24/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}] [2] [3] [4]
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 287--287
+Overfull \hbox (8.72697pt too wide) in paragraph at lines 275--278
+[]\T1/ptm/m/n/10 A data frame with the first geno-type am-bi-gu-ity re-tained i
+n the orig-i-nal columns. If []\T1/zi4/m/n/10 keep_ambiguities
+
+Overfull \hbox (32.27168pt too wide) in paragraph at lines 284--284
+ []\T1/zi4/m/n/9 HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55|A*01:99+A*68:66", "
+A*02:01+A*03:01|A*02:02+A*03:03"),[] 
+
+Overfull \hbox (24.75635pt too wide) in paragraph at lines 288--288
+ []\T1/zi4/m/n/9 HLA_type %>% GLstring_genotype_ambiguity(columns = c("HLA_A", 
+"HLA_B"), keep_ambiguities = TRUE)[] 
+[5] [6] [7]
+Overfull \hbox (44.26862pt too wide) in paragraph at lines 450--450
+ []\T1/zi4/m/n/9 # "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/
+53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"[] 
+[8] [9]
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 573--573
  []\T1/zi4/m/n/9 mismatch_count_HvG <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "HvG")[] 
-
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 291--291
+[10]
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 577--577
  []\T1/zi4/m/n/9 mismatch_count_GvH <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "GvH")[] 
-[5] [6]
+[11] [12] [13]
 No file Rd2.ind.
-[7]
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.aux)
+[14]
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.aux)
 
 Package rerunfilecheck Warning: File `Rd2.out' has changed.
 (rerunfilecheck)                Rerun to get outlines right
@@ -105,12 +121,12 @@ e/2024/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2024/tex
 mf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2024/texmf-dist/fo
 nts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/
 urw/times/utmri8a.pfb>
-Output written on Rd2.pdf (7 pages, 88728 bytes).
+Output written on Rd2.pdf (14 pages, 101890 bytes).
 Transcript written on Rd2.log.
 This is makeindex, version 2.17 [TeX Live 2024] (kpathsea + Thai support).
-Scanning input file Rd2.idx....done (7 entries accepted, 0 rejected).
-Sorting entries....done (17 comparisons).
-Generating output file Rd2.ind....done (17 lines written, 0 warnings).
+Scanning input file Rd2.idx....done (16 entries accepted, 0 rejected).
+Sorting entries....done (58 comparisons).
+Generating output file Rd2.ind....done (29 lines written, 0 warnings).
 Output written in Rd2.ind.
 Transcript written in Rd2.ilg.
 This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex)
@@ -181,36 +197,52 @@ ty (/usr/local/texlive/2024/texmf-dist/tex/latex/kvoptions/kvoptions.sty)))
 Writing index file Rd2.idx
 (/usr/local/texlive/2024/texmf-dist/tex/latex/psnfss/t1ptm.fd)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def)
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.aux)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.aux)
 (/usr/local/texlive/2024/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 )
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.out)
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.out)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/inconsolata/t1zi4.fd)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/jknapltx/ursfs.fd)
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.toc) [1{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/
-pdftex.map}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc}{/us
-r/local/texlive/2024/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}]
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.toc [1{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/p
+dftex.map}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr
+/local/texlive/2024/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}])
 [2] [3] [4] [5]
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 287--287
+Overfull \hbox (8.72697pt too wide) in paragraph at lines 275--278
+[]\T1/ptm/m/n/10 A data frame with the first geno-type am-bi-gu-ity re-tained i
+n the orig-i-nal columns. If []\T1/zi4/m/n/10 keep_ambiguities
+
+Overfull \hbox (32.27168pt too wide) in paragraph at lines 284--284
+ []\T1/zi4/m/n/9 HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55|A*01:99+A*68:66", "
+A*02:01+A*03:01|A*02:02+A*03:03"),[] 
+
+Overfull \hbox (24.75635pt too wide) in paragraph at lines 288--288
+ []\T1/zi4/m/n/9 HLA_type %>% GLstring_genotype_ambiguity(columns = c("HLA_A", 
+"HLA_B"), keep_ambiguities = TRUE)[] 
+[6] [7] [8]
+Overfull \hbox (44.26862pt too wide) in paragraph at lines 450--450
+ []\T1/zi4/m/n/9 # "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/
+53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"[] 
+[9] [10]
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 573--573
  []\T1/zi4/m/n/9 mismatch_count_HvG <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "HvG")[] 
 
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 291--291
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 577--577
  []\T1/zi4/m/n/9 mismatch_count_GvH <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "GvH")[] 
-[6]
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.ind [7] [8])
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.aux)
+[11] [12] [13]
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.ind [14] [15])
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.aux)
 
 Package rerunfilecheck Warning: File `Rd2.out' has changed.
 (rerunfilecheck)                Rerun to get outlines right
@@ -223,12 +255,12 @@ e/2024/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2024/tex
 mf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2024/texmf-dist/fo
 nts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/
 urw/times/utmri8a.pfb>
-Output written on Rd2.pdf (8 pages, 90638 bytes).
+Output written on Rd2.pdf (15 pages, 104773 bytes).
 Transcript written on Rd2.log.
 This is makeindex, version 2.17 [TeX Live 2024] (kpathsea + Thai support).
-Scanning input file Rd2.idx....done (7 entries accepted, 0 rejected).
-Sorting entries....done (17 comparisons).
-Generating output file Rd2.ind....done (17 lines written, 0 warnings).
+Scanning input file Rd2.idx....done (16 entries accepted, 0 rejected).
+Sorting entries....done (58 comparisons).
+Generating output file Rd2.ind....done (29 lines written, 0 warnings).
 Output written in Rd2.ind.
 Transcript written in Rd2.ilg.
 This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex)
@@ -299,44 +331,60 @@ ty (/usr/local/texlive/2024/texmf-dist/tex/latex/kvoptions/kvoptions.sty)))
 Writing index file Rd2.idx
 (/usr/local/texlive/2024/texmf-dist/tex/latex/psnfss/t1ptm.fd)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def)
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.aux)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.aux)
 (/usr/local/texlive/2024/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 )
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.out)
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.out)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/inconsolata/t1zi4.fd)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsa.fd)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/amsfonts/umsb.fd)
 (/usr/local/texlive/2024/texmf-dist/tex/latex/jknapltx/ursfs.fd)
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.toc) [1{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/
-pdftex.map}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc}{/us
-r/local/texlive/2024/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}]
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.toc [1{/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/p
+dftex.map}{/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr
+/local/texlive/2024/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}])
 [2] [3] [4] [5]
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 287--287
+Overfull \hbox (8.72697pt too wide) in paragraph at lines 275--278
+[]\T1/ptm/m/n/10 A data frame with the first geno-type am-bi-gu-ity re-tained i
+n the orig-i-nal columns. If []\T1/zi4/m/n/10 keep_ambiguities
+
+Overfull \hbox (32.27168pt too wide) in paragraph at lines 284--284
+ []\T1/zi4/m/n/9 HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55|A*01:99+A*68:66", "
+A*02:01+A*03:01|A*02:02+A*03:03"),[] 
+
+Overfull \hbox (24.75635pt too wide) in paragraph at lines 288--288
+ []\T1/zi4/m/n/9 HLA_type %>% GLstring_genotype_ambiguity(columns = c("HLA_A", 
+"HLA_B"), keep_ambiguities = TRUE)[] 
+[6] [7] [8]
+Overfull \hbox (44.26862pt too wide) in paragraph at lines 450--450
+ []\T1/zi4/m/n/9 # "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/
+53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"[] 
+[9] [10]
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 573--573
  []\T1/zi4/m/n/9 mismatch_count_HvG <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "HvG")[] 
 
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 291--291
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 577--577
  []\T1/zi4/m/n/9 mismatch_count_GvH <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "GvH")[] 
-[6]
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.ind [7] [8])
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.aux) )
+[11] [12] [13]
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.ind [14] [15])
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.aux) )
 (see the transcript file for additional information)</usr/local/texlive/2024/te
 xmf-dist/fonts/type1/public/inconsolata/Inconsolata-zi4r.pfb></usr/local/texliv
 e/2024/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2024/tex
 mf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2024/texmf-dist/fo
 nts/type1/urw/times/utmr8a.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/
 urw/times/utmri8a.pfb>
-Output written on Rd2.pdf (8 pages, 91245 bytes).
+Output written on Rd2.pdf (15 pages, 105126 bytes).
 Transcript written on Rd2.log.
 Saving output to ‘immunogenetr-manual.pdf’ ...
 Done
-You may want to clean up by 'rm -Rf /var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T//RtmpxcDjdI/Rd2pdf325f42aac8eb'
+You may want to clean up by 'rm -Rf /var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T//RtmpsVg22l/Rd2pdf91ce1f4dfe6c'

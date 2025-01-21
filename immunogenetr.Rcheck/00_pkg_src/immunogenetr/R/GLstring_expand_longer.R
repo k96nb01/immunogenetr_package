@@ -30,8 +30,7 @@
 #' @importFrom tidyr separate_longer_delim
 #' @importFrom tibble as_tibble
 #'
-globalVariables(c("value", "entry", "possible_gene_location", "locus",
-                  "genotype_ambiguity", "genotype", "haplotype", "allele"))
+
 
 GLstring_expand_longer <- function(GL_string){
   as_tibble(GL_string) %>%
@@ -62,3 +61,6 @@ GLstring_expand_longer <- function(GL_string){
     # Identify alleles
     mutate(allele = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype, haplotype))
 }
+
+globalVariables(c("value", "entry", "possible_gene_location", "locus",
+                  "genotype_ambiguity", "genotype", "haplotype", "allele"))

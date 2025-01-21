@@ -58,11 +58,6 @@
 #' @importFrom cli format_error
 #' @importFrom rlang abort
 
-globalVariables(c(".", "truncated_names", "locus_from_name", "DRB_locus",
-                  "row_for_function", "molecular_locus", "molecular",
-                  "final_type", "DRB345", "final_type_2", "GL_string"))
-
-
 HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "") {
   # Set up prefix and suffix regex to remove unwanted parts
   prefix_regex <- regex(str_c("^", str_escape(prefix_to_remove)), ignore_case = TRUE)
@@ -157,3 +152,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   # Return GL Strings
   return(step2 %>% dplyr::pull(GL_string))
 }
+
+globalVariables(c(".", "truncated_names", "locus_from_name", "DRB_locus",
+                  "row_for_function", "molecular_locus", "molecular",
+                  "final_type", "DRB345", "final_type_2", "GL_string"))

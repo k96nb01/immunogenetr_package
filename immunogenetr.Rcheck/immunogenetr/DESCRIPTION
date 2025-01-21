@@ -17,9 +17,9 @@ Config/testthat/edition: 3
 Imports: cli, dplyr, glue, purrr, rlang, stringr, tibble, tidyr,
         tidyselect, xml2
 NeedsCompilation: no
-Packaged: 2025-01-18 20:54:30 UTC; busra
+Packaged: 2025-01-21 20:15:51 UTC; busra
 Author: Nicholas Brown [cre, aut],
   Busra Coskun [aut]
 Maintainer: Nicholas Brown <nicholas.brown@pennmedicine.upenn.edu>
 Depends: R (>= 3.5.0)
-Built: R 4.4.1; ; 2025-01-18 20:54:47 UTC; unix
+Built: R 4.4.1; ; 2025-01-21 20:16:01 UTC; unix

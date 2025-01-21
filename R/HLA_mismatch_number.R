@@ -123,3 +123,6 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
     return(MM_table$MM)
   }
 }
+
+globalVariables(c("mismatches", "case", "HvG_number", "GvH_number", "MM", "bidirectional"))
+

@@ -52,14 +52,30 @@ Non-standard files/directories found at top level:
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... OK
+* checking R code for possible problems ... NOTE
+HLA_mismatch_number: no visible global function definition for
+  ‘str_count’
+HLA_mismatch_number: no visible global function definition for
+  ‘left_join’
+HLA_mismatch_number: no visible global function definition for
+  ‘join_by’
+Undefined global functions or variables:
+  join_by left_join str_count
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... OK
+* checking Rd \usage sections ... WARNING
+Undocumented arguments in Rd file 'HLA_prefix_remove.Rd'
+  ‘.data’
+
+Functions with \usage entries need to have the appropriate \alias
+entries, and all their arguments documented.
+The \usage entries must correspond to syntactically valid R code.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... ERROR
@@ -122,67 +138,8 @@ Last 13 lines of output:
    3.     └─rlang::abort("No test files found")
   Execution halted
 * checking PDF version of manual ... OK
-* checking HTML version of manual ... NOTE
-Found the following HTML validation problems:
-GLstring_gene_copies_combine.html:15:44 (GLstring_gene_copies_combine.Rd:5): Error: <main> is not recognized!
-GLstring_gene_copies_combine.html:15:44 (GLstring_gene_copies_combine.Rd:5): Warning: discarding unexpected <main>
-GLstring_gene_copies_combine.html:74:1 (GLstring_gene_copies_combine.Rd:35): Warning: discarding unexpected </main>
-GLstring_gene_copies_combine.html:4:1 (GLstring_gene_copies_combine.Rd:5): Warning: <link> inserting "type" attribute
-GLstring_gene_copies_combine.html:12:1 (GLstring_gene_copies_combine.Rd:5): Warning: <script> proprietary attribute "onload"
-GLstring_gene_copies_combine.html:12:1 (GLstring_gene_copies_combine.Rd:5): Warning: <script> inserting "type" attribute
-GLstring_gene_copies_combine.html:17:1 (GLstring_gene_copies_combine.Rd:5): Warning: <table> lacks "summary" attribute
-GLstring_gene_copies_combine.html:36:1 (GLstring_gene_copies_combine.Rd:10): Warning: <table> lacks "summary" attribute
-GLstring_gene_copies_combine.html:37:14 (GLstring_gene_copies_combine.Rd:10): Warning: <code> attribute "id" has invalid value ".data"
-HLA_column_repair.html:15:44 (HLA_column_repair.Rd:5): Error: <main> is not recognized!
-HLA_column_repair.html:15:44 (HLA_column_repair.Rd:5): Warning: discarding unexpected <main>
-HLA_column_repair.html:73:1 (HLA_column_repair.Rd:34): Warning: discarding unexpected </main>
-HLA_column_repair.html:4:1 (HLA_column_repair.Rd:5): Warning: <link> inserting "type" attribute
-HLA_column_repair.html:12:1 (HLA_column_repair.Rd:5): Warning: <script> proprietary attribute "onload"
-HLA_column_repair.html:12:1 (HLA_column_repair.Rd:5): Warning: <script> inserting "type" attribute
-HLA_column_repair.html:17:1 (HLA_column_repair.Rd:5): Warning: <table> lacks "summary" attribute
-HLA_column_repair.html:40:1 (HLA_column_repair.Rd:10): Warning: <table> lacks "summary" attribute
-HLA_mismatch_logical.html:15:44 (HLA_mismatch_logical.Rd:5): Error: <main> is not recognized!
-HLA_mismatch_logical.html:15:44 (HLA_mismatch_logical.Rd:5): Warning: discarding unexpected <main>
-HLA_mismatch_logical.html:95:1 (HLA_mismatch_logical.Rd:52): Warning: discarding unexpected </main>
-HLA_mismatch_logical.html:4:1 (HLA_mismatch_logical.Rd:5): Warning: <link> inserting "type" attribute
-HLA_mismatch_logical.html:12:1 (HLA_mismatch_logical.Rd:5): Warning: <script> proprietary attribute "onload"
-HLA_mismatch_logical.html:12:1 (HLA_mismatch_logical.Rd:5): Warning: <script> inserting "type" attribute
-HLA_mismatch_logical.html:17:1 (HLA_mismatch_logical.Rd:5): Warning: <table> lacks "summary" attribute
-HLA_mismatch_logical.html:43:1 (HLA_mismatch_logical.Rd:16): Warning: <table> lacks "summary" attribute
-HLA_mismatch_number.html:15:44 (HLA_mismatch_number.Rd:5): Error: <main> is not recognized!
-HLA_mismatch_number.html:15:44 (HLA_mismatch_number.Rd:5): Warning: discarding unexpected <main>
-HLA_mismatch_number.html:105:1 (HLA_mismatch_number.Rd:62): Warning: discarding unexpected </main>
-HLA_mismatch_number.html:4:1 (HLA_mismatch_number.Rd:5): Warning: <link> inserting "type" attribute
-HLA_mismatch_number.html:12:1 (HLA_mismatch_number.Rd:5): Warning: <script> proprietary attribute "onload"
-HLA_mismatch_number.html:12:1 (HLA_mismatch_number.Rd:5): Warning: <script> inserting "type" attribute
-HLA_mismatch_number.html:17:1 (HLA_mismatch_number.Rd:5): Warning: <table> lacks "summary" attribute
-HLA_mismatch_number.html:43:1 (HLA_mismatch_number.Rd:16): Warning: <table> lacks "summary" attribute
-HLA_prefix_add.html:15:44 (HLA_prefix_add.Rd:5): Error: <main> is not recognized!
-HLA_prefix_add.html:15:44 (HLA_prefix_add.Rd:5): Warning: discarding unexpected <main>
-HLA_prefix_add.html:75:1 (HLA_prefix_add.Rd:36): Warning: discarding unexpected </main>
-HLA_prefix_add.html:4:1 (HLA_prefix_add.Rd:5): Warning: <link> inserting "type" attribute
-HLA_prefix_add.html:12:1 (HLA_prefix_add.Rd:5): Warning: <script> proprietary attribute "onload"
-HLA_prefix_add.html:12:1 (HLA_prefix_add.Rd:5): Warning: <script> inserting "type" attribute
-HLA_prefix_add.html:17:1 (HLA_prefix_add.Rd:5): Warning: <table> lacks "summary" attribute
-HLA_prefix_add.html:36:1 (HLA_prefix_add.Rd:10): Warning: <table> lacks "summary" attribute
-HLA_prefix_add.html:37:14 (HLA_prefix_add.Rd:10): Warning: <code> attribute "id" has invalid value ".data"
-HLA_validate.html:15:44 (HLA_validate.Rd:5): Error: <main> is not recognized!
-HLA_validate.html:15:44 (HLA_validate.Rd:5): Warning: discarding unexpected <main>
-HLA_validate.html:72:1 (HLA_validate.Rd:37): Warning: discarding unexpected </main>
-HLA_validate.html:4:1 (HLA_validate.Rd:5): Warning: <link> inserting "type" attribute
-HLA_validate.html:12:1 (HLA_validate.Rd:5): Warning: <script> proprietary attribute "onload"
-HLA_validate.html:12:1 (HLA_validate.Rd:5): Warning: <script> inserting "type" attribute
-HLA_validate.html:17:1 (HLA_validate.Rd:5): Warning: <table> lacks "summary" attribute
-HLA_validate.html:40:1 (HLA_validate.Rd:10): Warning: <table> lacks "summary" attribute
-ambiguity_table_to_GLstring.html:15:44 (ambiguity_table_to_GLstring.Rd:5): Error: <main> is not recognized!
-ambiguity_table_to_GLstring.html:15:44 (ambiguity_table_to_GLstring.Rd:5): Warning: discarding unexpected <main>
-ambiguity_table_to_GLstring.html:74:1 (ambiguity_table_to_GLstring.Rd:39): Warning: discarding unexpected </main>
-ambiguity_table_to_GLstring.html:4:1 (ambiguity_table_to_GLstring.Rd:5): Warning: <link> inserting "type" attribute
-ambiguity_table_to_GLstring.html:12:1 (ambiguity_table_to_GLstring.Rd:5): Warning: <script> proprietary attribute "onload"
-ambiguity_table_to_GLstring.html:12:1 (ambiguity_table_to_GLstring.Rd:5): Warning: <script> inserting "type" attribute
-ambiguity_table_to_GLstring.html:17:1 (ambiguity_table_to_GLstring.Rd:5): Warning: <table> lacks "summary" attribute
-ambiguity_table_to_GLstring.html:37:1 (ambiguity_table_to_GLstring.Rd:10): Warning: <table> lacks "summary" attribute
+* checking HTML version of manual ... OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
-Status: 2 ERRORs, 2 WARNINGs, 3 NOTEs
+Status: 2 ERRORs, 3 WARNINGs, 3 NOTEs

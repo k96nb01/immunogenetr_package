@@ -28,8 +28,6 @@
 #' @importFrom tidyr pivot_wider
 #' @importFrom tidyr unite
 
-globalVariables(c("glstring", "sampleID"))
-
 read_HML <- function(HML_file){
   # Validate input
   if (!file.exists(HML_file)) {
@@ -72,3 +70,6 @@ read_HML <- function(HML_file){
   summarise(reduced, GL_string = str_flatten(glstring, collapse = "^"), .by = sampleID)
 
 }
+
+globalVariables(c("glstring", "sampleID"))
+

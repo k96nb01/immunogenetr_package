@@ -1,9 +1,22 @@
+GLstring_expand_longer
+                        GLstring_expand_longer
 GLstring_gene_copies_combine
                         GLstring_gene_copies_combine
+GLstring_genes          GLstring_genes
+GLstring_genes_expanded
+                        GLstring_genes_expanded
+GLstring_genotype_ambiguity
+                        GLstring_genotype_ambiguity
 HLA_column_repair       HLA_column_repair
+HLA_columns_to_GLstring
+                        HLA_columns_to_GLstring
+HLA_mismatch_base       HLA_mismatch_base
 HLA_mismatch_logical    HLA_mismatch_logical
 HLA_mismatch_number     HLA_mismatch_number
 HLA_prefix_add          HLA_prefix_add
+HLA_prefix_remove       HLA_prefix_remove
+HLA_truncate            HLA_truncate
 HLA_validate            HLA_validate
 ambiguity_table_to_GLstring
                         ambiguity_table_to_GLstring
+read_HML                read_HML
