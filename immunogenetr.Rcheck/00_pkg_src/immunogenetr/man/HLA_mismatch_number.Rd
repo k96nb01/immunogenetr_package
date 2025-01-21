@@ -24,10 +24,13 @@ mismatch calculation.}
 Options are "HvG" (host vs. graft), "GvH" (graft vs. host), or
 "bidirectional" (max of "HvG" and "GvH").}
 
-\item{homozygous_count}{An integer specifying how to handle homozygosity.
-Defaults to 2, where homozygous alleles are treated as duplicated for
-mismatch calculations. Can be specified to be 1, in which case homozygous
-alleles are treated as single occurrences without duplication.}
+\item{homozygous_count}{An integer specifying how to count homozygous mismatches.
+Defaults to 2, where homozygous mismatches are treated as two mismatches,
+regardless if one or two alleles are supplied in the GL string (in cases
+where one allele is supplied, it is duplicated by the function). If
+specified as 1, homozygous mismatches are only counted once, regardless of
+whether one or two alleles are supplied in the GL string (in cases where
+two alleles are supplied, the second identical allele is deleted).}
 }
 \value{
 An integer value or a character string:
@@ -39,7 +42,7 @@ string in the format "Locus1=Count1, Locus2=Count2, ...".
 \description{
 Calculates the number of mismatched HLA alleles between a
 recipient and a donor across specified loci. Supports mismatch calculations
-for host-vs-graft (HvG), graft-vs-host (GvH), or bidirectional mismatches.
+for host-vs-graft (HvG), graft-vs-host (GvH), or bidirectional.
 }
 \examples{
 # Example recipient and donor GL strings

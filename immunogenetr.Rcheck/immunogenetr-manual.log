@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.8.27)  18 JAN 2025 15:56
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.8.27)  21 JAN 2025 15:16
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -347,8 +347,8 @@ File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count294
 \l__pdf_internal_box=\box58
 )
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.aux)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.aux)
 \openout1 = `Rd2.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 8.
@@ -386,10 +386,10 @@ LaTeX Font Info:    ... okay on input line 8.
 )
 Package hyperref Info: Link coloring ON on input line 8.
 
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.out)
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.out)
 \@outlinefile=\write4
 \openout4 = `Rd2.out'.
 
@@ -419,64 +419,87 @@ LaTeX Font Info:    Trying to load font information for U+rsfs on input line 24
 (/usr/local/texlive/2024/texmf-dist/tex/latex/jknapltx/ursfs.fd
 File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 )
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.toc)
-\tf@toc=\write5
-\openout5 = `Rd2.toc'.
-
- [1
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.toc [1
 
 
 {/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
 al/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/local/texlive/2024
-/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}]
+/texmf-dist/fonts/enc/dvips/inconsolata/i4-t1-0.enc}])
+\tf@toc=\write5
+\openout5 = `Rd2.toc'.
+
 LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
 (Font)              scaled to size 9.0pt on input line 66.
 
 [2] [3] [4] [5]
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 287--287
+Overfull \hbox (8.72697pt too wide) in paragraph at lines 275--278
+[]\T1/ptm/m/n/10 A data frame with the first geno-type am-bi-gu-ity re-tained i
+n the orig-i-nal columns. If []\T1/zi4/m/n/10 keep_ambiguities
+ []
+
+
+Overfull \hbox (32.27168pt too wide) in paragraph at lines 284--284
+ []\T1/zi4/m/n/9 HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55|A*01:99+A*68:66", "
+A*02:01+A*03:01|A*02:02+A*03:03"),[] 
+ []
+
+
+Overfull \hbox (24.75635pt too wide) in paragraph at lines 288--288
+ []\T1/zi4/m/n/9 HLA_type %>% GLstring_genotype_ambiguity(columns = c("HLA_A", 
+"HLA_B"), keep_ambiguities = TRUE)[] 
+ []
+
+[6] [7] [8]
+Overfull \hbox (44.26862pt too wide) in paragraph at lines 450--450
+ []\T1/zi4/m/n/9 # "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/
+53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"[] 
+ []
+
+[9] [10]
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 573--573
  []\T1/zi4/m/n/9 mismatch_count_HvG <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "HvG")[] 
  []
 
 
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 291--291
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 577--577
  []\T1/zi4/m/n/9 mismatch_count_GvH <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "GvH")[] 
  []
 
-[6]
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.ind [7] [8
+[11] [12] [13]
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.ind [14] [15
 
 
 ])
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxcDjdI/Rd2pdf325f
-42aac8eb/Rd2.aux)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
+1f4dfe6c/Rd2.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
 Package rerunfilecheck Info: File `Rd2.out' has not changed.
-(rerunfilecheck)             Checksum: E43EF4AEE2BB7F4337B195B7E816C28B;1273.
+(rerunfilecheck)             Checksum: 2013B6CCAD0DB826ADD3F501974342E0;2731.
  ) 
 Here is how much of TeX's memory you used:
- 10534 strings out of 474116
- 159778 string characters out of 5743682
- 1940187 words of memory out of 5000000
- 32659 multiletter control sequences out of 15000+600000
+ 10613 strings out of 474116
+ 161164 string characters out of 5743682
+ 1941187 words of memory out of 5000000
+ 32668 multiletter control sequences out of 15000+600000
  591622 words of font info for 78 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 92i,5n,95p,347b,735s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 92i,6n,95p,347b,737s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/inconsolata/Inconsolat
 a-zi4r.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2024/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2024/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive
 /2024/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Rd2.pdf (8 pages, 91245 bytes).
+Output written on Rd2.pdf (15 pages, 105126 bytes).
 PDF statistics:
- 178 PDF objects out of 1000 (max. 8388607)
- 156 compressed objects within 2 object streams
- 61 named destinations out of 1000 (max. 500000)
- 65 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 329 PDF objects out of 1000 (max. 8388607)
+ 299 compressed objects within 3 object streams
+ 131 named destinations out of 1000 (max. 500000)
+ 137 words of extra memory for PDF output out of 10000 (max. 10000000)
 

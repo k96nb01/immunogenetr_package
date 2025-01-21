@@ -27,7 +27,6 @@
 #' @importFrom tidyr pivot_wider
 #' @importFrom tidyr unnest
 
-globalVariables(c("alleles", "everything"))
 
 GLstring_genes_expanded <- function(data, gl_string) {
   data %>%
@@ -38,3 +37,6 @@ GLstring_genes_expanded <- function(data, gl_string) {
     pivot_wider(names_from = locus, values_from = alleles, values_fn = list(alleles = list)) %>%  # Pivot back to wide format
     unnest(cols = everything())  # Unnest the columns
 }
+
+globalVariables(c("alleles", "everything"))
+

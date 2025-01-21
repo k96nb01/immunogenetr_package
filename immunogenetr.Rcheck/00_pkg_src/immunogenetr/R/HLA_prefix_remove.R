@@ -3,7 +3,7 @@
 #' @description This function removes HLA and locus prefixes from a string of HLA typing:
 #' "HLA-A2" changes to "2".
 #'
-#' @param data A string with HLA typing.
+#' @param .data A string with HLA typing.
 #'
 #' @return A string modified to remove HLA and locus prefixes.
 #'
@@ -21,8 +21,6 @@
 #' @importFrom dplyr %>%
 #' @importFrom stringr str_replace
 
-globalVariables(c("."))
-
 HLA_prefix_remove <- function(.data) {
   # Removes any HLA and locus prefixes from typing results.
   .data %>%
@@ -33,3 +31,6 @@ HLA_prefix_remove <- function(.data) {
     # replaces any sequences of digits followed by an asterisk with an empty string
     str_replace(., "[:digit:]*\\*", "")
 }
+
+globalVariables(c("."))
+

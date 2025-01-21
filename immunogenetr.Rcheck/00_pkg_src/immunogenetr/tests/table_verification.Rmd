@@ -21,7 +21,7 @@ C <- "HLA-A*24:02"
 D <- "HLA-A*31:03"
 N <- "HLA-A*68:11N"
 b <- "bidirectional"
-h <- 1
+h <- 2
 
 join <- function(a, b) {
   return(paste0(a, "+", b))
@@ -198,4 +198,5 @@ Matches + Mismatches = 2, so return mismatches.
 # Step 2: determine mismatches, excluding nulls.
 # Step 3: count matches + mismatches.
 # Step 4: if matches + mismatches < 2, add 1 until it equals 2.
+
 
