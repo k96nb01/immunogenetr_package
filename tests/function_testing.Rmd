@@ -852,45 +852,45 @@ HLA_mismatch_base(
 # Work on creating derivative mismatch functions
 HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "bidirectional"), homozygous_count = 2) {
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
-  
-  # Compute mismatch strings for both HvG and GvH
+
   mismatch_HvG <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
   mismatch_GvH <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)
   
   # Helper function to count mismatches per locus
   count_mismatches <- function(mismatch_string) {
-    if (is.na(mismatch_string) || mismatch_string == "NA") {
+    
+    if (any(is.na(mismatch_string)) || mismatch_string == "NA") {
       return(0L)
     }
+    
     alleles <- unlist(strsplit(mismatch_string, "\\+"))
     return(as.integer(length(alleles)))
   }
-  
+
   # Calculate mismatch counts for each locus
   calculate_mismatch_counts <- function(mismatch_result, loci) {
     if (length(loci) == 1) {
-      map_int(mismatch_result, count_mismatches)
-      } else {
-      # Split the result by loci and count mismatches for each
-      locus_mismatches <- strsplit(mismatch_result, ", ")[[1]]
-      counts <- sapply(locus_mismatches, function(x) {
-        locus_parts <- strsplit(x, "=")[[1]]
-        if (length(locus_parts) == 2) {
-          count_mismatches(locus_parts[2])
-        } else {
-          0
-        }
-      })
-      names(counts) <- loci
-      # Format the output for multiple loci
-      return(paste(paste0(names(counts), "=", counts), collapse = ", "))
+      return(as.integer(count_mismatches(mismatch_result))) 
     }
+
+    # For multiple loci, process the mismatch result by locus
+    locus_mismatches <- strsplit(mismatch_result, ", ")[[1]]
+    counts <- sapply(locus_mismatches, function(x) {
+      locus_parts <- strsplit(x, "=")[[1]]
+      if (length(locus_parts) == 2) {
+        count_mismatches(locus_parts[2])
+      } else {
+        0
+      }
+    })
+    names(counts) <- loci
+    return(paste(paste0(names(counts), "=", counts), collapse = ", "))
   }
-  
+
   # Process mismatch counts for both directions
   mismatch_count_HvG <- calculate_mismatch_counts(mismatch_HvG, loci)
   mismatch_count_GvH <- calculate_mismatch_counts(mismatch_GvH, loci)
-  
+
   # Handle directions
   if (direction == "HvG") {
     return(mismatch_count_HvG)
@@ -906,7 +906,6 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
       return(paste(paste0(loci, "=", max_counts), collapse = ", "))
     }
   }
-  
   stop("Invalid direction") # This should not be reached due to match.arg
 }
 
