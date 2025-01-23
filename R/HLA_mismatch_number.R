@@ -118,7 +118,6 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
         unite(locus, bidirectional, col = "MM", sep = "=") %>%
         summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
     }
-    #
     return(MM_table$MM)
   }
 }
