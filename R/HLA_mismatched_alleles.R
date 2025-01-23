@@ -10,15 +10,19 @@
 #' @param loci A character vector specifying the loci to be considered for
 #' mismatch calculation.
 #' @param direction A character string indicating the direction of mismatch.
-#' Options are "HvG" (host vs. graft) or "GvH" (graft vs. host).
+#' Options are "HvG" (host vs. graft), "GvH" (graft vs. host), "bidirectional"
+#' (the max value of "HvG" and "GvH"), or "SOT" (host vs. graft, as is used for
+#' mismatching in solid organ transplantation).
 #' @param homozygous_count An integer specifying how to handle homozygosity.
 #' Defaults to 2, where homozygous alleles are treated as duplicated for
-#' mismatch calculations. Can be specified to be 1, in which case homozygous
-#' alleles are treated as single occurrences without duplication.
+#' mismatch calculations. Can be specified as 1, in which case homozygous
+#' alleles are treated as single occurrences without duplication (in other words,
+#' homozyougs mismatches are only "counted" once).
 #'
 #' @return A character vector, where each element is a string summarizing the
 #' mismatches for the specified loci. The strings are formatted as
-#' comma-separated locus mismatch entries.
+#' comma-separated locus mismatch entries if multiple loci were supplied, or as
+#' simple GL strings if a single locus was supplied.
 
 #'
 #' @examples
@@ -45,12 +49,15 @@
 #' @importFrom stringr str_c
 #' @importFrom tidyr unite
 
-HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "bidirectional"), homozygous_count = 2) {
-  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
+HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
+  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
   # "HvG" or "GvH" can use the output of `HLA_mismatch_base` directly.
   if (direction == "HvG" | direction == "GvH") {
     HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction, homozygous_count)
-    # "Bidirectional" will have to paste together the output of each direction.
+    # "SOT" defaults to "HvG".
+  } else if (direction == "SOT"){
+    HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
+    # "Bidirectional" will paste together the output of each direction.
   } else if (direction == "bidirectional") {
     HvG <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
     GvH <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)
