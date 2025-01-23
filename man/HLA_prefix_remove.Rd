@@ -7,7 +7,7 @@
 HLA_prefix_remove(.data)
 }
 \arguments{
-\item{data}{A string with HLA typing.}
+\item{.data}{A string with HLA typing.}
 }
 \value{
 A string modified to remove HLA and locus prefixes.
