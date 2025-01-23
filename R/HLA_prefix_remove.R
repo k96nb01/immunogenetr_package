@@ -3,7 +3,7 @@
 #' @description This function removes HLA and locus prefixes from a string of HLA typing:
 #' "HLA-A2" changes to "2".
 #'
-#' @param .data A string with a single HLA allele.
+#' @param data A string with a single HLA allele.
 #'
 #' @return A string modified to remove HLA and locus prefixes.
 #'
