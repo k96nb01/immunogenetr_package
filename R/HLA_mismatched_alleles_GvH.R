@@ -41,5 +41,5 @@
 #' @importFrom tidyr unite
 
 HLA_mismatched_alleles_GvH <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2) {
-  HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)
+  HLA_mismatched_alleles(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)
 }
