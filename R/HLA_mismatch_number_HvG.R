@@ -36,35 +36,5 @@
 
 
 HLA_mismatch_number_HvG <- function(GL_string_recip, GL_string_donor, loci, homozygous_count = 2){
-  # Code to determine mismatch numbers if a single locus was supplied.
-  if (length(loci) == 1) {
-    # Determine mismatches.
-    replace_na(str_count(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count), "(\\+|$)"), 0) # The regex matches the end of the string or a "+".
-    } else {
-    # Code to determine mismatch numbers if multiple loci were supplied.
-    # Determine mismatches.
-      MM_table <- tibble("HvG" = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)) %>%
-      # Add a row number to combine data at the end.
-      mutate(case = row_number()) %>%
-      # Separate the loci.
-      separate_longer_delim(HvG, delim = ", ") %>%
-      separate_wider_delim(HvG, delim = "=", names = c("locus", "mismatches")) %>%
-      # Recode NA values to ensure accurate matching.
-      mutate(mismatches = na_if(mismatches, "NA")) %>%
-      # Count number of mismatches.
-      mutate(HvG_number = replace_na(str_count(mismatches, "(\\+|$)"), 0)) %>%
-      # Clean up table.
-      select(-mismatches)
-
-    # Return appropriate direction.
-    MM_table <- MM_table %>%
-        select(locus, case, HvG_number) %>%
-        unite(locus, HvG_number, col = "MM", sep = "=") %>%
-        summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
-
-    return(MM_table$MM)
-  }
+  HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "HvG", homozygous_count)
 }
-
-globalVariables(c("mismatches", "case", "HvG_number", "MM", "bidirectional"))
-
