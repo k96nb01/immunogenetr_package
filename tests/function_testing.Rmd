@@ -1280,4 +1280,8 @@ df %>% mutate(across(A1:A2, ~HLA_prefix_add(., "HLA-A*")))
 
 ```
 
-  
+```{r}
+# Test code
+HLA_mismatch_logical_HvG("HLA-A*02:01^HLA-B*15:02", "HLA-A*02:01+HLA-03:01^HLA-B*15:01", c("HLA-A"))
+```
+
