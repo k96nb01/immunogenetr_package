@@ -1,6 +1,6 @@
 #' @title HLA_mismatched_alleles_HvG
 #'
-#' @description A wrapper for the `HLA_mismatched_alleles function`: returns a string
+#' @description A wrapper for the `HLA_mismatched_alleles` function: returns a string
 #' of mismatches between recipient and donor HLA genotypes in the host-versus-graft
 #' direction.
 #'
