@@ -1255,4 +1255,29 @@ test_cases %>% mutate(mismatch = HLA_mismatched_alleles(recip_type, donor_type, 
 test_cases %>% mutate(mismatch = HLA_mismatched_alleles(recip_type, donor_type, c("HLA-A"), direction = "bidirectional", homozygous_count = 2))
 ```
 
+```{r}
+# Rewrite the prefix_remove and prefix_add functions
+
+HLA_prefix_add <- function(data, prefix = "HLA-") {
+  # Add string to beginning of typing
+  str_replace(data, "^",  prefix)
+}
+
+type <- "02:01:01N"
+
+HLA_prefix_add(type, "HLA-A*")
+
+df <- data.frame(
+A1 = c("01:01", "02:01"),
+A2 = c("03:01", "11:01"),
+B1 = c("07:02", "08:01"),
+B2 = c("15:01", "44:02"),
+stringsAsFactors = FALSE
+)
+
+# Add "HLA-A*" prefix to columns A1 and A2
+df %>% mutate(across(A1:A2, ~HLA_prefix_add(., "HLA-A*")))
+
+```
+
   
