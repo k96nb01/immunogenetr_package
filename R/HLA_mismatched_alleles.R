@@ -38,7 +38,7 @@
 #'
 #' @importFrom stringr str_c
 #' @importFrom tibble tibble
-#' @importFrom magritr  %>%
+#' @importFrom magrittr  %>%
 #' @importFrom dplyr mutate
 #' @importFrom dplyr across
 #' @importFrom tidyr replace_na
