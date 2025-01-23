@@ -9,12 +9,9 @@
 #' @param loci A character vector specifying the loci to be considered for
 #' mismatch calculation.
 #' @param direction A character string indicating the direction of mismatch.
-#' Options are "HvG" (host vs. graft), "GvH" (graft vs. host), or
-#' "bidirectional" (max of "HvG" and "GvH").
-#' @param homozygous_count An integer specifying how to handle homozygosity.
-#' Defaults to 2, where homozygous alleles are treated as duplicated for
-#' mismatch calculations. Can be specified to be 1, in which case homozygous
-#' alleles are treated as single occurrences without duplication.
+#' Options are "HvG" (host vs. graft), "GvH" (graft vs. host), "bidirectional"
+#' (if either "HvG" or "GvH" is TRUE), or "SOT" (host vs. graft, as is used for
+#' mismatching in solid organ transplantation).
 #'
 #' @return A logical value (`TRUE` or `FALSE`):
 #' - `TRUE` if there are mismatches between recipient and donor HLA alleles.
@@ -26,26 +23,24 @@
 #' GL_string_donor <- "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01"
 #'
 #' # Check if there are mismatches for HLA-A (Graft vs. Host)
-#' has_mismatch <- HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci =
+#' HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci =
 #' "HLA-A", direction = "GvH")
-#' print(has_mismatch)
-#' # Output: TRUE
 #'
 #' @export
 #'
 
-HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "bidirectional"), homozygous_count = 2) {
-  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
+HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, direction) {
+  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
   # Code to determine mismatch if a single locus was supplied.
   if (length(loci) == 1) {
     # Determine mismatches for both directions.
-    HvG <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count))
-    GvH <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count))
+    HvG <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG"))
+    GvH <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH"))
     # Make a tibble with the results and determine bidirectional mismatch.
     MM_table <- tibble(HvG, GvH) %>%
       mutate(bidirectional = HvG | GvH)
     # Return the result based on the direction argument.
-    if (direction == "HvG"){
+    if (direction == "HvG" | direction == "SOT"){
       return(MM_table$HvG)
     } else if (direction == "GvH"){
       return(MM_table$GvH)
@@ -55,7 +50,7 @@ HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, directi
   } else {
     # Code to determine mismatch numbers if multiple loci were supplied.
     # Determine mismatches for both directions.
-    HvG_table <- tibble("HvG" = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)) %>%
+    HvG_table <- tibble("HvG" = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG")) %>%
       # Add a row number to combine data at the end.
       mutate(case = row_number()) %>%
       # Separate the loci.
@@ -68,7 +63,7 @@ HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, directi
       # Clean up table.
       select(-mismatches)
 
-    GvH_table <- tibble("GvH" = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)) %>%
+    GvH_table <- tibble("GvH" = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH")) %>%
       # Add a row number to combine data at the end.
       mutate(case = row_number()) %>%
       # Separate the loci.
