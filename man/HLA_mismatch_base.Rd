@@ -8,14 +8,14 @@ HLA_mismatch_base(
   GL_string_recip,
   GL_string_donor,
   loci,
-  direction = c("HvG", "GvH"),
+  direction,
   homozygous_count = 2
 )
 }
 \arguments{
-\item{GL_string_recip}{A GL strings representing the recipient's HLA genotypes.}
+\item{GL_string_recip}{A GL string representing the recipient's HLA genotype.}
 
-\item{GL_string_donor}{A GL strings representing the donor's HLA genotypes.}
+\item{GL_string_donor}{A GL string representing the donor's HLA genotype.}
 
 \item{loci}{A character vector specifying the loci to be considered for
 mismatch calculation.}
@@ -31,13 +31,16 @@ alleles are treated as single occurrences without duplication.}
 \value{
 A character vector, where each element is a string summarizing the
 mismatches for the specified loci. The strings are formatted as
-comma-separated locus mismatch entries.
+comma-separated locus mismatch entries if multiple loci are supplied, or
+simple GL strings if a single locus is supplied.
 }
 \description{
 A function to return a string of mismatches between recipient
 and donor HLA genotypes represented as GL strings. The function finds
 mismatches based on the direction of comparison specified in the inputs
-and also handles homozygosity.
+and also handles homozygosity. As the name implies, this function is the base
+for all other mismatch (and matching) functions. This function is not meant to be
+called directly; it is better to use one of the derivative functions.
 }
 \examples{
 GL_string_recip <- "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52
