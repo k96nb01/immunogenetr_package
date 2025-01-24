@@ -2,8 +2,8 @@
 #'
 #' @description Calculates the number of HLA matches as two minus the number of
 #' mismatches from `HLA_mismatch_number`. Homozygous mismatches are counted twice.
-#' Supports mismatch calculations for host-vs-graft (HvG), graft-vs-host (GvH),
-#' or bidirectional. Bidirectional mismatching is the default, but can be overridden
+#' Supports match calculations for host-vs-graft (HvG), graft-vs-host (GvH),
+#' or bidirectional. Bidirectional matching is the default, but can be overridden
 #' using the "direction" argument.
 #'
 #' @param GL_string_recip A GL string representing the recipient's HLA genotype.
