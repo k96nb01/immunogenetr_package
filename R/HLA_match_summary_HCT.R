@@ -12,7 +12,7 @@
 #' @param GL_string_donor A GL string representing the donor's HLA genotype,
 #' and minimally containing the HLA-A, B, C and DRB1 loci (for Xof8 matching)
 #' or the HLA-A, B, C, DRB1 and DQB1 loci (for Xof10 matching).
-#' @param direction "GvH", "HvG" or "bidirectional".
+#' @param direction "GvH", "HvG" or "bidirectional". Default is "bidirectional".
 #' @param match_grade "Xof8" for HLA-A, B, C and DRB1 matching or "Xof10" for
 #' HLA-A, B, C, DRB1 and DQB1 matching.
 #'
