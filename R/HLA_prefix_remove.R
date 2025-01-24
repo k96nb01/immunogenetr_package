@@ -1,15 +1,11 @@
 #' @title HLA_prefix_remove
 #'
-#' @description This function removes HLA and locus prefixes from typing
-#' results in specified columns of a data frame. For example, a column with
-#' values `c("HLA-A2", "A2", "A*11:01", "A66", "HLA-DRB3*15:01")` changes to
-#' `c("2", "2", "11:01", "66", "15:01")`
+#' @description This function removes HLA and locus prefixes from a string of HLA typing:
+#' "HLA-A2" changes to "2".
 #'
-#' @param .data A data frame
-#' @param columns Names of columns in .data containing HLA typing results
+#' @param data A string with a single HLA allele.
 #'
-#' @return A data frame object with specified columns modified to remove HLA
-#' and locus prefixes.
+#' @return A string modified to remove HLA and locus prefixes.
 #'
 #' @examples
 #' df <- data.frame(
@@ -18,22 +14,23 @@
 #'   stringsAsFactors = FALSE
 #' )
 #'
-#' df %>% HLA_prefix_remove(columns = c("A1", "A2"))
+#' df %>% mutate(A1 = HLA_prefix_remove(A1))
 #'
 #' @export
 #'
-#' @importFrom dplyr mutate
-#' @importFrom dplyr across
 #' @importFrom dplyr %>%
 #' @importFrom stringr str_replace
 
-HLA_prefix_remove <- function(.data, columns) {
+HLA_prefix_remove <- function(data) {
   # Removes any HLA and locus prefixes from typing results.
-  .data %>%
-    mutate(across({{ columns }}, ~str_replace(., "HLA-", ""))) %>%
+  data %>%
     # replaces "HLA-" with an empty string in each cell.
-    mutate(across({{ columns }}, ~str_replace(., "[:alpha:]+", ""))) %>%
-    # replaces any sequences of alphabetic characters with an empty string
-    mutate(across({{ columns }}, ~str_replace(., "[:digit:]*\\*", "")))
+    str_replace("HLA-", "") %>%
+    # replaces any sequences of alphabetic characters at the start of the string with an empty string
+    str_replace("^[:alpha:]+", "") %>%
     # replaces any sequences of digits followed by an asterisk with an empty string
+    str_replace(., "[:digit:]*\\*", "")
 }
+
+globalVariables(c("."))
+

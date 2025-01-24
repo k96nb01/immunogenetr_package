@@ -1,0 +1,24 @@
+Package: immunogenetr
+Type: Package
+Title: Data Wrangling for HLA Data
+Version: 0.1.0
+Authors@R: c(
+    person("Nicholas", "Brown", email = "nicholas.brown@pennmedicine.upenn.edu", role = c("cre","aut")),
+    person("Busra", "Coskun", email = "bcoskun@sas.upenn.edu", role = "aut"))
+Description: Makes wrangling HLA data to WHO-approved nomenclature easier. 
+  Uses GL string for encoding genotypes.
+License: GPL-3 # Should probably think about this.
+URL: https://github.com/k96nb01/immunogenetr_package
+BugReports: https://github.com/k96nb01/immunogenetr_package/issues
+Encoding: UTF-8
+RoxygenNote: 7.3.2
+Suggests: testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Imports: cli, dplyr, glue, purrr, rlang, stringr, tibble, tidyr,
+        tidyselect, xml2
+NeedsCompilation: no
+Packaged: 2025-01-21 20:15:51 UTC; busra
+Author: Nicholas Brown [cre, aut],
+  Busra Coskun [aut]
+Maintainer: Nicholas Brown <nicholas.brown@pennmedicine.upenn.edu>
+Depends: R (>= 3.5.0)

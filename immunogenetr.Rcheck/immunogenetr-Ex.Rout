@@ -1,0 +1,109 @@
+
+R version 4.4.1 (2024-06-14) -- "Race for Your Life"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> pkgname <- "immunogenetr"
+> source(file.path(R.home("share"), "R", "examples-header.R"))
+> options(warn = 1)
+> base::assign(".ExTimings", "immunogenetr-Ex.timings", pos = 'CheckExEnv')
+> base::cat("name\tuser\tsystem\telapsed\n", file=base::get(".ExTimings", pos = 'CheckExEnv'))
+> base::assign(".format_ptime",
++ function(x) {
++   if(!is.na(x[4L])) x[1L] <- x[1L] + x[4L]
++   if(!is.na(x[5L])) x[2L] <- x[2L] + x[5L]
++   options(OutDec = '.')
++   format(x[1L:3L], digits = 7L)
++ },
++ pos = 'CheckExEnv')
+> 
+> ### * </HEADER>
+> library('immunogenetr')
+> 
+> base::assign(".oldSearch", base::search(), pos = 'CheckExEnv')
+> base::assign(".old_wd", base::getwd(), pos = 'CheckExEnv')
+> cleanEx()
+> nameEx("GLstring_expand_longer")
+> ### * GLstring_expand_longer
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: GLstring_expand_longer
+> ### Title: GLstring_expand_longer
+> ### Aliases: GLstring_expand_longer
+> 
+> ### ** Examples
+> 
+> GL_string <- "HLA-A*01:01:01:01/HLA-A*01:02/HLA-A*01:03/HLA-A
++   *01:95+HLA-A*24:02:01:01|HLA-A*01:01:01:01/HLA-A*01:03+HLA-A*24:03:01:01
++   ^HLA-B*07:01:01+B*15:01:01/B*15:02:01|B*07:03+B*15:99:01^HLA-DRB1*03:01:02
++   ~HLA-DRB5*01:01:01+HLA-KIR2DL5A*0010101+HLA-KIR2DL5A*0010201?
++   HLA-KIR2DL5B*0010201+HLA-KIR2DL5B*0010301"
+> result <- GLstring_expand_longer(GL_string)
+> print(result)
+# A tibble: 19 × 8
+   value          entry possible_gene_location locus genotype_ambiguity genotype
+   <chr>          <int>                  <int> <int>              <int>    <int>
+ 1 "HLA-A*01:01:…     1                      1     1                  1        1
+ 2 "HLA-A*01:02"      1                      1     1                  1        1
+ 3 "HLA-A*01:03"      1                      1     1                  1        1
+ 4 "HLA-A\n  *01…     1                      1     1                  1        1
+ 5 "HLA-A*24:02:…     1                      1     1                  1        2
+ 6 "HLA-A*01:01:…     1                      1     1                  2        1
+ 7 "HLA-A*01:03"      1                      1     1                  2        1
+ 8 "HLA-A*24:03:…     1                      1     1                  2        2
+ 9 "HLA-B*07:01:…     1                      1     2                  1        1
+10 "B*15:01:01"       1                      1     2                  1        2
+11 "B*15:02:01"       1                      1     2                  1        2
+12 "B*07:03"          1                      1     2                  2        1
+13 "B*15:99:01"       1                      1     2                  2        2
+14 "HLA-DRB1*03:…     1                      1     3                  1        1
+15 "HLA-DRB5*01:…     1                      1     3                  1        1
+16 "HLA-KIR2DL5A…     1                      1     3                  1        2
+17 "HLA-KIR2DL5A…     1                      1     3                  1        3
+18 "\n  HLA-KIR2…     1                      2     1                  1        1
+19 "HLA-KIR2DL5B…     1                      2     1                  1        2
+# ℹ 2 more variables: haplotype <int>, allele <int>
+> 
+> 
+> 
+> 
+> base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+> base::cat("GLstring_expand_longer", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+> cleanEx()
+> nameEx("GLstring_gene_copies_combine")
+> ### * GLstring_gene_copies_combine
+> 
+> flush(stderr()); flush(stdout())
+> 
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: GLstring_gene_copies_combine
+> ### Title: GLstring_gene_copies_combine
+> ### Aliases: GLstring_gene_copies_combine
+> 
+> ### ** Examples
+> 
+> HLA_type <- tibble(
++   sample = c("sample1", "sample2"),
++   HLA_A1 = c("HLA-A*01:01", "HLA-A*02:01"),
++   HLA_A2 = c("HLA-A*01:02", "HLA-A*02:02"),
++   stringsAsFactors = FALSE
++   )
+Error in tibble(sample = c("sample1", "sample2"), HLA_A1 = c("HLA-A*01:01",  : 
+  could not find function "tibble"
+Execution halted

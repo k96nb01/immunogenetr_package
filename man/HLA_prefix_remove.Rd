@@ -4,22 +4,17 @@
 \alias{HLA_prefix_remove}
 \title{HLA_prefix_remove}
 \usage{
-HLA_prefix_remove(.data, columns)
+HLA_prefix_remove(data)
 }
 \arguments{
-\item{.data}{A data frame}
-
-\item{columns}{Names of columns in .data containing HLA typing results}
+\item{data}{A string with a single HLA allele.}
 }
 \value{
-A data frame object with specified columns modified to remove HLA
-and locus prefixes.
+A string modified to remove HLA and locus prefixes.
 }
 \description{
-This function removes HLA and locus prefixes from typing
-results in specified columns of a data frame. For example, a column with
-values `c("HLA-A2", "A2", "A*11:01", "A66", "HLA-DRB3*15:01")` changes to
-`c("2", "2", "11:01", "66", "15:01")`
+This function removes HLA and locus prefixes from a string of HLA typing:
+"HLA-A2" changes to "2".
 }
 \examples{
 df <- data.frame(
@@ -28,6 +23,6 @@ df <- data.frame(
   stringsAsFactors = FALSE
 )
 
-df \%>\% HLA_prefix_remove(columns = c("A1", "A2"))
+df \%>\% mutate(A1 = HLA_prefix_remove(A1))
 
 }

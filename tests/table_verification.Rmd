@@ -1,0 +1,202 @@
+---
+title: "Table verification"
+---
+
+```{r}
+library(dplyr)
+library(tidyselect)
+library(stringr)
+library(tidyr)
+library(xml2)
+library(rlang)
+library(cli)
+library(purrr)
+```
+
+```{r}
+
+A <- "HLA-A*01:01"
+B <- "HLA-A*02:05"
+C <- "HLA-A*24:02"
+D <- "HLA-A*31:03"
+N <- "HLA-A*68:11N"
+b <- "bidirectional"
+h <- 2
+
+join <- function(a, b) {
+  return(paste0(a, "+", b))
+}
+
+```
+
+```{r}
+
+cat("\n\nSECTION 1\n")
+
+identical(HLA_mismatch_number(join(A, B), join(A, B), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(A, B), join(A, B), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(A, B), join(A, B), "HLA-A", b, h), 0L)
+
+identical(HLA_mismatch_number(join(A, A), join(A, A), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(A, A), join(A, A), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(A, A), join(A, A), "HLA-A", b, h), 0L)
+
+identical(HLA_mismatch_number(join(A, A), join(N, A), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(A, A), join(N, A), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(A, A), join(N, A), "HLA-A", b, h), 0L)
+
+identical(HLA_mismatch_number(join(N, A), join(A, A), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(N, A), join(A, A), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(N, A), join(A, A), "HLA-A", b, h), 0L)
+
+identical(HLA_mismatch_number(join(N, A), join(N, A), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(N, A), join(N, A), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(N, A), join(N, A), "HLA-A", b, h), 0L)
+
+identical(HLA_mismatch_number(join(N, N), join(N, N), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(N, N), join(N, N), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(N, N), join(N, N), "HLA-A", b, h), 0L)
+
+
+cat("\n\nSECTION 2\n")
+
+
+identical(HLA_mismatch_number(join(A, A), join(A, B), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(A, A), join(A, B), "HLA-A", "HvG", h), 1L) #
+identical(HLA_mismatch_number(join(A, A), join(A, B), "HLA-A", b, h), 1L)
+
+identical(HLA_mismatch_number(join(N, A), join(A, B), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(N, A), join(A, B), "HLA-A", "HvG", h), 1L) #
+identical(HLA_mismatch_number(join(N, A), join(A, B), "HLA-A", b, h), 1L)
+
+identical(HLA_mismatch_number(join(N, N), join(N, A), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(N, N), join(N, A), "HLA-A", "HvG", h), 1L)#
+identical(HLA_mismatch_number(join(N, N), join(N, A), "HLA-A", b, h), 1L)
+
+
+cat("\n\nSECTION 3\n")
+
+
+identical(HLA_mismatch_number(join(A, B), join(A, A), "HLA-A", "GvH", h), 1L) #
+identical(HLA_mismatch_number(join(A, B), join(A, A), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(A, B), join(A, A), "HLA-A", b, h), 1L)
+
+identical(HLA_mismatch_number(join(A, B), join(N, A), "HLA-A", "GvH", h), 1L) #
+identical(HLA_mismatch_number(join(A, B), join(N, A), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(A, B), join(N, A), "HLA-A", b, h), 1L)
+
+identical(HLA_mismatch_number(join(N, A), join(N, N), "HLA-A", "GvH", h), 1L) #
+identical(HLA_mismatch_number(join(N, A), join(N, N), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(N, A), join(N, N), "HLA-A", b, h), 1L)
+
+
+cat("\n\nSECTION 4\n")
+
+
+identical(HLA_mismatch_number(join(A, B), join(A, C), "HLA-A", "GvH", h), 1L)
+identical(HLA_mismatch_number(join(A, B), join(A, C), "HLA-A", "HvG", h), 1L)
+identical(HLA_mismatch_number(join(A, B), join(A, C), "HLA-A", b, h), 1L)
+
+identical(HLA_mismatch_number(join(N, A), join(N, B), "HLA-A", "GvH", h), 1L)
+identical(HLA_mismatch_number(join(N, A), join(N, B), "HLA-A", "HvG", h), 1L)
+identical(HLA_mismatch_number(join(N, A), join(N, B), "HLA-A", b, h), 1L)
+
+
+cat("\n\nSECTION 5\n")
+
+
+identical(HLA_mismatch_number(join(N, N), join(A, A), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(N, N), join(A, A), "HLA-A", "HvG", h), 2L)
+identical(HLA_mismatch_number(join(N, N), join(A, A), "HLA-A", b, h), 2L)
+
+identical(HLA_mismatch_number(join(N, N), join(A, B), "HLA-A", "GvH", h), 0L)
+identical(HLA_mismatch_number(join(N, N), join(A, B), "HLA-A", "HvG", h), 2L)
+identical(HLA_mismatch_number(join(N, N), join(A, B), "HLA-A", b, h), 2L)
+
+
+cat("\n\nSECTION 6\n")
+
+
+identical(HLA_mismatch_number(join(A, A), join(N, N), "HLA-A", "GvH", h), 2L)
+identical(HLA_mismatch_number(join(A, A), join(N, N), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(A, A), join(N, N), "HLA-A", b, h), 2L)
+
+identical(HLA_mismatch_number(join(A, B), join(N, N), "HLA-A", "GvH", h), 2L)
+identical(HLA_mismatch_number(join(A, B), join(N, N), "HLA-A", "HvG", h), 0L)
+identical(HLA_mismatch_number(join(A, B), join(N, N), "HLA-A", b, h), 2L)
+
+
+
+cat("\n\nSECTION 7\n")
+
+
+
+identical(HLA_mismatch_number(join(A, A), join(B, B), "HLA-A", "GvH", h), 2L)
+identical(HLA_mismatch_number(join(A, A), join(B, B), "HLA-A", "HvG", h), 2L)
+identical(HLA_mismatch_number(join(A, A), join(B, B), "HLA-A", b, h), 2L)
+
+identical(HLA_mismatch_number(join(A, A), join(N, B), "HLA-A", "GvH", h), 2L)
+########################################################################################################################
+identical(HLA_mismatch_number(join(A, A), join(N, B), "HLA-A", "HvG", h), 2L) 
+
+########################################################################################################################
+identical(HLA_mismatch_number(join(A, A), join(N, B), "HLA-A", b, h), 2L)
+
+########################################################################################################################
+identical(HLA_mismatch_number(join(N, A), join(B, B), "HLA-A", "GvH", h), 2L) 
+
+########################################################################################################################
+identical(HLA_mismatch_number(join(N, A), join(B, B), "HLA-A", "HvG", h), 2L)
+identical(HLA_mismatch_number(join(N, A), join(B, B), "HLA-A", b, h), 2L)
+
+
+
+cat("\n\nSECTION 8\n")
+
+
+
+identical(HLA_mismatch_number(join(A, A), join(B, C), "HLA-A", "GvH", h), 2L)
+identical(HLA_mismatch_number(join(A, A), join(B, C), "HLA-A", "HvG", h), 2L)
+identical(HLA_mismatch_number(join(A, A), join(B, C), "HLA-A", b, h), 2L)
+
+########################################################################################################################
+identical(HLA_mismatch_number(join(N, A), join(B, C), "HLA-A", "GvH", h), 2L) 
+
+########################################################################################################################
+identical(HLA_mismatch_number(join(N, A), join(B, C), "HLA-A", "HvG", h), 2L)
+identical(HLA_mismatch_number(join(N, A), join(B, C), "HLA-A", b, h), 2L)
+
+identical(HLA_mismatch_number(join(A, B), join(C, C), "HLA-A", "GvH", h), 2L)
+identical(HLA_mismatch_number(join(A, B), join(C, C), "HLA-A", "HvG", h), 2L)
+identical(HLA_mismatch_number(join(A, B), join(C, C), "HLA-A", b, h), 2L)
+
+identical(HLA_mismatch_number(join(A, B), join(N, C), "HLA-A", "GvH", h), 2L)
+########################################################################################################################
+identical(HLA_mismatch_number(join(A, B), join(N, C), "HLA-A", "HvG", h), 2L) 
+
+########################################################################################################################
+identical(HLA_mismatch_number(join(A, B), join(N, C), "HLA-A", b, h), 2L)
+
+identical(HLA_mismatch_number(join(A, B), join(C, D), "HLA-A", "GvH", h), 2L)
+identical(HLA_mismatch_number(join(A, B), join(C, D), "HLA-A", "HvG", h), 2L)
+identical(HLA_mismatch_number(join(A, B), join(C, D), "HLA-A", b, h), 2L)
+
+
+```
+
+A,B - N,C - HvG
+Matches: 0
+Mismatches: 1 (if we don't count null as mismatch)
+Matches + Mismatches != 2, so add 1 to Mismatches to get 2.
+
+N,N - N,A - HvG
+Matches: 1 (if we count null as a match)
+Mismatches: 1 (if we don't count null as mismatch)
+Matches + Mismatches = 2, so return mismatches.
+
+# Step 1: determine matches, including nulls.
+# Step 2: determine mismatches, excluding nulls.
+# Step 3: count matches + mismatches.
+# Step 4: if matches + mismatches < 2, add 1 until it equals 2.
+
+
