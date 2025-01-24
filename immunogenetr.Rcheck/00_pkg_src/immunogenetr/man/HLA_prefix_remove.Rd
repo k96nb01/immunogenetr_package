@@ -4,10 +4,10 @@
 \alias{HLA_prefix_remove}
 \title{HLA_prefix_remove}
 \usage{
-HLA_prefix_remove(.data)
+HLA_prefix_remove(data)
 }
 \arguments{
-\item{data}{A string with HLA typing.}
+\item{data}{A string with a single HLA allele.}
 }
 \value{
 A string modified to remove HLA and locus prefixes.

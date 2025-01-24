@@ -52,30 +52,14 @@ Non-standard files/directories found at top level:
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... NOTE
-HLA_mismatch_number: no visible global function definition for
-  ‘str_count’
-HLA_mismatch_number: no visible global function definition for
-  ‘left_join’
-HLA_mismatch_number: no visible global function definition for
-  ‘join_by’
-Undefined global functions or variables:
-  join_by left_join str_count
+* checking R code for possible problems ... OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
 * checking for missing documentation entries ... OK
 * checking for code/documentation mismatches ... OK
-* checking Rd \usage sections ... WARNING
-Undocumented arguments in Rd file 'HLA_prefix_remove.Rd'
-  ‘.data’
-
-Functions with \usage entries need to have the appropriate \alias
-entries, and all their arguments documented.
-The \usage entries must correspond to syntactically valid R code.
-See chapter ‘Writing R documentation files’ in the ‘Writing R
-Extensions’ manual.
+* checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ... ERROR
@@ -98,27 +82,16 @@ The error most likely occurred in:
 Error in tibble(sample = c("sample1", "sample2"), HLA_A1 = c("HLA-A*01:01",  : 
   could not find function "tibble"
 Execution halted
-* checking for unstated dependencies in ‘tests’ ... WARNING
-'library' or 'require' call not declared from: ‘tidyverse’
+* checking for unstated dependencies in ‘tests’ ... OK
 * checking tests ... ERROR
   Running ‘simple_test.R’
   Running ‘testthat.R’
 Running the tests in ‘tests/simple_test.R’ failed.
-Last 13 lines of output:
-  > library(tidyverse)
-  ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-  ✔ dplyr     1.1.4     ✔ readr     2.1.5
-  ✔ forcats   1.0.0     ✔ stringr   1.5.1
-  ✔ ggplot2   3.5.1     ✔ tibble    3.2.1
-  ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
-  ✔ purrr     1.0.2     
-  ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-  ✖ dplyr::filter() masks stats::filter()
-  ✖ dplyr::lag()    masks stats::lag()
-  ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
+Complete output:
+  > # library(tidyverse)
   > 
   > test <- read_csv("tests/test3.csv")
-  Error: 'tests/test3.csv' does not exist in current working directory ('/Users/busra/Documents/busra/codes/immunogenetr/immunogenetr/immunogenetr.Rcheck/tests').
+  Error in read_csv("tests/test3.csv") : could not find function "read_csv"
   Execution halted
 Running the tests in ‘tests/testthat.R’ failed.
 Last 13 lines of output:
@@ -142,4 +115,4 @@ Last 13 lines of output:
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
-Status: 2 ERRORs, 3 WARNINGs, 3 NOTEs
+Status: 2 ERRORs, 1 WARNING, 2 NOTEs

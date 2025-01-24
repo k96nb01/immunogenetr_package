@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.8.27)  21 JAN 2025 15:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.8.27)  23 JAN 2025 15:04
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -347,8 +347,8 @@ File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count294
 \l__pdf_internal_box=\box58
 )
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
-1f4dfe6c/Rd2.aux)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxdSgAQ/Rd2pdfd3fa
+3ea2e9f/Rd2.aux)
 \openout1 = `Rd2.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 8.
@@ -386,10 +386,10 @@ LaTeX Font Info:    ... okay on input line 8.
 )
 Package hyperref Info: Link coloring ON on input line 8.
 
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
-1f4dfe6c/Rd2.out)
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
-1f4dfe6c/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxdSgAQ/Rd2pdfd3fa
+3ea2e9f/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxdSgAQ/Rd2pdfd3fa
+3ea2e9f/Rd2.out)
 \@outlinefile=\write4
 \openout4 = `Rd2.out'.
 
@@ -419,8 +419,8 @@ LaTeX Font Info:    Trying to load font information for U+rsfs on input line 24
 (/usr/local/texlive/2024/texmf-dist/tex/latex/jknapltx/ursfs.fd
 File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 )
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
-1f4dfe6c/Rd2.toc [1
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxdSgAQ/Rd2pdfd3fa
+3ea2e9f/Rd2.toc [1
 
 
 {/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
@@ -456,38 +456,44 @@ Overfull \hbox (44.26862pt too wide) in paragraph at lines 450--450
 53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"[] 
  []
 
-[9] [10]
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 573--573
+[9]
+Overfull \hbox (44.26862pt too wide) in paragraph at lines 511--511
+ []\T1/zi4/m/n/9 # "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/
+53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"[] 
+ []
+
+[10] [11]
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 634--634
  []\T1/zi4/m/n/9 mismatch_count_HvG <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "HvG")[] 
  []
 
 
-Overfull \hbox (44.25941pt too wide) in paragraph at lines 577--577
+Overfull \hbox (44.25941pt too wide) in paragraph at lines 638--638
  []\T1/zi4/m/n/9 mismatch_count_GvH <- HLA_mismatch_number(GL_string_recip, GL_
 string_donor, loci, direction = "GvH")[] 
  []
 
-[11] [12] [13]
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
-1f4dfe6c/Rd2.ind [14] [15
+[12] [13] [14]
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxdSgAQ/Rd2pdfd3fa
+3ea2e9f/Rd2.ind [15] [16
 
 
 ])
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpsVg22l/Rd2pdf91ce
-1f4dfe6c/Rd2.aux)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpxdSgAQ/Rd2pdfd3fa
+3ea2e9f/Rd2.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
 Package rerunfilecheck Info: File `Rd2.out' has not changed.
-(rerunfilecheck)             Checksum: 2013B6CCAD0DB826ADD3F501974342E0;2731.
+(rerunfilecheck)             Checksum: E2BE87A8321291CCAF059EC6770E37EF;2918.
  ) 
 Here is how much of TeX's memory you used:
- 10613 strings out of 474116
- 161164 string characters out of 5743682
+ 10622 strings out of 474116
+ 161321 string characters out of 5743682
  1941187 words of memory out of 5000000
- 32668 multiletter control sequences out of 15000+600000
+ 32669 multiletter control sequences out of 15000+600000
  591622 words of font info for 78 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  92i,6n,95p,347b,737s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -496,10 +502,10 @@ a-zi4r.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2024/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2024/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive
 /2024/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Rd2.pdf (15 pages, 105126 bytes).
+Output written on Rd2.pdf (16 pages, 107202 bytes).
 PDF statistics:
- 329 PDF objects out of 1000 (max. 8388607)
- 299 compressed objects within 3 object streams
- 131 named destinations out of 1000 (max. 500000)
- 137 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 348 PDF objects out of 1000 (max. 8388607)
+ 316 compressed objects within 4 object streams
+ 139 named destinations out of 1000 (max. 500000)
+ 145 words of extra memory for PDF output out of 10000 (max. 10000000)
 
