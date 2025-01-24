@@ -3,10 +3,12 @@
 #' @description A function to return a string of mismatches between recipient
 #' and donor HLA genotypes represented as GL strings. The function finds
 #' mismatches based on the direction of comparison specified in the inputs
-#' and also handles homozygosity.
+#' and also handles homozygosity. As the name implies, this function is the base
+#' for all other mismatch (and matching) functions. This function is not meant to be
+#' called directly; it is better to use one of the derivative functions.
 #'
-#' @param GL_string_recip A GL strings representing the recipient's HLA genotypes.
-#' @param GL_string_donor A GL strings representing the donor's HLA genotypes.
+#' @param GL_string_recip A GL string representing the recipient's HLA genotype.
+#' @param GL_string_donor A GL string representing the donor's HLA genotype.
 #' @param loci A character vector specifying the loci to be considered for
 #' mismatch calculation.
 #' @param direction A character string indicating the direction of mismatch.
@@ -18,7 +20,8 @@
 #'
 #' @return A character vector, where each element is a string summarizing the
 #' mismatches for the specified loci. The strings are formatted as
-#' comma-separated locus mismatch entries.
+#' comma-separated locus mismatch entries if multiple loci are supplied, or
+#' simple GL strings if a single locus is supplied.
 
 #'
 #' @examples
@@ -49,7 +52,8 @@
 #' @importFrom purrr modify_if
 #'
 
-HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH"), homozygous_count = 2) {
+HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
+  direction <- match.arg(direction, c("HvG", "GvH"))
   # Ensure input vectors are of the same length - each input should be a single GL string.
   if (length(GL_string_recip) != length(GL_string_donor)) {
     stop("Recipient and donor GL strings must be of equal length")
