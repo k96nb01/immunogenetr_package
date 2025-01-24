@@ -13,6 +13,8 @@ HLA_columns_to_GLstring
 HLA_mismatch_base       HLA_mismatch_base
 HLA_mismatch_logical    HLA_mismatch_logical
 HLA_mismatch_number     HLA_mismatch_number
+HLA_mismatched_alleles
+                        HLA_mismatched_alleles
 HLA_prefix_add          HLA_prefix_add
 HLA_prefix_remove       HLA_prefix_remove
 HLA_truncate            HLA_truncate

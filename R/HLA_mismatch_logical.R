@@ -105,3 +105,5 @@ HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, directi
     return(MM_table$MM)
   }
 }
+
+globalVariables(c("left_join", "join_by", "HvG_MM", "GvH_MM"))
