@@ -4,7 +4,12 @@
 \alias{HLA_match_number}
 \title{HLA_match_number}
 \usage{
-HLA_match_number(GL_string_recip, GL_string_donor, loci, direction)
+HLA_match_number(
+  GL_string_recip,
+  GL_string_donor,
+  loci,
+  direction = "bidirectional"
+)
 }
 \arguments{
 \item{GL_string_recip}{A GL string representing the recipient's HLA genotype.}
@@ -28,8 +33,9 @@ string in the format "Locus1=Count1, Locus2=Count2, ...".
 \description{
 Calculates the number of HLA matches as two minus the number of
 mismatches from `HLA_mismatch_number`. Homozygous mismatches are counted twice.
-Supports mismatch calculations for host-vs-graft (HvG), graft-vs-host (GvH),
-or bidirectional.
+Supports match calculations for host-vs-graft (HvG), graft-vs-host (GvH),
+or bidirectional. Bidirectional matching is the default, but can be overridden
+using the "direction" argument.
 }
 \examples{
 # Example recipient and donor GL strings
