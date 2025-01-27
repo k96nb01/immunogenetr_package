@@ -2,8 +2,9 @@
 #'
 #' @description Calculates the number of HLA matches as two minus the number of
 #' mismatches from `HLA_mismatch_number`. Homozygous mismatches are counted twice.
-#' Supports mismatch calculations for host-vs-graft (HvG), graft-vs-host (GvH),
-#' or bidirectional.
+#' Supports match calculations for host-vs-graft (HvG), graft-vs-host (GvH),
+#' or bidirectional. Bidirectional matching is the default, but can be overridden
+#' using the "direction" argument.
 #'
 #' @param GL_string_recip A GL string representing the recipient's HLA genotype.
 #' @param GL_string_donor A GL string representing the donor's HLA genotype.
@@ -38,7 +39,7 @@
 #' @export
 #'
 
-HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction){
+HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction = "bidirectional"){
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
   # Code to determine match numbers if a single locus was supplied.
   if (length(loci) == 1) {

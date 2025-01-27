@@ -13,8 +13,8 @@
 #' truncated values. Default is 2.
 #' @param keep_suffix A logical value indicating whether to retain any
 #' WHO-recognized suffixes. Default is TRUE.
-#' @param keep_G_P_group A logical value indicated whether to retain any
-#' G or P group desingations. Default is FALSE.
+#' @param keep_G_P_group A logical value indicating whether to retain any
+#' G or P group designations. Default is FALSE.
 #'
 #' @return A string with the HLA typing truncated according to
 #' the specified number of fields and optional suffix retention.

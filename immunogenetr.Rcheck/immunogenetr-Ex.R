@@ -292,6 +292,35 @@ print(mismatch_count_bidirectional)
 base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
 base::cat("HLA_mismatch_number", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
 cleanEx()
+nameEx("HLA_mismatched_alleles")
+### * HLA_mismatched_alleles
+
+flush(stderr()); flush(stdout())
+
+base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+### Name: HLA_mismatched_alleles
+### Title: HLA_mismatched_alleles
+### Aliases: HLA_mismatched_alleles
+
+### ** Examples
+
+GL_string_recip <- "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52
+^HLA-DPB1*04:01"
+GL_string_donor <- "HLA-A3+HLA-A69^HLA-Cw10+HLA-Cw9^HLA-DR4+HLA-DR17^HLA-DR52
++HLA-DR53^HLA-DPB1*04:01+HLA-DPB1*04:02"
+loci <- c("HLA-A", "HLA-Cw", "HLA-DR51/52/53", "HLA-DPB1")
+mismatches <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction = "HvG")
+print(mismatches)
+
+# Output
+# "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"
+
+
+
+
+base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
+base::cat("HLA_mismatched_alleles", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
+cleanEx()
 nameEx("HLA_prefix_add")
 ### * HLA_prefix_add
 
@@ -312,8 +341,8 @@ df <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# Add HLA- prefix to columns A1 and A2
-df %>% HLA_prefix_add(columns = c("A1", "A2"))
+# Add "HLA-A*" prefix to columns A1 and A2
+df %>% mutate(across(A1:A2, ~HLA_prefix_add(., "HLA-A*")))
 
 
 

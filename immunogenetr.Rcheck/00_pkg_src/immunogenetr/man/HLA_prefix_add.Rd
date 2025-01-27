@@ -4,12 +4,10 @@
 \alias{HLA_prefix_add}
 \title{HLA_prefix_add}
 \usage{
-HLA_prefix_add(.data, columns, prefix = "HLA-")
+HLA_prefix_add(data, prefix = "HLA-")
 }
 \arguments{
-\item{.data}{A data frame}
-
-\item{columns}{Name of columns in .data to which the prefix should be added}
+\item{data}{A string with a single HLA allele.}
 
 \item{prefix}{A character string to be added as a prefix to the column values.
 Default is "HLA-".}
@@ -20,7 +18,8 @@ selected columns.
 }
 \description{
 This function adds a specified prefix to the beginning of
-each value in the identified columns of the given data frame.
+each value in the identified columns of the given data frame. Useful for adding
+HLA or gene prefixes.
 }
 \examples{
 df <- data.frame(
@@ -31,7 +30,7 @@ df <- data.frame(
   stringsAsFactors = FALSE
 )
 
-# Add HLA- prefix to columns A1 and A2
-df \%>\% HLA_prefix_add(columns = c("A1", "A2"))
+# Add "HLA-A*" prefix to columns A1 and A2
+df \%>\% mutate(across(A1:A2, ~HLA_prefix_add(., "HLA-A*")))
 
 }
