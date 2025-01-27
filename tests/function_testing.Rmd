@@ -1281,7 +1281,99 @@ df %>% mutate(across(A1:A2, ~HLA_prefix_add(., "HLA-A*")))
 ```
 
 ```{r}
-# Test code
-HLA_mismatch_logical_HvG("HLA-A*02:01^HLA-B*15:02", "HLA-A*02:01+HLA-03:01^HLA-B*15:01", c("HLA-A"))
-```
+# Write the HLA_match_number function
 
+HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction){
+  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
+  # Code to determine match numbers if a single locus was supplied.
+  if (length(loci) == 1) {
+    if (direction == "HvG") {
+    # Calculate matches as 2 - HvG mismatch.
+    match_table <- tibble(mismatch = HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, loci)) %>%
+      mutate(match = 2 - mismatch)
+      return(match_table$match)
+    } else if (direction == "GvH") {
+      # Calculate matches as 2 - GvH mismatch.
+    match_table <- tibble(mismatch = HLA_mismatch_number_GvH(GL_string_recip, GL_string_donor, loci)) %>%
+      mutate(match = 2 - mismatch)
+      return(match_table$match)
+    } else if (direction == "bidirectional") {
+    # Calculate matches as 2 - bidirectional mismatch.
+    match_table <- tibble(mismatch = HLA_mismatch_number_bidirectional(GL_string_recip, GL_string_donor, loci)) %>%
+      mutate(match = 2 - mismatch)
+      return(match_table$match)
+    }
+  # Code to determine match numbers if multiple loci were supplied.
+  } else {
+    if (direction == "HvG") {
+    # Determine mismatches for the HvG direction.
+    match_table <- tibble(mismatch = HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, loci)) %>%
+      # Add a row number to combine data at the end.
+      mutate(case = row_number()) %>%
+      # Separate the loci.
+      separate_longer_delim(mismatch, delim = ", ") %>%
+      separate_wider_delim(mismatch, delim = "=", names = c("locus", "mismatches")) %>% 
+      # Recode mismatches as integers
+      mutate(mismatches = as.integer(mismatches)) %>% 
+      # Calculate matches as 2 - mismatch.
+      mutate(matches = 2 - mismatches) %>%
+      # Clean up table.
+      select(-mismatches) %>%
+      unite(locus, matches, col = "Matches", sep = "=") %>%
+      summarise(Matches = str_flatten(Matches, collapse = ", "), .by = case)
+
+    return(match_table$Matches)
+    } else if (direction == "GvH") {
+    # Determine mismatches for the GvH direction.
+    match_table <- tibble(mismatch = HLA_mismatch_number_GvH(GL_string_recip, GL_string_donor, loci)) %>%
+      # Add a row number to combine data at the end.
+      mutate(case = row_number()) %>%
+      # Separate the loci.
+      separate_longer_delim(mismatch, delim = ", ") %>%
+      separate_wider_delim(mismatch, delim = "=", names = c("locus", "mismatches")) %>% 
+      # Recode mismatches as integers
+      mutate(mismatches = as.integer(mismatches)) %>% 
+      # Calculate matches as 2 - mismatch.
+      mutate(matches = 2 - mismatches) %>%
+      # Clean up table.
+      select(-mismatches) %>%
+      unite(locus, matches, col = "Matches", sep = "=") %>%
+      summarise(Matches = str_flatten(Matches, collapse = ", "), .by = case)
+
+    return(match_table$Matches)
+    } else if (direction == "bidirectional") {
+    # Determine mismatches for both directions.
+    match_table <- tibble(mismatch = HLA_mismatch_number_bidirectional(GL_string_recip, GL_string_donor, loci)) %>%
+      # Add a row number to combine data at the end.
+      mutate(case = row_number()) %>%
+      # Separate the loci.
+      separate_longer_delim(mismatch, delim = ", ") %>%
+      separate_wider_delim(mismatch, delim = "=", names = c("locus", "mismatches")) %>% 
+      # Recode mismatches as integers
+      mutate(mismatches = as.integer(mismatches)) %>% 
+      # Calculate matches as 2 - mismatch.
+      mutate(matches = 2 - mismatches) %>%
+      # Clean up table.
+      select(-mismatches) %>%
+      unite(locus, matches, col = "Matches", sep = "=") %>%
+      summarise(Matches = str_flatten(Matches, collapse = ", "), .by = case)
+
+    return(match_table$Matches)
+    }
+  }
+}
+
+HLA_match_number(
+  c("HLA-A*02:01+HLA-A*32:01^HLA-B*15:01^HLA-DRB3*01:01", "HLA-A*03:01+HLA-A*34:01^HLA-B*15:02^HLA-DRB3*01:01"), 
+  c("HLA-A*02:01+HLA-A*32:01^HLA-B*15:01+HLA-B*14:03", "HLA-A*02:09+HLA-A*36:01^HLA-B*15:01+HLA-B*14:03"),
+  c("HLA-A", "HLA-B"),
+  "GvH"
+)
+
+# This works:
+test_cases %>% mutate(matches = HLA_match_number(recip_type, donor_type, c("HLA-A", "HLA-B"), "GvH"))
+
+# This works, too:
+test_cases %>% mutate(matches = HLA_match_number(recip_type, donor_type, c("HLA-A"), "GvH"))
+```
+      
