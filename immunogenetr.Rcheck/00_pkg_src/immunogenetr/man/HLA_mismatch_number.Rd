@@ -8,21 +8,22 @@ HLA_mismatch_number(
   GL_string_recip,
   GL_string_donor,
   loci,
-  direction = c("HvG", "GvH", "bidirectional"),
+  direction,
   homozygous_count = 2
 )
 }
 \arguments{
-\item{GL_string_recip}{A GL strings representing the recipient's HLA genotypes.}
+\item{GL_string_recip}{A GL string representing the recipient's HLA genotype.}
 
-\item{GL_string_donor}{A GL strings representing the donor's HLA genotypes.}
+\item{GL_string_donor}{A GL string representing the donor's HLA genotype.}
 
 \item{loci}{A character vector specifying the loci to be considered for
 mismatch calculation.}
 
 \item{direction}{A character string indicating the direction of mismatch.
-Options are "HvG" (host vs. graft), "GvH" (graft vs. host), or
-"bidirectional" (max of "HvG" and "GvH").}
+Options are "HvG" (host vs. graft), "GvH" (graft vs. host), "bidirectional"
+(the max value of "HvG" and "GvH"), or "SOT" (host vs. graft, as is used for
+mismatching in solid organ transplantation).}
 
 \item{homozygous_count}{An integer specifying how to count homozygous mismatches.
 Defaults to 2, where homozygous mismatches are treated as two mismatches,
@@ -51,16 +52,13 @@ GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
 loci <- c("HLA-A", "HLA-B")
 
 # Calculate mismatch numbers (Host vs. Graft)
-mismatch_count_HvG <- HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "HvG")
-print(mismatch_count_HvG)
+HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 
 # Calculate mismatch numbers (Graft vs. Host)
-mismatch_count_GvH <- HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "GvH")
-print(mismatch_count_GvH)
+HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "GvH")
 
 # Calculate mismatch numbers (Bidirectional)
-mismatch_count_bidirectional <- HLA_mismatch_number(GL_string_recip, GL_string_donor,
+HLA_mismatch_number(GL_string_recip, GL_string_donor,
 loci, direction = "bidirectional")
-print(mismatch_count_bidirectional)
 
 }

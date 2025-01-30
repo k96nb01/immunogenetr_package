@@ -36,17 +36,19 @@ and `suffix_to_remove` arguments can be used to clean up the column names. See t
 how these arguments are used.
 }
 \examples{
-typing_table <- tibble(
+typing_table <- data.frame(
 patient = c("patient1", "patient2", "patient3"),
 mA1cd = c("A*01:01", "A*02:01", "A*03:01"),
 mA2cd = c("A*11:01", "blank", "A*26:01"),
 mB1cd = c("B*07:02", "B*08:01", "B*15:01"),
 mB2cd = c("B*44:02", "B*40:01", "-"),
 mC1cd = c("C*03:04", "C*04:01", "C*05:01"),
-mC2cd = c("C*07:01", "C*07:02", "C*08:01")
+mC2cd = c("C*07:01", "C*07:02", "C*08:01"),
+stringsAsFactors = FALSE
 )
 
-typing_table \%>\% mutate(GL_string = HLA_columns_to_GLstring(., HLA_typing_columns =
-c(mA1cd:mC2cd), prefix_to_remove = "m", suffix_to_remove = "cd"))
+typing_table$GL_string <- HLA_columns_to_GLstring(typing_table, HLA_typing_columns =
+c("mA1cd", "mA2cd", "mB1cd", "mB2cd", "mC1cd", "mC2cd"),
+prefix_to_remove = "m", suffix_to_remove = "cd")
 
 }

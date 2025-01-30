@@ -4,13 +4,7 @@
 \alias{HLA_mismatch_logical}
 \title{HLA_mismatch_logical}
 \usage{
-HLA_mismatch_logical(
-  GL_string_recip,
-  GL_string_donor,
-  loci,
-  direction = c("HvG", "GvH", "bidirectional"),
-  homozygous_count = 2
-)
+HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci, direction)
 }
 \arguments{
 \item{GL_string_recip}{A GL strings representing the recipient's HLA genotypes.}
@@ -21,13 +15,9 @@ HLA_mismatch_logical(
 mismatch calculation.}
 
 \item{direction}{A character string indicating the direction of mismatch.
-Options are "HvG" (host vs. graft), "GvH" (graft vs. host), or
-"bidirectional" (max of "HvG" and "GvH").}
-
-\item{homozygous_count}{An integer specifying how to handle homozygosity.
-Defaults to 2, where homozygous alleles are treated as duplicated for
-mismatch calculations. Can be specified to be 1, in which case homozygous
-alleles are treated as single occurrences without duplication.}
+Options are "HvG" (host vs. graft), "GvH" (graft vs. host), "bidirectional"
+(if either "HvG" or "GvH" is TRUE), or "SOT" (host vs. graft, as is used for
+mismatching in solid organ transplantation).}
 }
 \value{
 A logical value (`TRUE` or `FALSE`):
@@ -45,9 +35,7 @@ GL_string_recip <- "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21"
 GL_string_donor <- "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01"
 
 # Check if there are mismatches for HLA-A (Graft vs. Host)
-has_mismatch <- HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci =
+HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci =
 "HLA-A", direction = "GvH")
-print(has_mismatch)
-# Output: TRUE
 
 }

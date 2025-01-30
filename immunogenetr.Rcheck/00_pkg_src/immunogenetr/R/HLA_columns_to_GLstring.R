@@ -19,18 +19,20 @@
 #' @return A list of GL strings in the order of the original data frame.
 #'
 #' @examples
-#' typing_table <- tibble(
+#' typing_table <- data.frame(
 #' patient = c("patient1", "patient2", "patient3"),
 #' mA1cd = c("A*01:01", "A*02:01", "A*03:01"),
 #' mA2cd = c("A*11:01", "blank", "A*26:01"),
 #' mB1cd = c("B*07:02", "B*08:01", "B*15:01"),
 #' mB2cd = c("B*44:02", "B*40:01", "-"),
 #' mC1cd = c("C*03:04", "C*04:01", "C*05:01"),
-#' mC2cd = c("C*07:01", "C*07:02", "C*08:01")
+#' mC2cd = c("C*07:01", "C*07:02", "C*08:01"),
+#' stringsAsFactors = FALSE
 #' )
 #'
-#' typing_table %>% mutate(GL_string = HLA_columns_to_GLstring(., HLA_typing_columns =
-#' c(mA1cd:mC2cd), prefix_to_remove = "m", suffix_to_remove = "cd"))
+#' typing_table$GL_string <- HLA_columns_to_GLstring(typing_table, HLA_typing_columns =
+#' c("mA1cd", "mA2cd", "mB1cd", "mB2cd", "mC1cd", "mC2cd"),
+#' prefix_to_remove = "m", suffix_to_remove = "cd")
 #'
 #' @export
 #'
@@ -71,7 +73,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     mutate(row_for_function = 1:nrow(.)) %>%
     # pivoting longer to get each allele on a separate row.
     pivot_longer(cols = all_of(col2mod), names_to = "names", values_to = "allele") %>%
-    # Determine if typing is serologic by presence of ":" in allele.
+    # Determine if typing is molecular by presence of ":" in allele, a leading zero, or the loci DQA1, DPB1, and DPA1, which are always in molecular format.
     mutate(molecular = str_detect(allele, ":") | str_detect(allele, "^0") | str_detect(names, "(DQA1)|(DPB1)|(DPA1)")) %>%
     # Remove prefixes and suffixes from column names
     mutate(truncated_names = str_replace(names, prefix_regex, ""),

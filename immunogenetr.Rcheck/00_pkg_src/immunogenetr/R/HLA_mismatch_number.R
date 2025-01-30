@@ -4,13 +4,14 @@
 #' recipient and a donor across specified loci. Supports mismatch calculations
 #' for host-vs-graft (HvG), graft-vs-host (GvH), or bidirectional.
 #'
-#' @param GL_string_recip A GL strings representing the recipient's HLA genotypes.
-#' @param GL_string_donor A GL strings representing the donor's HLA genotypes.
+#' @param GL_string_recip A GL string representing the recipient's HLA genotype.
+#' @param GL_string_donor A GL string representing the donor's HLA genotype.
 #' @param loci A character vector specifying the loci to be considered for
 #' mismatch calculation.
 #' @param direction A character string indicating the direction of mismatch.
-#' Options are "HvG" (host vs. graft), "GvH" (graft vs. host), or
-#' "bidirectional" (max of "HvG" and "GvH").
+#' Options are "HvG" (host vs. graft), "GvH" (graft vs. host), "bidirectional"
+#' (the max value of "HvG" and "GvH"), or "SOT" (host vs. graft, as is used for
+#' mismatching in solid organ transplantation).
 #' @param homozygous_count An integer specifying how to count homozygous mismatches.
 #' Defaults to 2, where homozygous mismatches are treated as two mismatches,
 #' regardless if one or two alleles are supplied in the GL string (in cases
@@ -32,23 +33,33 @@
 #' loci <- c("HLA-A", "HLA-B")
 #'
 #' # Calculate mismatch numbers (Host vs. Graft)
-#' mismatch_count_HvG <- HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "HvG")
-#' print(mismatch_count_HvG)
+#' HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 #'
 #' # Calculate mismatch numbers (Graft vs. Host)
-#' mismatch_count_GvH <- HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "GvH")
-#' print(mismatch_count_GvH)
+#' HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "GvH")
 #'
 #' # Calculate mismatch numbers (Bidirectional)
-#' mismatch_count_bidirectional <- HLA_mismatch_number(GL_string_recip, GL_string_donor,
+#' HLA_mismatch_number(GL_string_recip, GL_string_donor,
 #' loci, direction = "bidirectional")
-#' print(mismatch_count_bidirectional)
 #'
 #' @export
 #'
+#' @importFrom dplyr join_by
+#' @importFrom dplyr mutate
+#' @importFrom dplyr summarise
+#' @importFrom dplyr left_join
+#' @importFrom dplyr na_if
+#' @importFrom stringr str_count
+#' @importFrom stringr str_flatten
+#' @importFrom tidyr separate_longer_delim
+#' @importFrom tidyr separate_wider_delim
+#' @importFrom tidyr replace_na
+#' @importFrom tibble tibble
+#' @importFrom tidyr unite
 
 
-HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction = c("HvG", "GvH", "bidirectional"), homozygous_count = 2){
+HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2){
+  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
   # Code to determine mismatch numbers if a single locus was supplied.
   if (length(loci) == 1) {
     # Determine mismatches for both directions.
@@ -58,7 +69,7 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
     MM_table <- tibble(HvG, GvH) %>%
       mutate(bidirectional = pmax(HvG, GvH, na.rm = TRUE))
     # Return the result based on the direction argument.
-    if (direction == "HvG"){
+    if (direction == "HvG" | direction == "SOT"){
       return(MM_table$HvG)
     } else if (direction == "GvH"){
       return(MM_table$GvH)
@@ -101,7 +112,7 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
 
     # Return appropriate direction.
     # HvG
-    if (direction == "HvG") {
+    if (direction == "HvG" | direction == "SOT") {
       MM_table <- MM_table %>%
         select(locus, case, HvG_number) %>%
         unite(locus, HvG_number, col = "MM", sep = "=") %>%
@@ -119,7 +130,6 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
         unite(locus, bidirectional, col = "MM", sep = "=") %>%
         summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
     }
-    #
     return(MM_table$MM)
   }
 }

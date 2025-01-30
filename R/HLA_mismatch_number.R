@@ -44,6 +44,18 @@
 #'
 #' @export
 #'
+#' @importFrom dplyr join_by
+#' @importFrom dplyr mutate
+#' @importFrom dplyr summarise
+#' @importFrom dplyr left_join
+#' @importFrom dplyr na_if
+#' @importFrom stringr str_count
+#' @importFrom stringr str_flatten
+#' @importFrom tidyr separate_longer_delim
+#' @importFrom tidyr separate_wider_delim
+#' @importFrom tidyr replace_na
+#' @importFrom tibble tibble
+#' @importFrom tidyr unite
 
 
 HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2){

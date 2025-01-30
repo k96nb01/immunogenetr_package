@@ -13,10 +13,14 @@
 #' allele for a specific locus.
 #'
 #' @examples
-#' table <- tibble(GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^
-#' HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01")
+#' table <- data.frame(
+#' GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^
+#' HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01",
+#' stringsAsFactors = FALSE
+#' )
 #'
-#' table %>% GLstring_genes_expanded("GL_string")
+#' GLstring_genes_expanded(table, "GL_string")
+
 #'
 #' @export
 #'

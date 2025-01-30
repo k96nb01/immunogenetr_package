@@ -23,6 +23,6 @@ df <- data.frame(
   stringsAsFactors = FALSE
 )
 
-df \%>\% mutate(A1 = HLA_prefix_remove(A1))
+df$A1 <- HLA_prefix_remove(df$A1)
 
 }

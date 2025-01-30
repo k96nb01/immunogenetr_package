@@ -36,7 +36,7 @@ Standardizable: FALSE
 * checking top-level files ... NOTE
 Non-standard files/directories found at top level:
   ‘immunogenetr_overview.html’ ‘immunogenetr_overview.qmd’
-  ‘immunogenetr_overview_files’ ‘navigate’
+  ‘immunogenetr_overview_files’
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK
@@ -62,57 +62,10 @@ Non-standard files/directories found at top level:
 * checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
-* checking examples ... ERROR
-Running examples in ‘immunogenetr-Ex.R’ failed
-The error most likely occurred in:
-
-> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
-> ### Name: GLstring_gene_copies_combine
-> ### Title: GLstring_gene_copies_combine
-> ### Aliases: GLstring_gene_copies_combine
-> 
-> ### ** Examples
-> 
-> HLA_type <- tibble(
-+   sample = c("sample1", "sample2"),
-+   HLA_A1 = c("HLA-A*01:01", "HLA-A*02:01"),
-+   HLA_A2 = c("HLA-A*01:02", "HLA-A*02:02"),
-+   stringsAsFactors = FALSE
-+   )
-Error in tibble(sample = c("sample1", "sample2"), HLA_A1 = c("HLA-A*01:01",  : 
-  could not find function "tibble"
-Execution halted
-* checking for unstated dependencies in ‘tests’ ... OK
-* checking tests ... ERROR
-  Running ‘simple_test.R’
-  Running ‘testthat.R’
-Running the tests in ‘tests/simple_test.R’ failed.
-Complete output:
-  > # library(tidyverse)
-  > 
-  > test <- read_csv("tests/test3.csv")
-  Error in read_csv("tests/test3.csv") : could not find function "read_csv"
-  Execution halted
-Running the tests in ‘tests/testthat.R’ failed.
-Last 13 lines of output:
-  > # * https://r-pkgs.org/testing-design.html#sec-tests-files-overview
-  > # * https://testthat.r-lib.org/articles/special-files.html
-  > 
-  > library(testthat)
-  > library(immunogenetr)
-  > 
-  > test_check("immunogenetr")
-  Error in `test_dir()`:
-  ! No test files found
-  Backtrace:
-      ▆
-   1. └─testthat::test_check("immunogenetr")
-   2.   └─testthat::test_dir("testthat", package = package, reporter = reporter, ..., load_package = "installed")
-   3.     └─rlang::abort("No test files found")
-  Execution halted
+* checking examples ... OK
 * checking PDF version of manual ... OK
 * checking HTML version of manual ... OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
-Status: 2 ERRORs, 1 WARNING, 2 NOTEs
+Status: 1 WARNING, 2 NOTEs

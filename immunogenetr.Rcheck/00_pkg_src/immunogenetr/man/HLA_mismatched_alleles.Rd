@@ -8,7 +8,7 @@ HLA_mismatched_alleles(
   GL_string_recip,
   GL_string_donor,
   loci,
-  direction = c("HvG", "GvH", "bidirectional"),
+  direction,
   homozygous_count = 2
 )
 }
@@ -21,17 +21,21 @@ HLA_mismatched_alleles(
 mismatch calculation.}
 
 \item{direction}{A character string indicating the direction of mismatch.
-Options are "HvG" (host vs. graft) or "GvH" (graft vs. host).}
+Options are "HvG" (host vs. graft), "GvH" (graft vs. host), "bidirectional"
+(the max value of "HvG" and "GvH"), or "SOT" (host vs. graft, as is used for
+mismatching in solid organ transplantation).}
 
 \item{homozygous_count}{An integer specifying how to handle homozygosity.
 Defaults to 2, where homozygous alleles are treated as duplicated for
-mismatch calculations. Can be specified to be 1, in which case homozygous
-alleles are treated as single occurrences without duplication.}
+mismatch calculations. Can be specified as 1, in which case homozygous
+alleles are treated as single occurrences without duplication (in other words,
+homozyougs mismatches are only "counted" once).}
 }
 \value{
 A character vector, where each element is a string summarizing the
 mismatches for the specified loci. The strings are formatted as
-comma-separated locus mismatch entries.
+comma-separated locus mismatch entries if multiple loci were supplied, or as
+simple GL strings if a single locus was supplied.
 }
 \description{
 A function to return a string of mismatches between recipient

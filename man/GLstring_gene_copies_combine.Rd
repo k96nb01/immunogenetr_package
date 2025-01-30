@@ -24,13 +24,12 @@ A function for combining two columns of typing from the same
 locus into a single column in the appropriate GL string format.
 }
 \examples{
-HLA_type <- tibble(
+HLA_type <- data.frame(
   sample = c("sample1", "sample2"),
   HLA_A1 = c("HLA-A*01:01", "HLA-A*02:01"),
   HLA_A2 = c("HLA-A*01:02", "HLA-A*02:02"),
   stringsAsFactors = FALSE
-  )
-
-HLA_type \%>\% GLstring_gene_copies_combine(columns = c("HLA_A1", "HLA_A2"))
+)
+GLstring_gene_copies_combine(HLA_type, columns = c("HLA_A1", "HLA_A2"))
 
 }

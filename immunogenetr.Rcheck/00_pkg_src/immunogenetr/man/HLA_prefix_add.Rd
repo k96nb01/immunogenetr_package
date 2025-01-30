@@ -31,6 +31,7 @@ df <- data.frame(
 )
 
 # Add "HLA-A*" prefix to columns A1 and A2
-df \%>\% mutate(across(A1:A2, ~HLA_prefix_add(., "HLA-A*")))
+df$A1 <- HLA_prefix_add(df$A1, "HLA-A*")
+df$A2 <- HLA_prefix_add(df$A2, "HLA-A*")
 
 }
