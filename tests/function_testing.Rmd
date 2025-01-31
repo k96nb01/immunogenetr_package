@@ -1412,4 +1412,3 @@ GLstring_regex(Allele)
 str_view(GL_string, GLstring_regex(Allele))
 
 ```
->>>>>>> 7769d345a579c76fbd90f25190f3a1baab642489
