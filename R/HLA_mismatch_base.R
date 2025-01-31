@@ -119,34 +119,24 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     # Set names for each locus
     names(recip_alleles_list_processed) <- map_chr(
       recip_alleles_list_processed,
-      ~ if_else(str_detect(.x, "\\*"), # Molecular nomenclature
-                strsplit(.x, "\\*")[[1]][1],
-                str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
+      ~ case_when(
+        # Molecular nomenclature
+        str_detect(.x, "\\*") && str_detect(.x, "HLA-DRB[345]") ~ "HLA-DRB3/4/5",
+        str_detect(.x, "\\*") ~ strsplit(.x, "\\*")[[1]][1],
+        # Serologic nomenclature
+        !str_detect(.x, "\\*") && str_detect(.x, "HLA-DR5[123]") ~ "HLA-DR51/52/53",
+        !str_detect(.x, "\\*") ~ str_extract(.x, "^HLA-[A-Za-z]+"))
     )
     names(donor_alleles_list_processed) <- map_chr(
       donor_alleles_list_processed,
-      ~ if_else(str_detect(.x, "\\*"), # Molecular nomenclature
-                strsplit(.x, "\\*")[[1]][1],
-                str_extract(.x, "^HLA-[A-Za-z]+")) # Serologic nomenclature
+      ~ case_when(
+        # Molecular nomenclature
+        str_detect(.x, "\\*") && str_detect(.x, "HLA-DRB[345]") ~ "HLA-DRB3/4/5",
+        str_detect(.x, "\\*") ~ strsplit(.x, "\\*")[[1]][1],
+        # Serologic nomenclature
+        !str_detect(.x, "\\*") && str_detect(.x, "HLA-DR5[123]") ~ "HLA-DR51/52/53",
+        !str_detect(.x, "\\*") ~ str_extract(.x, "^HLA-[A-Za-z]+"))
     )
-
-    # Modify the names if they start with DRB3, 4, 5
-    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
-    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DRB[345]"), ~ "HLA-DRB3/4/5")
-
-    # Modify the names for DR51, DR52, DR53 to treat them as a single locus
-    names(recip_alleles_list_processed) <- modify_if(names(recip_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
-    names(donor_alleles_list_processed) <- modify_if(names(donor_alleles_list_processed), ~ str_detect(.x, "HLA-DR5[123]"), ~ "HLA-DR51/52/53")
-
-    # Aggregate DR51/52/53 alleles under the single locus "HLA-DR51/52/53"
-    if ("HLA-DR51/52/53" %in% loci) {
-      recip_alleles_list_processed["HLA-DR51/52/53"] <- recip_alleles_list %>%
-        keep(str_detect(., "HLA-DR5[123]")) %>%
-        paste(collapse = "+")
-      donor_alleles_list_processed["HLA-DR51/52/53"] <- donor_alleles_list %>%
-        keep(str_detect(., "HLA-DR5[123]")) %>%
-        paste(collapse = "+")
-    }
 
     # Find which supplied loci are missing from recipient and donor genotypes
     missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
