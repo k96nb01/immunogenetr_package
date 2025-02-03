@@ -94,14 +94,14 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
 
     # Function to process the alleles strings.
     process_alleles <- function(alleles_list, homozygous_count) {
-      # Process DRB345 alleles to add them to a single locus "HLA-DRB3/4/5"
+      # Process DRB3/4/5 or DR51/52/53 alleles to add them to a single locus "HLA-DRB3/4/5"
       alleles_list_DRB345 <- alleles_list %>%
-        keep(str_detect(., "HLA-DRB[345]")) %>%
+        keep(str_detect(., "(HLA-DRB[345])|(HLA-DR5[123])")) %>%
         paste(collapse = "+")
 
-      # Remove DRB345 alleles from the original list
+      # Remove DRB3/4/5 or DR51/52/53 alleles from the original list
       alleles_list_no_DRB345 <- alleles_list %>%
-        keep(!str_detect(., "HLA-DRB[345]"))
+        keep(!str_detect(., "(HLA-DRB[345])|(HLA-DR5[123])"))
 
       # Combine lists and preprocess each allele string
       alleles_list_processed <- c(alleles_list_no_DRB345, alleles_list_DRB345) %>%
