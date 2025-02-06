@@ -8,8 +8,8 @@
 #' @return A tibble with the sample name and the GL string.
 #'
 #' @examples
-#' read_HML("data/HML_1.hml")
-#' read_HML("data/hml_2.hml")
+#' read_HML("inst/extdata/HML_1.hml")
+#' read_HML("inst/extdata/hml_2.hml")
 #'
 #' @export
 #'
