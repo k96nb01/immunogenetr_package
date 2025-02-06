@@ -17,7 +17,7 @@ Reads the GL strings of HML files and returns a tibble with
 the full genotype for each sample.
 }
 \examples{
-read_HML("data/HML_1.hml")
-read_HML("data/hml_2.hml")
+read_HML("inst/extdata/HML_1.hml")
+read_HML("inst/extdata/hml_2.hml")
 
 }
