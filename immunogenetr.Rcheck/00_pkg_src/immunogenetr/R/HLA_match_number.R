@@ -9,7 +9,9 @@
 #' @param GL_string_recip A GL string representing the recipient's HLA genotype.
 #' @param GL_string_donor A GL string representing the donor's HLA genotype.
 #' @param loci A character vector specifying the loci to be considered for
-#' mismatch calculation.
+#' mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)
+#' are considered once locus for this function, and should be called in this argument
+#' as "HLA-DRB3/4/5" or "HLA-DR51/52/53", respectively.
 #' @param direction A character string indicating the direction of match.
 #' Options are "HvG" (host vs. graft), "GvH" (graft vs. host), "bidirectional"
 #' (the minimum value of "HvG" and "GvH").
@@ -45,17 +47,17 @@ HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction =
   if (length(loci) == 1) {
     if (direction == "HvG") {
       # Calculate matches as 2 - HvG mismatch.
-      match_table <- tibble(mismatch = HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, loci)) %>%
+      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "HvG")) %>%
         mutate(match = 2 - mismatch)
       return(match_table$match)
     } else if (direction == "GvH") {
       # Calculate matches as 2 - GvH mismatch.
-      match_table <- tibble(mismatch = HLA_mismatch_number_GvH(GL_string_recip, GL_string_donor, loci)) %>%
+      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "GvH")) %>%
         mutate(match = 2 - mismatch)
       return(match_table$match)
     } else if (direction == "bidirectional") {
       # Calculate matches as 2 - bidirectional mismatch.
-      match_table <- tibble(mismatch = HLA_mismatch_number_bidirectional(GL_string_recip, GL_string_donor, loci)) %>%
+      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "bidirectional")) %>%
         mutate(match = 2 - mismatch)
       return(match_table$match)
     }
@@ -63,7 +65,7 @@ HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction =
   } else {
     if (direction == "HvG") {
       # Determine mismatches for the HvG direction.
-      match_table <- tibble(mismatch = HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, loci)) %>%
+      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "HvG")) %>%
         # Add a row number to combine data at the end.
         mutate(case = row_number()) %>%
         # Separate the loci.
@@ -81,7 +83,7 @@ HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction =
       return(match_table$Matches)
     } else if (direction == "GvH") {
       # Determine mismatches for the GvH direction.
-      match_table <- tibble(mismatch = HLA_mismatch_number_GvH(GL_string_recip, GL_string_donor, loci)) %>%
+      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "GvH")) %>%
         # Add a row number to combine data at the end.
         mutate(case = row_number()) %>%
         # Separate the loci.
@@ -99,7 +101,7 @@ HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction =
       return(match_table$Matches)
     } else if (direction == "bidirectional") {
       # Determine mismatches for both directions.
-      match_table <- tibble(mismatch = HLA_mismatch_number_bidirectional(GL_string_recip, GL_string_donor, loci)) %>%
+      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "bidirectional")) %>%
         # Add a row number to combine data at the end.
         mutate(case = row_number()) %>%
         # Separate the loci.
@@ -119,5 +121,4 @@ HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction =
   }
 }
 
-globalVariables(c("HLA_mismatch_number_HvG", "mismatch", "HLA_mismatch_number_GvH",
-                  "HLA_mismatch_number_bidirectional", "matches", "Matches"))
+globalVariables(c("mismatch", "matches", "Matches"))

@@ -20,12 +20,14 @@
 #'
 #' @examples
 #' # Example recipient and donor GL strings
-#' GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-#' GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
-#' loci <- c("HLA-A", "HLA-B")
+#' GL_string_recip <- "HLA-A*29:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02
+#' ^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
+#' GL_string_donor <- "HLA-A*02:01+HLA-A*29:02^HLA-C*06:01+HLA-C*07:02^
+#' HLA-B*08:01+HLA-B*13:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
 #'
 #' # Calculate mismatch numbers
-#' HLA_match_number(GL_string_recip, GL_string_donor, loci)
+#' HLA_match_summary_HCT(GL_string_recip, GL_string_donor,
+#' direction = "bidirectional", match_grade = "Xof8")
 #'
 #' @export
 #'
@@ -33,7 +35,7 @@
 HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = "bidirectional", match_grade){
   if (match_grade == "Xof8") {
     if (direction == "HvG") {
-      match_table <- tibble(matches = HLA_match_number_HvG(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"))) %>%
+      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"), direction = "HvG")) %>%
         # Add a row number to combine data at the end.
         mutate(case = row_number()) %>%
         # Separate the loci.
@@ -47,7 +49,7 @@ HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = 
         distinct(case, match_sum)
       return(match_table$match_sum)
     } else if (direction == "GvH") {
-      match_table <- tibble(matches = HLA_match_number_GvH(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"))) %>%
+      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"), direction = "GvH")) %>%
         # Add a row number to combine data at the end.
         mutate(case = row_number()) %>%
         # Separate the loci.
@@ -61,7 +63,7 @@ HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = 
         distinct(case, match_sum)
       return(match_table$match_sum)
     } else if (direction == "bidirectional") {
-      match_table <- tibble(matches = HLA_match_number_bidirectional(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"))) %>%
+      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"), direction = "bidirectional")) %>%
         # Add a row number to combine data at the end.
         mutate(case = row_number()) %>%
         # Separate the loci.
@@ -77,7 +79,7 @@ HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = 
     }
   } else if (match_grade == "Xof10") {
     if (direction == "HvG") {
-      match_table <- tibble(matches = HLA_match_number_HvG(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1"))) %>%
+      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1"), direction = "HvG")) %>%
         # Add a row number to combine data at the end.
         mutate(case = row_number()) %>%
         # Separate the loci.
@@ -91,7 +93,7 @@ HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = 
         distinct(case, match_sum)
       return(match_table$match_sum)
     } else if (direction == "GvH") {
-      match_table <- tibble(matches = HLA_match_number_GvH(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1"))) %>%
+      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1"), direction = "GvH")) %>%
         # Add a row number to combine data at the end.
         mutate(case = row_number()) %>%
         # Separate the loci.
@@ -105,7 +107,7 @@ HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = 
         distinct(case, match_sum)
       return(match_table$match_sum)
     } else if (direction == "bidirectional") {
-      match_table <- tibble(matches = HLA_match_number_bidirectional(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1"))) %>%
+      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1"), direction = "bidirectional")) %>%
         # Add a row number to combine data at the end.
         mutate(case = row_number()) %>%
         # Separate the loci.
@@ -122,5 +124,4 @@ HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = 
   }
 }
 
-globalVariables(c("HLA_match_number_HvG", "matches", "match_sum", "HLA_match_number_GvH",
-                  "HLA_match_number_bidirectional"))
+globalVariables(c("matches", "match_sum"))

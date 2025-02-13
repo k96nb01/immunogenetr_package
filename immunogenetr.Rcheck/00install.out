@@ -1,6 +1,10 @@
 * installing *source* package ‘immunogenetr’ ...
 ** using staged installation
 ** R
+** data
+*** moving datasets to lazyload DB
+Warning: objects ‘.’, ‘.’, ‘.’, ‘.’ are created by more than one data call
+** inst
 ** byte-compile and prepare package for lazy loading
 ** help
 *** installing help indices

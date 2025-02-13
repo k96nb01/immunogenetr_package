@@ -18,7 +18,9 @@ HLA_mismatched_alleles(
 \item{GL_string_donor}{A GL strings representing the donor's HLA genotypes.}
 
 \item{loci}{A character vector specifying the loci to be considered for
-mismatch calculation.}
+mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)
+are considered once locus for this function, and should be called in this argument
+as "HLA-DRB3/4/5" or "HLA-DR51/52/53", respectively.}
 
 \item{direction}{A character string indicating the direction of mismatch.
 Options are "HvG" (host vs. graft), "GvH" (graft vs. host), "bidirectional"

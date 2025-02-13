@@ -14,7 +14,7 @@
 #'   stringsAsFactors = FALSE
 #' )
 #'
-#' df$A1 <- HLA_prefix_remove(df$A1)
+#' df <- HLA_prefix_remove(df)
 #'
 #' @export
 #'

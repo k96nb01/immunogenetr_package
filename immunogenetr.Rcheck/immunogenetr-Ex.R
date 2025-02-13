@@ -275,12 +275,14 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 ### ** Examples
 
 # Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
-loci <- c("HLA-A", "HLA-B")
+GL_string_recip <- "HLA-A*29:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02
+^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
+GL_string_donor <- "HLA-A*02:01+HLA-A*29:02^HLA-C*06:01+HLA-C*07:02^
+HLA-B*08:01+HLA-B*13:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
 
 # Calculate mismatch numbers
-HLA_match_number(GL_string_recip, GL_string_donor, loci)
+HLA_match_summary_HCT(GL_string_recip, GL_string_donor,
+direction = "bidirectional", match_grade = "Xof8")
 
 
 
@@ -343,32 +345,6 @@ HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci =
 base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
 base::cat("HLA_mismatch_logical", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
 cleanEx()
-nameEx("HLA_mismatch_logical_GvH")
-### * HLA_mismatch_logical_GvH
-
-flush(stderr()); flush(stdout())
-
-base::assign(".ptime", proc.time(), pos = "CheckExEnv")
-### Name: HLA_mismatch_logical_GvH
-### Title: HLA_mismatch_logical_GvH
-### Aliases: HLA_mismatch_logical_GvH
-
-### ** Examples
-
-# Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21"
-GL_string_donor <- "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01"
-
-# Check if there are mismatches for HLA-A (Graft vs. Host)
-HLA_mismatch_logical_GvH(GL_string_recip, GL_string_donor, loci =
-"HLA-A")
-
-
-
-
-base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
-base::cat("HLA_mismatch_logical_GvH", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
-cleanEx()
 nameEx("HLA_mismatch_number")
 ### * HLA_mismatch_number
 
@@ -401,110 +377,6 @@ loci, direction = "bidirectional")
 
 base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
 base::cat("HLA_mismatch_number", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
-cleanEx()
-nameEx("HLA_mismatch_number_GvH")
-### * HLA_mismatch_number_GvH
-
-flush(stderr()); flush(stdout())
-
-base::assign(".ptime", proc.time(), pos = "CheckExEnv")
-### Name: HLA_mismatch_number_GvH
-### Title: HLA_mismatch_number_GvH
-### Aliases: HLA_mismatch_number_GvH
-
-### ** Examples
-
-# Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
-loci <- c("HLA-A", "HLA-B")
-
-# Calculate mismatch numbers in the GvH direction
-HLA_mismatch_number_GvH(GL_string_recip, GL_string_donor, loci)
-
-
-
-
-base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
-base::cat("HLA_mismatch_number_GvH", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
-cleanEx()
-nameEx("HLA_mismatch_number_HvG")
-### * HLA_mismatch_number_HvG
-
-flush(stderr()); flush(stdout())
-
-base::assign(".ptime", proc.time(), pos = "CheckExEnv")
-### Name: HLA_mismatch_number_HvG
-### Title: HLA_mismatch_number_HvG
-### Aliases: HLA_mismatch_number_HvG
-
-### ** Examples
-
-# Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
-loci <- c("HLA-A", "HLA-B")
-
-# Calculate mismatch numbers in the HvG direction
-HLA_mismatch_number_HvG(GL_string_recip, GL_string_donor, loci)
-
-
-
-
-base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
-base::cat("HLA_mismatch_number_HvG", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
-cleanEx()
-nameEx("HLA_mismatch_number_SOT")
-### * HLA_mismatch_number_SOT
-
-flush(stderr()); flush(stdout())
-
-base::assign(".ptime", proc.time(), pos = "CheckExEnv")
-### Name: HLA_mismatch_number_SOT
-### Title: HLA_mismatch_number_SOT
-### Aliases: HLA_mismatch_number_SOT
-
-### ** Examples
-
-# Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
-loci <- c("HLA-A", "HLA-B")
-
-# Calculate mismatch numbers
-HLA_mismatch_number_SOT(GL_string_recip, GL_string_donor, loci)
-
-
-
-
-base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
-base::cat("HLA_mismatch_number_SOT", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
-cleanEx()
-nameEx("HLA_mismatch_number_bidirectional")
-### * HLA_mismatch_number_bidirectional
-
-flush(stderr()); flush(stdout())
-
-base::assign(".ptime", proc.time(), pos = "CheckExEnv")
-### Name: HLA_mismatch_number_bidirectional
-### Title: HLA_mismatch_number_bidirectional
-### Aliases: HLA_mismatch_number_bidirectional
-
-### ** Examples
-
-# Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
-loci <- c("HLA-A", "HLA-B")
-
-# Calculate mismatch numbers
-HLA_mismatch_number_bidirectional(GL_string_recip, GL_string_donor, loci)
-
-
-
-
-base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
-base::cat("HLA_mismatch_number_bidirectional", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
 cleanEx()
 nameEx("HLA_mismatched_alleles")
 ### * HLA_mismatched_alleles
@@ -583,7 +455,7 @@ df <- data.frame(
   stringsAsFactors = FALSE
 )
 
-df$A1 <- HLA_prefix_remove(df$A1)
+df <- HLA_prefix_remove(df)
 
 
 
@@ -693,8 +565,8 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-read_HML("../tests/HML_1.hml")
-read_HML("../tests/hml_2.hml")
+read_HML("../inst/extdata/HML_1.hml")
+read_HML("../inst/extdata/hml_2.hml")
 
 
 

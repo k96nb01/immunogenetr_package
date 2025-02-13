@@ -15,17 +15,7 @@ HLA_match_number        HLA_match_number
 HLA_match_summary_HCT   HLA_match_summary_HCT
 HLA_mismatch_base       HLA_mismatch_base
 HLA_mismatch_logical    HLA_mismatch_logical
-HLA_mismatch_logical_GvH
-                        HLA_mismatch_logical_GvH
 HLA_mismatch_number     HLA_mismatch_number
-HLA_mismatch_number_GvH
-                        HLA_mismatch_number_GvH
-HLA_mismatch_number_HvG
-                        HLA_mismatch_number_HvG
-HLA_mismatch_number_SOT
-                        HLA_mismatch_number_SOT
-HLA_mismatch_number_bidirectional
-                        HLA_mismatch_number_bidirectional
 HLA_mismatched_alleles
                         HLA_mismatched_alleles
 HLA_prefix_add          HLA_prefix_add

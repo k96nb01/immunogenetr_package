@@ -1,0 +1,71 @@
+
+R version 4.4.1 (2024-06-14) -- "Race for Your Life"
+Copyright (C) 2024 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # This file is part of the standard setup for testthat.
+> # It is recommended that you do not modify it.
+> #
+> # Where should you do additional test configuration?
+> # Learn more about the roles of various files in:
+> # * https://r-pkgs.org/testing-design.html#sec-tests-files-overview
+> # * https://testthat.r-lib.org/articles/special-files.html
+> 
+> library(testthat)
+> library(immunogenetr)
+> 
+> test_check("immunogenetr")
+
+Attaching package: 'dplyr'
+
+The following object is masked from 'package:testthat':
+
+    matches
+
+The following objects are masked from 'package:stats':
+
+    filter, lag
+
+The following objects are masked from 'package:base':
+
+    intersect, setdiff, setequal, union
+
+
+Attaching package: 'tidyr'
+
+The following object is masked from 'package:testthat':
+
+    matches
+
+[1] "In order for the regex expression to work properly, all alleles must have the full HLA- prefix. Process your data to add the full HLA allele name before passing the results to `GLstring_regex`."
+[1] "In order for the regex expression to work properly, all alleles must have the full HLA- prefix. Process your data to add the full HLA allele name before passing the results to `GLstring_regex`."
+
+Attaching package: 'purrr'
+
+The following object is masked from 'package:testthat':
+
+    is_null
+
+[ FAIL 0 | WARN 2 | SKIP 2 | PASS 143 ]
+
+══ Skipped tests (2) ═══════════════════════════════════════════════════════════
+• Test file does not exist. (1): 'test-read_HML.R:22:5'
+• empty test (1): 'test-ambiguity_table_to_GLstring.R:6:1'
+
+[ FAIL 0 | WARN 2 | SKIP 2 | PASS 143 ]
+> 
+> proc.time()
+   user  system elapsed 
+  1.150   0.060   1.215 

@@ -11,32 +11,36 @@
 * checking extension type ... Package
 * this is package ‘immunogenetr’ version ‘0.1.0’
 * package encoding: UTF-8
-* checking CRAN incoming feasibility ... NOTE
+* checking CRAN incoming feasibility ... [3s/10s] NOTE
 Maintainer: ‘Nicholas Brown <nicholas.brown@pennmedicine.upenn.edu>’
 
 New submission
-
-Non-FOSS package license (GPL-3 # Should probably think about this.)
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
 * checking if there is a namespace ... OK
 * checking for executable files ... OK
-* checking for hidden files and directories ... OK
+* checking for hidden files and directories ... NOTE
+Found the following hidden files and directories:
+  .github
+These were most likely included in error. See section ‘Package
+structure’ in the ‘Writing R Extensions’ manual.
+
+CRAN-pack does not know about
+  .github
 * checking for portable file names ... OK
 * checking for sufficient/correct file permissions ... OK
-* checking whether package ‘immunogenetr’ can be installed ... OK
+* checking whether package ‘immunogenetr’ can be installed ... WARNING
+Found the following significant warnings:
+  Warning: objects ‘.’, ‘.’, ‘.’, ‘.’ are created by more than one data call
+See ‘/Users/busra/Documents/busra/codes/immunogenetr/immunogenetr/immunogenetr.Rcheck/00install.out’ for details.
 * checking installed package size ... OK
 * checking package directory ... OK
 * checking for future file timestamps ... OK
-* checking DESCRIPTION meta-information ... WARNING
-Non-standard license specification:
-  GPL-3 # Should probably think about this.
-Standardizable: FALSE
+* checking DESCRIPTION meta-information ... OK
 * checking top-level files ... NOTE
-Non-standard files/directories found at top level:
-  ‘immunogenetr_overview.html’ ‘immunogenetr_overview.qmd’
-  ‘immunogenetr_overview_files’
+Non-standard file/directory found at top level:
+  ‘data.R’
 * checking for left-over files ... OK
 * checking index information ... OK
 * checking package subdirectories ... OK
@@ -57,15 +61,112 @@ Non-standard files/directories found at top level:
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
 * checking Rd cross-references ... OK
-* checking for missing documentation entries ... OK
+* checking for missing documentation entries ... WARNING
+Undocumented data sets:
+  ‘.’
+All user-level objects in a package should have documentation entries.
+See chapter ‘Writing R documentation files’ in the ‘Writing R
+Extensions’ manual.
 * checking for code/documentation mismatches ... OK
 * checking Rd \usage sections ... OK
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
-* checking examples ... OK
+* checking contents of ‘data’ directory ... OK
+* checking data for non-ASCII characters ... OK
+* checking LazyData ... OK
+* checking data for ASCII and uncompressed saves ... OK
+* checking examples ... ERROR
+Running examples in ‘immunogenetr-Ex.R’ failed
+The error most likely occurred in:
+
+> base::assign(".ptime", proc.time(), pos = "CheckExEnv")
+> ### Name: HLA_match_summary_HCT
+> ### Title: HLA_match_summary_HCT
+> ### Aliases: HLA_match_summary_HCT
+> 
+> ### ** Examples
+> 
+> # Example recipient and donor GL strings
+> GL_string_recip <- "HLA-A*29:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02
++ ^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
+> GL_string_donor <- "HLA-A*02:01+HLA-A*29:02^HLA-C*06:01+HLA-C*07:02^
++ HLA-B*08:01+HLA-B*13:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
+> 
+> # Calculate mismatch numbers
+> HLA_match_summary_HCT(GL_string_recip, GL_string_donor,
++ direction = "bidirectional", match_grade = "Xof8")
+Error in `map2_chr()`:
+ℹ In index: 1.
+Caused by error in `.f()`:
+! Either the recipient and/or donor GL strings are missing these loci: HLA-B
+Backtrace:
+     ▆
+  1. ├─immunogenetr::HLA_match_summary_HCT(...)
+  2. │ ├─... %>% distinct(case, match_sum)
+  3. │ └─tibble::tibble(...)
+  4. │   └─tibble:::tibble_quos(xs, .rows, .name_repair)
+  5. │     └─rlang::eval_tidy(xs[[j]], mask)
+  6. ├─dplyr::distinct(., case, match_sum)
+  7. ├─dplyr::mutate(., match_sum = sum(matches), .by = case)
+  8. ├─dplyr::mutate(., matches = as.integer(matches))
+  9. ├─tidyr::separate_wider_delim(...)
+ 10. │ └─tidyr:::check_data_frame(data)
+ 11. │   └─base::is.data.frame(x)
+ 12. ├─tidyr::separate_longer_delim(., matches, delim = ", ")
+ 13. │ └─tidyr:::check_data_frame(data)
+ 14. │   └─base::is.data.frame(x)
+ 15. ├─dplyr::mutate(., case = row_number())
+ 16. ├─immunogenetr::HLA_match_number(...)
+ 17. │ ├─... %>% ...
+ 18. │ └─tibble::tibble(...)
+ 19. │   └─tibble:::tibble_quos(xs, .rows, .name_repair)
+ 20. │     └─rlang::eval_tidy(xs[[j]], mask)
+ 21. ├─dplyr::summarise(...)
+ 22. ├─tidyr::unite(., locus, matches, col = "Matches", sep = "=")
+ 23. ├─dplyr::select(., -mismatches)
+ 24. ├─dplyr::mutate(., matches = 2 - mismatches)
+ 25. ├─dplyr::mutate(., mismatches = as.integer(mismatches))
+ 26. ├─tidyr::separate_wider_delim(...)
+ 27. │ └─tidyr:::check_data_frame(data)
+ 28. │   └─base::is.data.frame(x)
+ 29. ├─tidyr::separate_longer_delim(., mismatch, delim = ", ")
+ 30. │ └─tidyr:::check_data_frame(data)
+ 31. │   └─base::is.data.frame(x)
+ 32. ├─dplyr::mutate(., case = row_number())
+ 33. ├─immunogenetr::HLA_mismatch_number(...)
+ 34. │ ├─... %>% select(-mismatches)
+ 35. │ └─tibble::tibble(...)
+ 36. │   └─tibble:::tibble_quos(xs, .rows, .name_repair)
+ 37. │     └─rlang::eval_tidy(xs[[j]], mask)
+ 38. ├─dplyr::select(., -mismatches)
+ 39. ├─dplyr::mutate(...)
+ 40. ├─dplyr::mutate(., mismatches = na_if(mismatches, "NA"))
+ 41. ├─tidyr::separate_wider_delim(...)
+ 42. │ └─tidyr:::check_data_frame(data)
+ 43. │   └─base::is.data.frame(x)
+ 44. ├─tidyr::separate_longer_delim(., HvG, delim = ", ")
+ 45. │ └─tidyr:::check_data_frame(data)
+ 46. │   └─base::is.data.frame(x)
+ 47. ├─dplyr::mutate(., case = row_number())
+ 48. ├─immunogenetr::HLA_mismatch_base(...)
+ 49. │ └─purrr::map2_chr(GL_string_recip, GL_string_donor, process_pair)
+ 50. │   └─purrr:::map2_("character", .x, .y, .f, ..., .progress = .progress)
+ 51. │     ├─purrr:::with_indexed_errors(...)
+ 52. │     │ └─base::withCallingHandlers(...)
+ 53. │     ├─purrr:::call_with_cleanup(...)
+ 54. │     └─immunogenetr (local) .f(.x[[i]], .y[[i]], ...)
+ 55. │       └─base::stop(...)
+ 56. └─base::.handleSimpleError(...)
+ 57.   └─purrr (local) h(simpleError(msg, call))
+ 58.     └─cli::cli_abort(...)
+ 59.       └─rlang::abort(...)
+Execution halted
+* checking for unstated dependencies in ‘tests’ ... OK
+* checking tests ... OK
+  Running ‘testthat.R’
 * checking PDF version of manual ... OK
 * checking HTML version of manual ... OK
 * checking for non-standard things in the check directory ... OK
 * checking for detritus in the temp directory ... OK
 * DONE
-Status: 1 WARNING, 2 NOTEs
+Status: 1 ERROR, 2 WARNINGs, 3 NOTEs

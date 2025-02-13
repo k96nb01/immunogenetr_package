@@ -1,0 +1,18 @@
+library(testthat)
+library(stringr)
+
+test_that("HLA_validate correctly validates and cleans HLA alleles", {
+  expect_equal(HLA_validate("HLA-A2"), "HLA-A2")
+  expect_equal(HLA_validate("A*02:01:01:01N"), "A*02:01:01:01N")
+  expect_equal(HLA_validate("A*02:01:01N"), "A*02:01:01N")
+  expect_equal(HLA_validate("HLA-DRB1*02:03novel"), "HLA-DRB1*02:03")
+  expect_equal(HLA_validate("HLA-DQB1*03:01v"), "HLA-DQB1*03:01")
+  expect_equal(HLA_validate("HLA-DRB1*02:03P"), "HLA-DRB1*02:03P")
+  expect_equal(HLA_validate("HLA-DPB1*04:01:01G"), "HLA-DPB1*04:01:01G")
+  expect_equal(HLA_validate("2"), "2")
+  expect_equal(HLA_validate(2), "2")
+  expect_equal(HLA_validate("B27"), "B27")
+  expect_equal(HLA_validate("A*010101"), "A*010101")
+  expect_equal(HLA_validate("-"), NA_character_)
+  expect_equal(HLA_validate("blank"), NA_character_)
+})
