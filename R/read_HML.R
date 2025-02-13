@@ -8,8 +8,11 @@
 #' @return A tibble with the sample name and the GL string.
 #'
 #' @examples
-#' read_HML("../inst/extdata/HML_1.hml")
-#' read_HML("../inst/extdata/hml_2.hml")
+#' HML_1 <- system.file("extdata", "HML_1.hml", package="immunogenetr")
+#' HML_2 <- system.file("extdata", "hml_2.hml", package="immunogenetr")
+#'
+#' read_HML(HML_1)
+#' read_HML(HML_2)
 #'
 #' @export
 #'
