@@ -23,7 +23,6 @@
 #' typing <- "A*01:01:01:02N"
 #' HLA_truncate(typing) # "A*01:01"
 #'
-#' print(test1)
 #'
 #' @export
 #'
