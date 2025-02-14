@@ -32,5 +32,5 @@ HLA_prefix_remove <- function(data) {
     str_replace(., "[:digit:]*\\*", "")
 }
 
-
+globalVariables(c("."))
 
