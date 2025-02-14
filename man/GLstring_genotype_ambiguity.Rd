@@ -7,13 +7,13 @@
 GLstring_genotype_ambiguity(data, columns, keep_ambiguities = FALSE)
 }
 \arguments{
+\item{data}{A data frame}
+
 \item{columns}{The names of the columns in the data frame that contain GL strings}
 
 \item{keep_ambiguities}{A logical value indicating whether to retain the
 remaining ambiguities in separate columns with "_genotype_ambiguity" appended
 to the original column names. Default is FALSE.}
-
-\item{.data}{A data frame}
 }
 \value{
 A data frame with the first genotype ambiguity retained in the

@@ -7,10 +7,10 @@
 GLstring_genes(data, gl_string)
 }
 \arguments{
+\item{data}{A data frame}
+
 \item{gl_string}{The name of the column in the data frame that contains
 GL strings}
-
-\item{.data}{A data frame}
 }
 \value{
 A data frame with GL strings separated, loci identified, and data
