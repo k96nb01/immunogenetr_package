@@ -4,7 +4,7 @@
 #' that contains GL strings. It separates the GL strings, identifies the HLA
 #' loci, and transforms the data into a wider format with loci as column names.
 #'
-#' @param .data A data frame
+#' @param data A data frame
 #' @param gl_string The name of the column in the data frame that contains
 #' GL strings
 #'
