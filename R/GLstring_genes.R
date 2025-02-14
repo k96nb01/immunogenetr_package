@@ -46,4 +46,4 @@ GLstring_genes <- function(data, gl_string){
     HLA_column_repair(.)
 }
 
-
+globalVariables(c("."))
