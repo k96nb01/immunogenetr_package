@@ -155,6 +155,6 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   return(step2 %>% dplyr::pull(GL_string))
 }
 
-globalVariables(c(".", "truncated_names", "locus_from_name", "DRB_locus",
+globalVariables(c("truncated_names", "locus_from_name", "DRB_locus",
                   "row_for_function", "molecular_locus", "molecular",
                   "final_type", "DRB345", "final_type_2", "GL_string"))
