@@ -7,7 +7,7 @@
 #' strings prior to execution; otherwise, an error will be thrown if a "^" is
 #' detected in the GL strings.
 #'
-#' @param .data A data frame
+#' @param data A data frame
 #' @param columns The names of the columns in the data frame that contain GL strings
 #' @param keep_ambiguities A logical value indicating whether to retain the
 #' remaining ambiguities in separate columns with "_genotype_ambiguity" appended
