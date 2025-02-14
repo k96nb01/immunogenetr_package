@@ -216,5 +216,5 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
   map2_chr(GL_string_recip, GL_string_donor, process_pair)
 }
 
-globalVariables(c(".", "process_alleles"))
+globalVariables(c("process_alleles"))
 
