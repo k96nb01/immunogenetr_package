@@ -30,10 +30,10 @@
 #' @importFrom stringr str_extract
 
 
-GLstring_genes <- function(.data, gl_string){
+GLstring_genes <- function(data, gl_string){
   # Identify the columns to modify
-  col2mod <- names(select(.data, {{gl_string}}))
-  .data %>%
+  col2mod <- names(select(data, {{gl_string}}))
+  data %>%
     # Separate the GL string column by the delimiter "^" into multiple rows
     separate_longer_delim({{ col2mod }}, delim = "^") %>%
     # Rename the separated column to "gl_string"
