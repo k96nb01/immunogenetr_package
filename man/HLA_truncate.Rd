@@ -34,4 +34,6 @@ in a GL string (e.g. "HLA-A*02:01:01:01+HLA-A*68:01:01^HLA-DRB1*01:01:01+HLA-DRB
 typing <- "A*01:01:01:02N"
 HLA_truncate(typing) # "A*01:01"
 
+print(test1)
+
 }
