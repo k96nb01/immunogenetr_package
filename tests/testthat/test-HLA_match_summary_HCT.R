@@ -10,6 +10,10 @@ test_that("HLA_match_summary_HCT correctly calculates match summary for HCT", {
   result_Xof8_GvH <- HLA_match_summary_HCT(GL_string_recip, GL_string_donor, direction = "GvH", match_grade = "Xof8")
   result_Xof8_bidirectional <- HLA_match_summary_HCT(GL_string_recip, GL_string_donor, direction = "bidirectional", match_grade = "Xof8")
 
+  expect_type(result_Xof8_HvG, "integer")
+  expect_type(result_Xof8_GvH, "integer")
+  expect_type(result_Xof8_bidirectional, "integer")
+
   expect_equal(result_Xof8_HvG, 4)
   expect_equal(result_Xof8_GvH, 5)
   expect_equal(result_Xof8_bidirectional, 4)
