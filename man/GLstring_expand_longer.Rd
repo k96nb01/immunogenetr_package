@@ -17,10 +17,12 @@ and alleles, each with associated identifiers
 }
 \description{
 A function that expands a GL string into a longer, more detailed
-format by separating the string into its components resulting from its
-hierarchical set of operators, including gene locations, loci, genotypes,
-haplotypes, and alleles. The function processes each level of the GL string
-and assigns identifiers for each hierarchical component.
+format (also known as an ambiguity table) by separating the string into its
+components resulting from its hierarchical set of operators, including gene
+locations, loci, genotypes, haplotypes, and alleles. The function processes
+each level of the GL string and assigns identifiers for each hierarchical
+component. The resulting table can be assembled back into a GL string using
+the function `ambiguity_table_to_GLstring`.
 }
 \examples{
 GL_string <- "HLA-A*01:01:01:01/HLA-A*01:02/HLA-A*01:03/HLA-A
