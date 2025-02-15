@@ -43,6 +43,7 @@ test_that("HLA_mismatch_number correctly calculates mismatch counts", {
   # Test the 2010 mismatch table.
   (mismatch_table_2010_test <- mismatch_table_2010
     %>% rename(Patient = patient, Donor = donor)
+    # Assign the example alleles.
     %>% mutate(recipient_1 = case_when(
       str_detect(Patient, "^A") ~ A,
       str_detect(Patient, "^N") ~ N
@@ -62,10 +63,11 @@ test_that("HLA_mismatch_number correctly calculates mismatch counts", {
       str_detect(Donor, "D$") ~ D,
       str_detect(Donor, "N$") ~ N
     ))
+    # Turn the two alleles into a GL string.
     %>% mutate(GL_string_recip = str_c(recipient_1, recipient_2, sep = "+"),
                GL_string_donor = str_c(donor_1, donor_2, sep = "+"))
     %>% select(Patient, Donor, GL_string_recip, GL_string_donor, "#GvH", "#HvG", "#Max")
-    # Calculate MM numbers for each row
+    # Calculate MM numbers for each row - use homozygous_count = 1 for the 2010 table.
     %>% mutate(
       GvH_hc1 = HLA_mismatch_number(GL_string_recip, GL_string_donor, "HLA-A", "GvH", 1),
       HvG_hc1 = HLA_mismatch_number(GL_string_recip, GL_string_donor, "HLA-A", "HvG", 1),
@@ -73,12 +75,15 @@ test_that("HLA_mismatch_number correctly calculates mismatch counts", {
     )
     %>%
       rename(GvH = "#GvH", HvG = "#HvG", Max = "#Max") %>%
+      # Check that the calculated results match the consensus results.
       mutate(
         GvH_hc1_result = (GvH == GvH_hc1),
         HvG_hc1_result = (HvG == HvG_hc1),
         bidirectional_hc1_result = (Max == bidirectional_hc1)
       ) %>%
+      # Check that for each row all values are correct.
       mutate(total_result = if_all(GvH_hc1_result:bidirectional_hc1_result)) %>%
+      # Summarize to a single value if all were true.
       distinct(total_result) %>%
       pull(total_result)
   )
@@ -87,6 +92,7 @@ test_that("HLA_mismatch_number correctly calculates mismatch counts", {
 
   # Test the 2016 mismatch table
   (mismatch_table_2016_test <- mismatch_table_2016
+    # Assign the example alleles.
     %>% mutate(recipient_1 = case_when(
       str_detect(Patient, "^A") ~ A,
       str_detect(Patient, "^N") ~ N
@@ -106,10 +112,11 @@ test_that("HLA_mismatch_number correctly calculates mismatch counts", {
       str_detect(Donor, "D$") ~ D,
       str_detect(Donor, "N$") ~ N
     ))
+    # Turn the two alleles into a GL string.
     %>% mutate(GL_string_recip = str_c(recipient_1, recipient_2, sep = "+"),
                GL_string_donor = str_c(donor_1, donor_2, sep = "+"))
     %>% select(Patient, Donor, GL_string_recip, GL_string_donor, "#GvH", "#HvG", "#Max")
-    # Calculate MM numbers for each row
+    # Calculate MM numbers for each row - use homozygous_count = 2 for the 2016 table.
     %>% mutate(
       GvH_hc2 = HLA_mismatch_number(GL_string_recip, GL_string_donor, "HLA-A", "GvH", 2),
       HvG_hc2 = HLA_mismatch_number(GL_string_recip, GL_string_donor, "HLA-A", "HvG", 2),
@@ -117,12 +124,15 @@ test_that("HLA_mismatch_number correctly calculates mismatch counts", {
     )
     %>%
       rename(GvH = "#GvH", HvG = "#HvG", Max = "#Max") %>%
+      # Check that the calculated results match the consensus results.
       mutate(
         GvH_hc2_result = (GvH == GvH_hc2),
         HvG_hc2_result = (HvG == HvG_hc2),
         bidirectional_hc2_result = (Max == bidirectional_hc2)
       ) %>%
+      # Check that for each row all values are correct.
       mutate(total_result = if_all(GvH_hc2_result:bidirectional_hc2_result)) %>%
+      # Summarize to a single value if all were true.
       distinct(total_result) %>%
       pull(total_result)
   )
