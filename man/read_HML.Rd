@@ -17,8 +17,8 @@ Reads the GL strings of HML files and returns a tibble with
 the full genotype for each sample.
 }
 \examples{
-HML_1 <- system.file("extdata", "HML_1.hml", package="immunogenetr")
-HML_2 <- system.file("extdata", "hml_2.hml", package="immunogenetr")
+HML_1 <- system.file("extdata", "HML_1.hml", package = "immunogenetr")
+HML_2 <- system.file("extdata", "hml_2.hml", package = "immunogenetr")
 
 read_HML(HML_1)
 read_HML(HML_2)

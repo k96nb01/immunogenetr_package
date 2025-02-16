@@ -37,7 +37,9 @@ GL_string_recip <- "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21"
 GL_string_donor <- "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01"
 
 # Check if there are mismatches for HLA-A (Graft vs. Host)
-HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci =
-"HLA-A", direction = "GvH")
+HLA_mismatch_logical(GL_string_recip, GL_string_donor,
+  loci =
+    "HLA-A", direction = "GvH"
+)
 
 }

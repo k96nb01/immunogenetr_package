@@ -53,6 +53,8 @@ HLA_match_number(GL_string_recip, GL_string_donor, loci, direction = "GvH")
 
 # Calculate mismatch numbers (Bidirectional)
 HLA_match_number(GL_string_recip, GL_string_donor,
-loci, direction = "bidirectional")
+  loci,
+  direction = "bidirectional"
+)
 
 }
