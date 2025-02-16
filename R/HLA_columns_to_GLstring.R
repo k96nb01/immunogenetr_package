@@ -70,7 +70,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 
   # Processing Step 1
   step1 <- data %>%
-    mutate(row_for_function = 1:nrow(.)) %>%
+    mutate(row_for_function = row_number()) %>%
     # pivoting longer to get each allele on a separate row.
     pivot_longer(cols = all_of(col2mod), names_to = "names", values_to = "allele") %>%
     # Determine if typing is molecular by presence of ":" in allele, a leading zero, or the loci DQA1, DPB1, and DPA1, which are always in molecular format.
