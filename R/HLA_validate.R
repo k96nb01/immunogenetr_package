@@ -32,6 +32,8 @@
 #' @importFrom dplyr %>%
 #' @importFrom stringr str_extract
 
-HLA_validate <- function(data){
-  data %>% str_extract("(HLA-)?([:alnum:]*)(\\*)?[:digit:]{1,}:?[:digit:]*:?[:digit:]*:?[:digit:]*([GPLSCAQNgplscaqn](?!.))*") %>% as.character()
+HLA_validate <- function(data) {
+  data %>%
+    str_extract("(HLA-)?([:alnum:]*)(\\*)?[:digit:]{1,}:?[:digit:]*:?[:digit:]*:?[:digit:]*([GPLSCAQNgplscaqn](?!.))*") %>%
+    as.character()
 }
