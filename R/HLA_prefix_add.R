@@ -30,5 +30,5 @@
 
 HLA_prefix_add <- function(data, prefix = "HLA-") {
   # Add string to beginning of typing
-  str_replace(data, "^",  prefix)
+  str_replace(data, "^", prefix)
 }
