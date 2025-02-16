@@ -19,10 +19,10 @@
 #'
 #' @examples
 #' HLA_type <- data.frame(
-#' sample = c("sample1", "sample2"),
-#' HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55|A*01:99+A*68:66", "A*02:01+A*03:01|A*02:02+A*03:03"),
-#' HLA_B = c("B*07:02+B*58:01|B*07:03+B*58:09", "B*08:01+B*15:01|B*08:02+B*15:17"),
-#' stringsAsFactors = FALSE
+#'   sample = c("sample1", "sample2"),
+#'   HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55|A*01:99+A*68:66", "A*02:01+A*03:01|A*02:02+A*03:03"),
+#'   HLA_B = c("B*07:02+B*58:01|B*07:03+B*58:09", "B*08:01+B*15:01|B*08:02+B*15:17"),
+#'   stringsAsFactors = FALSE
 #' )
 #'
 #' GLstring_genotype_ambiguity(HLA_type, columns = c("HLA_A", "HLA_B"), keep_ambiguities = TRUE)
@@ -45,14 +45,14 @@
 
 GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE) {
   # Identify the columns to modify
-  cols2mod <- names(select(data, {{columns}}))
+  cols2mod <- names(select(data, {{ columns }}))
 
   # Set up error detection of "^", which indicates the genes haven't been separated from the GL string.
-  (genes_not_separated <- data %>% mutate(across(all_of({{ cols2mod }}), ~str_detect(., "\\^"))) %>%
-      summarize(X = toString(across({{ cols2mod }}))) %>%
-      mutate(X = str_replace_all(X, "c[:punct:]", " ")) %>%
-      mutate(Y = str_detect(X, "TRUE")) %>%
-      select(Y)
+  (genes_not_separated <- data %>% mutate(across(all_of({{ cols2mod }}), ~ str_detect(., "\\^"))) %>%
+    summarize(X = toString(across({{ cols2mod }}))) %>%
+    mutate(X = str_replace_all(X, "c[:punct:]", " ")) %>%
+    mutate(Y = str_detect(X, "TRUE")) %>%
+    select(Y)
   )
 
   # Error code
@@ -63,17 +63,19 @@ GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE)
   # Copy GL string to a new ambiguity column
   data %>%
     mutate(across({{ cols2mod }},
-                  ~ as.character(.),
-                  .names = "{col}_genotype_ambiguity")) %>%
+      ~ as.character(.),
+      .names = "{col}_genotype_ambiguity"
+    )) %>%
     # Keep the first genotype ambiguity in the original columns
     mutate(across({{ cols2mod }}, ~ str_extract(., "[^|]+"))) %>%
     # Keep the remaining genotype ambiguities in the ambiguity columns
-    mutate(across(ends_with("_genotype_ambiguity"), ~ str_replace(., "[^|]+", "")))  %>%
+    mutate(across(ends_with("_genotype_ambiguity"), ~ str_replace(., "[^|]+", ""))) %>%
     mutate(across(ends_with("_genotype_ambiguity"), ~ str_replace(., "[\\|]+", ""))) %>%
-    mutate(across(ends_with("_genotype_ambiguity"), ~ na_if(., "")))  %>%
+    mutate(across(ends_with("_genotype_ambiguity"), ~ na_if(., ""))) %>%
     # Drop the ambiguity columns if not wanted
-    { if (keep_ambiguities) . else select(., -contains("ambiguity")) }
-
+    {
+      if (keep_ambiguities) . else select(., -contains("ambiguity"))
+    }
 }
 
 globalVariables(c("X", "Y", "ends_with"))
