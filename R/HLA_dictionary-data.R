@@ -18,6 +18,3 @@
 #' @source <https://doi.org/10.1111/j.1399-0039.2008.01183.x>
 #'
 "HLA_dictionary"
-
-
-
