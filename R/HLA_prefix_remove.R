@@ -33,4 +33,3 @@ HLA_prefix_remove <- function(data) {
 }
 
 globalVariables(c("."))
-
