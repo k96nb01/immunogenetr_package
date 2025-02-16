@@ -34,7 +34,7 @@
 #'
 
 
-GLstring_expand_longer <- function(GL_string){
+GLstring_expand_longer <- function(GL_string) {
   as_tibble(GL_string) %>%
     # Assign a unique identifier for each entry for the function
     mutate(entry = row_number()) %>%
@@ -64,5 +64,7 @@ GLstring_expand_longer <- function(GL_string){
     mutate(allele = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype, haplotype))
 }
 
-globalVariables(c("value", "entry", "possible_gene_location", "locus",
-                  "genotype_ambiguity", "genotype", "haplotype", "allele"))
+globalVariables(c(
+  "value", "entry", "possible_gene_location", "locus",
+  "genotype_ambiguity", "genotype", "haplotype", "allele"
+))
