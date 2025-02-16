@@ -36,12 +36,14 @@
 #'
 #' # Calculate mismatch numbers (Bidirectional)
 #' HLA_match_number(GL_string_recip, GL_string_donor,
-#' loci, direction = "bidirectional")
+#'   loci,
+#'   direction = "bidirectional"
+#' )
 #'
 #' @export
 #'
 
-HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction = "bidirectional"){
+HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction = "bidirectional") {
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
   # Code to determine match numbers if a single locus was supplied.
   if (length(loci) == 1) {
