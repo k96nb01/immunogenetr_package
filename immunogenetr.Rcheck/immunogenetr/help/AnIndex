@@ -5,8 +5,10 @@ GLstring_genes_expanded	GLstring_genes_expanded
 GLstring_gene_copies_combine	GLstring_gene_copies_combine
 GLstring_genotype_ambiguity	GLstring_genotype_ambiguity
 GLstring_regex	GLstring_regex
+Haplotype_frequencies	Haplotype_frequencies
 HLA_columns_to_GLstring	HLA_columns_to_GLstring
 HLA_column_repair	HLA_column_repair
+HLA_dictionary	HLA_dictionary
 HLA_match_number	HLA_match_number
 HLA_match_summary_HCT	HLA_match_summary_HCT
 HLA_mismatched_alleles	HLA_mismatched_alleles
@@ -16,5 +18,9 @@ HLA_mismatch_number	HLA_mismatch_number
 HLA_prefix_add	HLA_prefix_add
 HLA_prefix_remove	HLA_prefix_remove
 HLA_truncate	HLA_truncate
+HLA_typing_1	HLA_typing_1
+HLA_typing_LIS	HLA_typing_LIS
 HLA_validate	HLA_validate
+mismatch_table_2010	mismatch_table_2010
+mismatch_table_2016	mismatch_table_2016
 read_HML	read_HML

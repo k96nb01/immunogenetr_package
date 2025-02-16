@@ -275,10 +275,12 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 ### ** Examples
 
 # Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*29:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02
-^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
-GL_string_donor <- "HLA-A*02:01+HLA-A*29:02^HLA-C*06:01+HLA-C*07:02^
-HLA-B*08:01+HLA-B*13:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
+GL_string_recip <-
+"HLA-A*29:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB1*04:01+
+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
+GL_string_donor <-
+"HLA-A*02:01+HLA-A*29:02^HLA-C*06:01+HLA-C*07:02^HLA-B*08:01+
+HLA-B*13:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
 
 # Calculate mismatch numbers
 HLA_match_summary_HCT(GL_string_recip, GL_string_donor,
@@ -481,6 +483,7 @@ HLA_truncate(typing) # "A*01:01"
 
 
 
+
 base::assign(".dptime", (proc.time() - get(".ptime", pos = "CheckExEnv")), pos = "CheckExEnv")
 base::cat("HLA_truncate", base::get(".format_ptime", pos = 'CheckExEnv')(get(".dptime", pos = "CheckExEnv")), "\n", file=base::get(".ExTimings", pos = 'CheckExEnv'), append=TRUE, sep="\t")
 cleanEx()
@@ -529,23 +532,50 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 ### ** Examples
 
 # Example data frame input
-data <- data.frame(
-  value = c(
-    "HLA-A*01:01:01:01", "HLA-A*01:02", "HLA-A*01:03", "HLA-A*01:95",
-    "HLA-A*24:02:01:01", "HLA-A*01:01:01:01", "HLA-A*01:03",
-    "HLA-A*24:03:01:01", "HLA-B*07:01:01", "B*15:01:01"
-  ),
-  possible_gene_location = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-  locus = c("HLA-A", "HLA-A", "HLA-A", "HLA-A", "HLA-A", "HLA-A", "HLA-A",
-    "HLA-A", "HLA-B", "HLA-B"),
-  genotype_ambiguity = c(1, 1, 1, 1, 1, 2, 2, 2, 1, 1),
-  genotype = c(1, 1, 1, 1, 2, 1, 1, 2, 1, 2),
-  haplotype = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-  entry = c(1, 2, 3, 4, 1, 1, 2, 1, 1, 1),
-  stringsAsFactors = FALSE
+data <- tibble::tribble(
+~value,                  ~entry, ~possible_gene_location,
+~locus, ~genotype_ambiguity, ~genotype, ~haplotype, ~allele,
+"HLA-A*01:01:01:01",     1,      1,
+1,      1,                   1,         1,          1,
+"HLA-A*01:02",           1,      1,
+1,      1,                   1,         1,          2,
+"HLA-A*01:03",           1,      1,
+1,      1,                   1,         1,          3,
+"HLA-A*01:95",           1,      1,
+1,      1,                   1,         1,          4,
+"HLA-A*24:02:01:01",     1,      1,
+1,      1,                   2,         1,          1,
+"HLA-A*01:01:01:01",     1,      1,
+1,      2,                   1,         1,          1,
+"HLA-A*01:03",           1,      1,
+1,      2,                   1,         1,          2,
+"HLA-A*24:03:01:01",     1,      1,
+1,      2,                   2,         1,          1,
+"HLA-B*07:01:01",        1,      1,
+2,      1,                   1,         1,          1,
+"B*15:01:01",            1,      1,
+2,      1,                   2,         1,          1,
+"B*15:02:01",            1,      1,
+2,      1,                   2,         1,          2,
+"B*07:03",               1,      1,
+2,      2,                   1,         1,          1,
+"B*15:99:01",            1,      1,
+2,      2,                   2,         1,          1,
+"HLA-DRB1*03:01:02",     1,      1,
+3,      1,                   1,         1,          1,
+"HLA-DRB5*01:01:01",     1,      1,
+3,      1,                   1,         2,          1,
+"HLA-KIR2DL5A*0010101",  1,      1,
+3,      1,                   2,         1,          1,
+"HLA-KIR2DL5A*0010201",  1,      1,
+3,      1,                   3,         1,          1,
+"HLA-KIR2DL5B*0010201",  1,      2,
+1,      1,                   1,         1,          1,
+"HLA-KIR2DL5B*0010301",  1,      2,
+1,      1,                   2,         1,          1
 )
-result <- ambiguity_table_to_GLstring(data)
-print(result)
+
+ambiguity_table_to_GLstring(data)
 
 
 
@@ -565,8 +595,11 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-read_HML("../inst/extdata/HML_1.hml")
-read_HML("../inst/extdata/hml_2.hml")
+HML_1 <- system.file("extdata", "HML_1.hml", package="immunogenetr")
+HML_2 <- system.file("extdata", "hml_2.hml", package="immunogenetr")
+
+read_HML(HML_1)
+read_HML(HML_2)
 
 
 

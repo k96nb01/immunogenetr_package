@@ -23,6 +23,7 @@
 #' typing <- "A*01:01:01:02N"
 #' HLA_truncate(typing) # "A*01:01"
 #'
+#'
 #' @export
 #'
 #' @importFrom dplyr mutate

@@ -4,10 +4,10 @@
 \alias{GLstring_genes}
 \title{GLstring_genes}
 \usage{
-GLstring_genes(.data, gl_string)
+GLstring_genes(data, gl_string)
 }
 \arguments{
-\item{.data}{A data frame}
+\item{data}{A data frame}
 
 \item{gl_string}{The name of the column in the data frame that contains
 GL strings}

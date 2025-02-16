@@ -4,10 +4,10 @@
 \alias{GLstring_genotype_ambiguity}
 \title{GLstring_genotype_ambiguity}
 \usage{
-GLstring_genotype_ambiguity(.data, columns, keep_ambiguities = FALSE)
+GLstring_genotype_ambiguity(data, columns, keep_ambiguities = FALSE)
 }
 \arguments{
-\item{.data}{A data frame}
+\item{data}{A data frame}
 
 \item{columns}{The names of the columns in the data frame that contain GL strings}
 

@@ -4,7 +4,7 @@
 #' that contains GL strings. It separates the GL strings, identifies the HLA
 #' loci, and transforms the data into a wider format with loci as column names.
 #'
-#' @param .data A data frame
+#' @param data A data frame
 #' @param gl_string The name of the column in the data frame that contains
 #' GL strings
 #'
@@ -30,10 +30,10 @@
 #' @importFrom stringr str_extract
 
 
-GLstring_genes <- function(.data, gl_string){
+GLstring_genes <- function(data, gl_string){
   # Identify the columns to modify
-  col2mod <- names(select(.data, {{gl_string}}))
-  .data %>%
+  col2mod <- names(select(data, {{gl_string}}))
+  data %>%
     # Separate the GL string column by the delimiter "^" into multiple rows
     separate_longer_delim({{ col2mod }}, delim = "^") %>%
     # Rename the separated column to "gl_string"
@@ -45,5 +45,5 @@ GLstring_genes <- function(.data, gl_string){
     # Apply the HLA_column_repair function to the transformed data
     HLA_column_repair(.)
 }
-globalVariables(c("."))
 
+globalVariables(c("."))

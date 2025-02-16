@@ -58,14 +58,8 @@ The following object is masked from 'package:testthat':
 
     is_null
 
-[ FAIL 0 | WARN 2 | SKIP 2 | PASS 143 ]
-
-══ Skipped tests (2) ═══════════════════════════════════════════════════════════
-• Test file does not exist. (1): 'test-read_HML.R:22:5'
-• empty test (1): 'test-ambiguity_table_to_GLstring.R:6:1'
-
-[ FAIL 0 | WARN 2 | SKIP 2 | PASS 143 ]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 154 ]
 > 
 > proc.time()
    user  system elapsed 
-  1.150   0.060   1.215 
+  1.433   0.062   1.507 

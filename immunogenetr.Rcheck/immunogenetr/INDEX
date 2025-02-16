@@ -11,6 +11,7 @@ GLstring_regex          GLstring_regex
 HLA_column_repair       HLA_column_repair
 HLA_columns_to_GLstring
                         HLA_columns_to_GLstring
+HLA_dictionary          Data on HLA alleles in the 2008 HLA dictionary
 HLA_match_number        HLA_match_number
 HLA_match_summary_HCT   HLA_match_summary_HCT
 HLA_mismatch_base       HLA_mismatch_base
@@ -21,7 +22,23 @@ HLA_mismatched_alleles
 HLA_prefix_add          HLA_prefix_add
 HLA_prefix_remove       HLA_prefix_remove
 HLA_truncate            HLA_truncate
+HLA_typing_1            Synthetic HLA typing data for 10 individuals
+                        for the HLA-A, B, C, DRB1, DRB3/4/5, DQB1,
+                        DQA1, DPB1 and DPA1 loci.
+HLA_typing_LIS          Synthetic HLA typing data for 10 individuals
+                        for the HLA-A, B, C, DRB1, DRB3, DRB4, DRB5,
+                        DQB1, DQA1, DPB1 and DPA1 loci. Data formatted
+                        to resemble a HistoTrac table.
 HLA_validate            HLA_validate
+Haplotype_frequencies   Ten HLA-A~C~B~DRB3/4/5~DRB1~DQA1~DQB1~DPA1~DPB1
+                        haplotypes and their frequencies in the global
+                        population.
 ambiguity_table_to_GLstring
                         ambiguity_table_to_GLstring
+mismatch_table_2010     Consensus mismatch numbers for every possible
+                        allele combination at a single locus, from the
+                        2010 publication.
+mismatch_table_2016     Consensus mismatch numbers for every possible
+                        allele combination at a single locus, from the
+                        2016 publication.
 read_HML                read_HML

@@ -7,7 +7,7 @@
 #' strings prior to execution; otherwise, an error will be thrown if a "^" is
 #' detected in the GL strings.
 #'
-#' @param .data A data frame
+#' @param data A data frame
 #' @param columns The names of the columns in the data frame that contain GL strings
 #' @param keep_ambiguities A logical value indicating whether to retain the
 #' remaining ambiguities in separate columns with "_genotype_ambiguity" appended
@@ -43,12 +43,12 @@
 #' @importFrom rlang abort
 
 
-GLstring_genotype_ambiguity <- function(.data, columns, keep_ambiguities = FALSE) {
+GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE) {
   # Identify the columns to modify
-  cols2mod <- names(select(.data, {{columns}}))
+  cols2mod <- names(select(data, {{columns}}))
 
   # Set up error detection of "^", which indicates the genes haven't been separated from the GL string.
-  (genes_not_separated <- .data %>% mutate(across(all_of({{ cols2mod }}), ~str_detect(., "\\^"))) %>%
+  (genes_not_separated <- data %>% mutate(across(all_of({{ cols2mod }}), ~str_detect(., "\\^"))) %>%
       summarize(X = toString(across({{ cols2mod }}))) %>%
       mutate(X = str_replace_all(X, "c[:punct:]", " ")) %>%
       mutate(Y = str_detect(X, "TRUE")) %>%
@@ -61,7 +61,7 @@ GLstring_genotype_ambiguity <- function(.data, columns, keep_ambiguities = FALSE
   }
 
   # Copy GL string to a new ambiguity column
-  .data %>%
+  data %>%
     mutate(across({{ cols2mod }},
                   ~ as.character(.),
                   .names = "{col}_genotype_ambiguity")) %>%
@@ -76,4 +76,4 @@ GLstring_genotype_ambiguity <- function(.data, columns, keep_ambiguities = FALSE
 
 }
 
-globalVariables(c("X", "Y", ".", "ends_with"))
+globalVariables(c("X", "Y", "ends_with"))

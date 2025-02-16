@@ -7,7 +7,8 @@ library(purrr)
 library(tidyr)
 
 test_that("read_HML correctly extracts GL strings from HML files", {
-  test_file <- "/inst/extdata/HML_1.hml"
+  HML_1 <- system.file("extdata", "HML_1.hml", package="immunogenetr")
+  test_file <- HML_1
 
   if (file.exists(test_file)) {
     result <- read_HML(test_file)

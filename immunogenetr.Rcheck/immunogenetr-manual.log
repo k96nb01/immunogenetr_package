@@ -1,8 +1,8 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.8.27)  12 FEB 2025 22:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2024.8.27)  15 FEB 2025 19:14
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**\input ./Rd2.tex \input ./Rd2.tex \input ./Rd2.tex \input ./Rd2.tex
+**\input ./Rd2.tex \input ./Rd2.tex \input ./Rd2.tex
 (./Rd2.tex
 (/usr/local/texlive/2024/texmf-dist/tex/latex/base/book.cls
 Document Class: book 2023/05/17 v1.4n Standard LaTeX document class
@@ -347,8 +347,8 @@ File: l3backend-pdftex.def 2024-02-20 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count294
 \l__pdf_internal_box=\box58
 )
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpTRwX7n/Rd2pdf9954
-1fa5b263/Rd2.aux)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpBzLuXo/Rd2pdfc1c7
+2faa023d/Rd2.aux)
 \openout1 = `Rd2.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 8.
@@ -386,10 +386,10 @@ LaTeX Font Info:    ... okay on input line 8.
 )
 Package hyperref Info: Link coloring ON on input line 8.
 
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpTRwX7n/Rd2pdf9954
-1fa5b263/Rd2.out)
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpTRwX7n/Rd2pdf9954
-1fa5b263/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpBzLuXo/Rd2pdfc1c7
+2faa023d/Rd2.out)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpBzLuXo/Rd2pdfc1c7
+2faa023d/Rd2.out)
 \@outlinefile=\write4
 \openout4 = `Rd2.out'.
 
@@ -419,8 +419,8 @@ LaTeX Font Info:    Trying to load font information for U+rsfs on input line 24
 (/usr/local/texlive/2024/texmf-dist/tex/latex/jknapltx/ursfs.fd
 File: ursfs.fd 1998/03/24 rsfs font definition file (jk)
 )
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpTRwX7n/Rd2pdf9954
-1fa5b263/Rd2.toc [1
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpBzLuXo/Rd2pdfc1c7
+2faa023d/Rd2.toc [1
 
 
 {/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
@@ -429,77 +429,88 @@ al/texlive/2024/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/local/texlive/2024
 \tf@toc=\write5
 \openout5 = `Rd2.toc'.
 
-LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
-(Font)              scaled to size 9.0pt on input line 68.
 
+Overfull \hbox (36.25578pt too wide) in paragraph at lines 44--48
+[]\T1/ptm/m/n/10 A func-tion that con-verts a data ta-ble of HLA al-lele am-bi-
+gu-i-ties (e.g. as cre-ated by `GLstring_expand_longer`)
+ []
+
+LaTeX Font Info:    Font shape `T1/zi4/m/n' will be
+(Font)              scaled to size 9.0pt on input line 69.
 [2] [3] [4] [5]
-Overfull \hbox (8.72697pt too wide) in paragraph at lines 283--286
+Overfull \hbox (8.72697pt too wide) in paragraph at lines 313--316
 []\T1/ptm/m/n/10 A data frame with the first geno-type am-bi-gu-ity re-tained i
 n the orig-i-nal columns. If []\T1/zi4/m/n/10 keep_ambiguities
  []
 
-
-Overfull \hbox (32.27168pt too wide) in paragraph at lines 292--292
+[6]
+Overfull \hbox (32.27168pt too wide) in paragraph at lines 322--322
  []\T1/zi4/m/n/9 HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55|A*01:99+A*68:66", "
 A*02:01+A*03:01|A*02:02+A*03:03"),[] 
  []
 
 
-Overfull \hbox (12.75941pt too wide) in paragraph at lines 297--297
+Overfull \hbox (12.75941pt too wide) in paragraph at lines 327--327
  []\T1/zi4/m/n/9 GLstring_genotype_ambiguity(HLA_type, columns = c("HLA_A", "HL
 A_B"), keep_ambiguities = TRUE)[] 
  []
 
-[6] [7] [8]
-Overfull \hbox (52.0458pt too wide) in paragraph at lines 443--448
+
+Underfull \hbox (badness 10000) in paragraph at lines 365--365
+[]\T1/ptm/m/it/10 Ten HLA-A~C~B~DRB3/4/5~DRB1~DQA1~DQB1~DPA1~DPB1
+ []
+
+[7] [8] [9]
+Overfull \hbox (52.0458pt too wide) in paragraph at lines 533--538
 []\T1/ptm/m/n/10 Calculates the num-ber of HLA matches as two mi-nus the num-be
 r of mis-matches from `HLA_mismatch_number`.
  []
 
-[9] [10] [11]
-Overfull \hbox (44.26862pt too wide) in paragraph at lines 624--624
+[10] [11] [12]
+Overfull \hbox (44.26862pt too wide) in paragraph at lines 716--716
  []\T1/zi4/m/n/9 # "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/
 53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"[] 
  []
 
-[12]
-Overfull \hbox (44.26862pt too wide) in paragraph at lines 690--690
+[13] [14]
+Overfull \hbox (44.26862pt too wide) in paragraph at lines 782--782
  []\T1/zi4/m/n/9 # "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/
 53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"[] 
  []
 
-[13] [14] [15] [16] [17]
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpTRwX7n/Rd2pdf9954
-1fa5b263/Rd2.ind [18] [19
+[15] [16] [17] [18] [19] [20] [21]
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpBzLuXo/Rd2pdfc1c7
+2faa023d/Rd2.ind [22] [23
 
 
 ])
-(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpTRwX7n/Rd2pdf9954
-1fa5b263/Rd2.aux)
+(/private/var/folders/ty/t6ly5vw106q21p3tlt70_7_r0000gn/T/RtmpBzLuXo/Rd2pdfc1c7
+2faa023d/Rd2.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-02-20>
  ***********
 Package rerunfilecheck Info: File `Rd2.out' has not changed.
-(rerunfilecheck)             Checksum: DE805075E4FFFE8A6A23917973740928;3389.
+(rerunfilecheck)             Checksum: 7DC8753F8BD02998B7F1F18F5D5B42E3;4299.
  ) 
 Here is how much of TeX's memory you used:
- 10649 strings out of 474116
- 161802 string characters out of 5743682
- 1940187 words of memory out of 5000000
- 32672 multiletter control sequences out of 15000+600000
+ 10699 strings out of 474116
+ 162755 string characters out of 5743682
+ 1952187 words of memory out of 5000000
+ 32682 multiletter control sequences out of 15000+600000
  591622 words of font info for 78 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 92i,6n,95p,364b,737s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 92i,6n,95p,387b,737s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2024/texmf-dist/fonts/type1/public/inconsolata/Inconsolat
-a-zi4r.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
-></usr/local/texlive/2024/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
-al/texlive/2024/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive
-/2024/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Rd2.pdf (19 pages, 113819 bytes).
+a-zi4r.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/c
+msy10.pfb></usr/local/texlive/2024/texmf-dist/fonts/type1/urw/times/utmb8a.pfb>
+</usr/local/texlive/2024/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loca
+l/texlive/2024/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/local/texlive/
+2024/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on Rd2.pdf (23 pages, 134274 bytes).
 PDF statistics:
- 402 PDF objects out of 1000 (max. 8388607)
- 367 compressed objects within 4 object streams
- 163 named destinations out of 1000 (max. 500000)
- 169 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 503 PDF objects out of 1000 (max. 8388607)
+ 461 compressed objects within 5 object streams
+ 203 named destinations out of 1000 (max. 500000)
+ 217 words of extra memory for PDF output out of 10000 (max. 10000000)
 
