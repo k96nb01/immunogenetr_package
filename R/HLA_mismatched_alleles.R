@@ -57,7 +57,7 @@ HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direc
   if (direction == "HvG" | direction == "GvH") {
     HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction, homozygous_count)
     # "SOT" defaults to "HvG".
-  } else if (direction == "SOT"){
+  } else if (direction == "SOT") {
     HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
     # "Bidirectional" will paste together the output of each direction.
   } else if (direction == "bidirectional") {
@@ -65,7 +65,7 @@ HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direc
     GvH <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)
     # Combine the results from each direction
     bidirectional <- tibble("HvG" = HvG, "GvH" = GvH) %>%
-      mutate(across(HvG:GvH, ~replace_na(., "NA"))) %>%
+      mutate(across(HvG:GvH, ~ replace_na(., "NA"))) %>%
       mutate(HvG = str_c("HvG;", HvG), GvH = str_c("GvH;", GvH)) %>%
       unite(HvG, GvH, col = "bidirectional", sep = "<>")
 
