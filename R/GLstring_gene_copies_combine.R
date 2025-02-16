@@ -36,15 +36,15 @@
 #' @importFrom stringr str_replace
 
 
-GLstring_gene_copies_combine <- function(.data, columns, sample_column = "sample"){
+GLstring_gene_copies_combine <- function(.data, columns, sample_column = "sample") {
   # Identify the columns to modify
-  cols2mod <- names(select(.data, {{columns}}))
+  cols2mod <- names(select(.data, {{ columns }}))
 
   .data %>%
     pivot_longer(all_of(cols2mod), names_to = "locus", values_to = "allele") %>%
     mutate(locus = str_extract(allele, "HLA-[:alnum:]+")) %>%
     filter(!is.na(locus)) %>%
-    summarise(allele = str_c(allele, collapse = "+"), .by = c({{sample_column}}, locus)) %>%
+    summarise(allele = str_c(allele, collapse = "+"), .by = c({{ sample_column }}, locus)) %>%
     pivot_wider(names_from = locus, values_from = allele) %>%
     rename_with(~ str_replace(., "HLA\\-", "HLA_"))
 }
