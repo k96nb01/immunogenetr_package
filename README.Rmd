@@ -1,10 +1,16 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 # immunogenetr
 
 <!-- badges: start -->
-
 [![codecov](https://codecov.io/gh/k96nb01/immunogenetr_package/graph/badge.svg?token=16D4U43VET)](https://codecov.io/gh/k96nb01/immunogenetr_package)
 <!-- badges: end -->
 
