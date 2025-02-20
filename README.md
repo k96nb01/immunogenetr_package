@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# immunogenetr
+# immunogenetr <img src='man/figures/immunogenetr_sticker.png' align="right" height="139" />
 
 <!-- badges: start -->
 
