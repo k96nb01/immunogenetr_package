@@ -9,4 +9,59 @@
 [![R-CMD-check](https://github.com/k96nb01/immunogenetr_package/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/k96nb01/immunogenetr_package/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-A suite of functions for HLA informatics.
+immunogenetr is a comprehensive toolkit that streamlines human leukocyte antigen (HLA) informatics with a robust suite of functions for managing and standardizing HLA data. It is built on tidyverse principles with the aim of delivering clear, consistent, and modular code and simplifying workflow integration. 
+
+Specific functionalities of this library include but are not limited to:
+
+- **Identification of mismatches** for host vs. graft, graft vs. host, and bidirectional analyses for data in both serological and molecular formats
+- **Translation** of tables, such as HLA columns or ambiguity tables, into proper GL strings
+- **Coercion of wild-caught HLA data** to and from GL string
+- **Expression of match summaries** for hematopoietic cell transplantation (HCT) analyses
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Usage](##usage)
+- [License](#license)
+
+## Installation
+
+You may install immunogenetr from GitHub with the below lines of code. Devtools is necessary for installation. If devtools is not installed, you may run ```install.packages("devtools") ``` first.
+
+```r
+devtools::install_github("k96nb01/immunogenetr_package")
+```
+
+## Usage
+
+An example workflow could be as follows: 
+
+```
+# Read in a table from project files
+file <- HLA_typing_1
+
+# Convert all rows to GL strings
+GL_strings <- HLA_columns_to_GLstring(file, HLA_typing_columns = starts_with("HLA-"), prefix_to_remove = "HLA-")
+
+# Find donor and recipients
+donor <- GL_strings[1]
+recip <- GL_strings[2]
+
+# Only consider first two fields
+HLA_truncate(recip) 
+HLA_truncate(donor) 
+
+HCT_table <- data.frame(
+    recip_data = recip,
+    donor_data = donor
+)
+
+# Calculate relevant HCT matches
+HCT_table$results <- HLA_match_summary_HCT(HCT_table$recip_data, HCT_table$donor_data, match_grade = "Xof10")
+
+# View results
+print(HCT_table$results)
+```
+
+## License
+This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE.txt) file for details.
