@@ -67,7 +67,7 @@ HCT_table <- data.frame(
 HCT_table$results <- HLA_match_summary_HCT(HCT_table$recip_data, HCT_table$donor_data, match_grade = "Xof10")
 
 # View results
-print(HCT_table$results)
+HCT_table$results
 ```
 
 ## License
