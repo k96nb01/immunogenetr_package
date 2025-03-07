@@ -20,8 +20,11 @@
 #' the specified number of fields and optional suffix retention.
 #'
 #' @examples
-#' typing <- "A*01:01:01:02N"
-#' HLA_truncate(typing) # "A*01:01"
+#'
+#' file <- Haplotype_frequencies
+#' file$`HLA-A` <- HLA_prefix_add(file$`HLA-A`, "HLA-")
+#' file$`HLA-A` <- sapply(file$`HLA-A`, HLA_truncate)
+#' View(file$`HLA-A`)
 #'
 #' @export
 #'

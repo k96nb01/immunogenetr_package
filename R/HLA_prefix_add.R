@@ -12,17 +12,12 @@
 #' selected columns.
 #'
 #' @examples
-#' df <- data.frame(
-#'   A1 = c("01:01", "02:01"),
-#'   A2 = c("03:01", "11:01"),
-#'   B1 = c("07:02", "08:01"),
-#'   B2 = c("15:01", "44:02"),
-#'   stringsAsFactors = FALSE
-#' )
 #'
-#' # Add "HLA-A*" prefix to columns A1 and A2
-#' df$A1 <- HLA_prefix_add(df$A1, "HLA-A*")
-#' df$A2 <- HLA_prefix_add(df$A2, "HLA-A*")
+#' file <- HLA_typing_1[, -1]
+#'
+#' # Add "HLA-" prefix to columns A1 and A2
+#' file$A1 <- HLA_prefix_add(file$A1, "HLA-")
+#' file$A2 <- HLA_prefix_add(file$A2, "HLA-")
 #'
 #' @export
 #'

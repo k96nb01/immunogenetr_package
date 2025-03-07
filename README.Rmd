@@ -65,7 +65,7 @@ The expected file output is
 
 ```{include=TRUE}
 # Step 2: Convert all rows to GL strings
-GL_strings <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything(), prefix_to_remove = "HLA-")
+GL_strings <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
 ```
 
 <div style="overflow-x: auto; white-space: nowrap;">

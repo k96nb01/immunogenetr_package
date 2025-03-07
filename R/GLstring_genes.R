@@ -12,12 +12,13 @@
 #' transformed to a wider format with loci as columns.
 #'
 #' @examples
-#' table <- data.frame(
-#'   GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*
-#'   08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01",
-#'   stringsAsFactors = FALSE
-#' )
-#' GLstring_genes(table, "GL_string")
+#'
+#' file <- HLA_typing_1[, -1]
+#' GL_string <- data.frame('GL_string' = HLA_columns_to_GLstring (
+#'   file, HLA_typing_columns = everything()))
+#' GL_string <- GL_string[1, , drop = FALSE]  # When considering first patient
+#' result <- GLstring_genes(GL_string, "GL_string")
+#' View(result)
 #'
 #' @export
 #'
