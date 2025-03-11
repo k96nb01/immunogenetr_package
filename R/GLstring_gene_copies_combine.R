@@ -13,11 +13,10 @@
 #' for each locus, in GL string format.
 #'
 #' @examples
-#' file <- HLA_typing_1
-#' file$A1 <- HLA_prefix_add(file$A1, "HLA-")
-#' file$A2 <- HLA_prefix_add(file$A2, "HLA-")
-#' strings <- GLstring_gene_copies_combine(file, columns = c("A1", "A2"), sample = "patient")
-#' View(strings)
+#' library(dplyr)
+#' HLA_typing_1 %>%
+#' mutate(across(A1:B2, ~HLA_prefix_add(.))) %>%
+#' GLstring_gene_copies_combine(c(A1:B2), sample_column = patient)
 #'
 #' @export
 #'
