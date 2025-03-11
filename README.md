@@ -68,18 +68,17 @@ print(HLA_typing_1)
 | 9 | A\*03:01 | A\*30:01 | C\*07:02 | C\*12:03 | B\*07:02 | B\*38:01 | DRB3\*01:01 | DRB5\*01:01 | DRB1\*03:01 | DRB1\*15:01 | DQA1\*01:02 | DQA1\*05:01 | DQB1\*02:01 | DQB1\*06:02 | DPA1\*01:03 | DPA1\*01:03 | DPB1\*04:01 | DPB1\*04:01 |
 | 10 | A\*02:05 | A\*11:01 | C\*07:18 | C\*16:02 | B\*51:01 | B\*58:01 | DRB3\*03:01 | DRB5\*01:01 | DRB1\*13:02 | DRB1\*15:01 | DQA1\*01:02 | DQA1\*01:03 | DQB1\*06:01 | DQB1\*06:09 | DPA1\*01:03 | DPA1\*01:03 | DPB1\*02:01 | DPB1\*104:01 |
 
-``` r
-# immunogenetr uses genotype list strings (GL strings) for most functions, including the matching and mismatching 
-# functions. To easily convert the genotypes found in "HLA_typing_1" to GL strings we can use the 
-# `HLA_columns_to_GLstring` function:
+immunogenetr uses genotype list strings (GL strings) for most functions,
+including the matching and mismatching functions. To easily convert the
+genotypes found in “HLA_typing_1” to GL strings we can use the
+`HLA_columns_to_GLstring` function:
 
+``` r
 HLA_typing_1_GLstring <- HLA_typing_1 %>% 
-  mutate(GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = A1:DPB1_2
-), .after = patient) %>% # Note the syntax for the `HLA_columns_to_GLstring` arguments - 
-# when this function is used inside of a `mutate` function 
-# to make a new column in a data frame, "." is used in the 
-# first argument to tell the function to use the working 
-# data frame as the source of the HLA typing columns.
+  mutate(GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = A1:DPB1_2), .after = patient) %>% 
+  # Note the syntax for the `HLA_columns_to_GLstring` arguments - when this function is used inside 
+  # of a `mutate` function to make a new column in a data frame, "." is used in the first argument 
+  # to tell the function to use the working data frame as the source of the HLA typing columns.
   select(patient, GL_string)
 
 print(HLA_typing_1_GLstring)
@@ -232,13 +231,13 @@ HLA_typing_1_GLstring_candidate <- HLA_typing_1_GLstring %>%
 # Join the recipient to the 10-donor list and perform matching
 HLA_typing_1_GLstring_donors <- HLA_typing_1_GLstring %>% 
   rename(GL_string_donor = GL_string, donor = patient) %>% 
-  cross_join(HLA_typing_1_GLstring_candidate) %>% 
+  cross_join(HLA_typing_1_GLstring_candidate) %>%
   mutate(ABCDRB1_matching = HLA_match_summary_HCT(
                               GL_string_recip, 
                               GL_string_donor, 
                               direction = "bidirectional", 
                               match_grade = "Xof8"), 
-                            .after = donor) %>% 
+                            .after = donor) %>%
   arrange(desc(ABCDRB1_matching))
 
 print(HLA_typing_1_GLstring_donors)

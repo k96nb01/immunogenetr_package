@@ -70,26 +70,15 @@ print(HLA_typing_1)
 |      10|A\*02:05 |A\*11:01 |C\*07:18 |C\*16:02 |B\*51:01 |B\*58:01 |DRB3\*03:01 |DRB5\*01:01 |DRB1\*13:02 |DRB1\*15:01 |DQA1\*01:02 |DQA1\*01:03 |DQB1\*06:01 |DQB1\*06:09 |DPA1\*01:03 |DPA1\*01:03 |DPB1\*02:01 |DPB1\*104:01 |
 
 
+
+immunogenetr uses genotype list strings (GL strings) for most functions, including the matching and mismatching functions. To easily convert the genotypes found in "HLA_typing_1" to GL strings we can use the `HLA_columns_to_GLstring` function:
+
 ```r
-# immunogenetr uses genotype list strings (GL strings) for most functions, including the matching and mismatching 
-# functions. To easily convert the genotypes found in "HLA_typing_1" to GL strings we can use the 
-# `HLA_columns_to_GLstring` function:
-
 HLA_typing_1_GLstring <- HLA_typing_1 %>% 
-  mutate(GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = A1:DPB1_2
-), .after = patient) %>% # Note the syntax for the `HLA_columns_to_GLstring` arguments - 
-# when this function is used inside of a `mutate` function 
-# to make a new column in a data frame, "." is used in the 
-# first argument to tell the function to use the working 
-# data frame as the source of the HLA typing columns.
-=======
-```{r}
-# immunogenetr uses genotype list strings (GL strings) for most functions, including the matching and mismatching functions. To easily convert the genotypes found in "HLA_typing_1" to GL strings we can use the `HLA_columns_to_GLstring` function:
-
-HLA_typing_1_GLstring <- HLA_typing_1 %>% 
-  mutate(GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = A1:DPB1_2
-), .after = patient) %>% # Note the syntax for the `HLA_columns_to_GLstring` arguments - when this function is used inside of a `mutate` function to make a new column in a data frame, "." is used in the first argument to tell the function to use the working data frame as the source of the HLA typing columns.
->>>>>>> 616292d31fbbdca295f417a2c9b870e2a1ea87a2
+  mutate(GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = A1:DPB1_2), .after = patient) %>% 
+  # Note the syntax for the `HLA_columns_to_GLstring` arguments - when this function is used inside 
+  # of a `mutate` function to make a new column in a data frame, "." is used in the first argument 
+  # to tell the function to use the working data frame as the source of the HLA typing columns.
   select(patient, GL_string)
 
 print(HLA_typing_1_GLstring)
@@ -110,11 +99,8 @@ print(HLA_typing_1_GLstring)
 
 The "HLA_typing_1_GLstring" data frame now contains a row with a GL string for each individual, containing their full HLA genotype in a single string. Let's select one individual to act as a recipient, and one to act as a donor.
 
-<<<<<<< HEAD
+
 ```r
-=======
-```{r}
->>>>>>> 616292d31fbbdca295f417a2c9b870e2a1ea87a2
 # Select one case each for recipient and donor.
 HLA_typing_1_GLstring_recipient <- HLA_typing_1_GLstring %>% 
   filter(patient == 7) %>% 
@@ -126,15 +112,11 @@ HLA_typing_1_GLstring_donor <- HLA_typing_1_GLstring %>%
   select(-patient)
 
 # Combine the tables so recipient and donor are on the same row.
-<<<<<<< HEAD
 HLA_typing_1_recip_donor <- bind_cols(
   HLA_typing_1_GLstring_recipient, 
   HLA_typing_1_GLstring_donor
   )
 
-=======
-HLA_typing_1_recip_donor <- bind_cols(HLA_typing_1_GLstring_recipient, HLA_typing_1_GLstring_donor)
->>>>>>> 616292d31fbbdca295f417a2c9b870e2a1ea87a2
 print(HLA_typing_1_recip_donor)
 ```
 | case|GL_string_recipient|GL_string_donor|
@@ -145,7 +127,6 @@ print(HLA_typing_1_recip_donor)
 
 We now have a data frame with a recipient and donor HLA genotype on one row. Let's try out some of the mismatching functions on this data.
 
-<<<<<<< HEAD
 ```r
 HLA_typing_1_recip_donor_mismatches <- HLA_typing_1_recip_donor %>% 
   mutate(A_MM_GvH = HLA_mismatch_logical(
@@ -160,12 +141,6 @@ HLA_typing_1_recip_donor_mismatches <- HLA_typing_1_recip_donor %>%
                       "HLA-A", 
                       direction = "HvG"), 
                     .after = A_MM_GvH)
-=======
-```{r}
-HLA_typing_1_recip_donor_mismatches <- HLA_typing_1_recip_donor %>% 
-  mutate(A_MM_GvH = HLA_mismatch_logical(GL_string_recipient, GL_string_donor, "HLA-A", direction = "GvH"), .after = case) %>% 
-  mutate(A_MM_HvG = HLA_mismatch_logical(GL_string_recipient, GL_string_donor, "HLA-A", direction = "HvG"), .after = A_MM_GvH)
->>>>>>> 616292d31fbbdca295f417a2c9b870e2a1ea87a2
 
 print(HLA_typing_1_recip_donor_mismatches)
 ```
@@ -175,7 +150,7 @@ print(HLA_typing_1_recip_donor_mismatches)
 
 The `HLA_mismatch_logical` function determines if there are any mismatches at a particular locus. We've determined that at the HLA-A locus there are not any mismatches in the graft-versus-host direction, but are in the host-versus-graft direction. We can use the `HLA_mismatched_alleles` function to tell us what those mismatches are:
 
-<<<<<<< HEAD
+
 ```r
 HLA_typing_1_recip_donor_mismatched_allles <- HLA_typing_1_recip_donor %>% 
   mutate(A_HvG_MMs = HLA_mismatched_alleles(
@@ -184,11 +159,6 @@ HLA_typing_1_recip_donor_mismatched_allles <- HLA_typing_1_recip_donor %>%
                         "HLA-A", 
                         direction = "HvG"), 
                       .after = case)
-=======
-```{r}
-HLA_typing_1_recip_donor_mismatched_allles <- HLA_typing_1_recip_donor %>% 
-  mutate(A_HvG_MMs = HLA_mismatched_alleles(GL_string_recipient, GL_string_donor, "HLA-A", direction = "HvG"), .after = case)
->>>>>>> 616292d31fbbdca295f417a2c9b870e2a1ea87a2
 
 print(HLA_typing_1_recip_donor_mismatched_allles)
 ```
@@ -199,7 +169,7 @@ print(HLA_typing_1_recip_donor_mismatched_allles)
 
 The `HLA_mismatched_alleles` function reported that the "HLA-A*30:01" allele was mismatched in the HvG direction. Sometimes, however, we simply want to know how many mismatches are at a particular locus. We can do that with the `HLA_mismatch_number` function:
 
-<<<<<<< HEAD
+
 ```r
 # Determine the number of bidirectional mismatches at several loci.
 HLA_typing_1_recip_donor_MM_number <- HLA_typing_1_recip_donor %>% 
@@ -209,12 +179,6 @@ HLA_typing_1_recip_donor_MM_number <- HLA_typing_1_recip_donor %>%
                         c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"), 
                         direction = "bidirectional"), 
                       .after = case)
-=======
-```{r}
-# Determine the number of bidirectional mismatches at several loci.
-HLA_typing_1_recip_donor_MM_number <- HLA_typing_1_recip_donor %>% 
-  mutate(ABCDRB1_MM = HLA_mismatch_number(GL_string_recipient, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"), direction = "bidirectional"), .after = case)
->>>>>>> 616292d31fbbdca295f417a2c9b870e2a1ea87a2
 
 print(HLA_typing_1_recip_donor_MM_number)
 ```
@@ -225,7 +189,7 @@ print(HLA_typing_1_recip_donor_MM_number)
 
 We might want to calculate an HLA match summary for stem cell transplantation. We can use the `HLA_match_summarry_HCT` function for this:
 
-<<<<<<< HEAD
+
 ```r
 # The match_grade argument of "Xof8" will return the number of matches at the HLA-A, B, C, and DRB1 loci.
 HLA_typing_1_recip_donor_8of8_matching <- HLA_typing_1_recip_donor %>% 
@@ -235,12 +199,6 @@ HLA_typing_1_recip_donor_8of8_matching <- HLA_typing_1_recip_donor %>%
                               direction = "bidirectional", 
                               match_grade = "Xof8"), 
                             .after = case)
-=======
-```{r}
-# The match_grade argument of "Xof8" will return the number of matches at the HLA-A, B, C, and DRB1 loci.
-HLA_typing_1_recip_donor_8of8_matching <- HLA_typing_1_recip_donor %>% 
-  mutate(ABCDRB1_matching = HLA_match_summary_HCT(GL_string_recipient, GL_string_donor, direction = "bidirectional", match_grade = "Xof8"), .after = case)
->>>>>>> 616292d31fbbdca295f417a2c9b870e2a1ea87a2
 
 print(HLA_typing_1_recip_donor_8of8_matching)
 ```
@@ -252,11 +210,8 @@ print(HLA_typing_1_recip_donor_8of8_matching)
 
 Clearly, this recipient and donor are not a great match. Let's see how we could use this workflow to find the best-matched donor from several options. To do this, we'll choose a case from "HLA_typing_1" and compare it to all the cases in that data set:
 
-<<<<<<< HEAD
+
 ```r
-=======
-```{r}
->>>>>>> 616292d31fbbdca295f417a2c9b870e2a1ea87a2
 # Select one case to be the recipient.
 HLA_typing_1_GLstring_candidate <- HLA_typing_1_GLstring %>% 
   filter(patient == 3) %>% 
@@ -266,17 +221,13 @@ HLA_typing_1_GLstring_candidate <- HLA_typing_1_GLstring %>%
 # Join the recipient to the 10-donor list and perform matching
 HLA_typing_1_GLstring_donors <- HLA_typing_1_GLstring %>% 
   rename(GL_string_donor = GL_string, donor = patient) %>% 
-  cross_join(HLA_typing_1_GLstring_candidate) %>% 
-<<<<<<< HEAD
+  cross_join(HLA_typing_1_GLstring_candidate) %>%
   mutate(ABCDRB1_matching = HLA_match_summary_HCT(
                               GL_string_recip, 
                               GL_string_donor, 
                               direction = "bidirectional", 
                               match_grade = "Xof8"), 
-                            .after = donor) %>% 
-=======
-  mutate(ABCDRB1_matching = HLA_match_summary_HCT(GL_string_recip, GL_string_donor, direction = "bidirectional", match_grade = "Xof8"), .after = donor) %>% 
->>>>>>> 616292d31fbbdca295f417a2c9b870e2a1ea87a2
+                            .after = donor) %>%
   arrange(desc(ABCDRB1_matching))
 
 print(HLA_typing_1_GLstring_donors)
