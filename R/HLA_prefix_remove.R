@@ -8,6 +8,7 @@
 #' @return A string modified to remove HLA and locus prefixes.
 #'
 #' @examples
+#'
 #' df <- data.frame(
 #'   A1 = c("HLA-A2", "A2", "A*11:01", "A66", "HLA-DRB3*15:01"),
 #'   A2 = c("HLA-A1", "A1", "A*02:01", "A68", "HLA-DRB4*14:01"),

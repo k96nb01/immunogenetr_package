@@ -20,8 +20,10 @@
 #'   "HLA-C*" = c("03:04", "04:01"),
 #'   stringsAsFactors = FALSE
 #' )
-#'
 #' HLA_column_repair(HLA_type, format = "tidyverse")
+#'
+#'
+#'
 #'
 #' @export
 #'

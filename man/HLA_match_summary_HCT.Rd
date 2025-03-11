@@ -37,16 +37,17 @@ be overridden with the "direction" argument.
 }
 \examples{
 # Example recipient and donor GL strings
-GL_string_recip <-
-  "HLA-A*29:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB1*04:01+
-HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
-GL_string_donor <-
-  "HLA-A*02:01+HLA-A*29:02^HLA-C*06:01+HLA-C*07:02^HLA-B*08:01+
-HLA-B*13:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+
+GL_string_recip <- GL_string[1]
+GL_string_donor <- GL_string[2]
 
 # Calculate mismatch numbers
 HLA_match_summary_HCT(GL_string_recip, GL_string_donor,
   direction = "bidirectional", match_grade = "Xof8"
 )
+
+
 
 }
