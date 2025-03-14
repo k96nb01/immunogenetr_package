@@ -30,6 +30,6 @@ GLstring_regex <- function(data) {
   }
   # Format the HLA alleles for searching within a GL string.
   table <- tibble(alleles = data) %>%
-    mutate(alleles_regex = str_c(str_escape(alleles), "(?=(\\?|\\^|\\||\\+|\\~|/|$))")) # The regex includes all the delimiters in a GL string and the end of a string.
+    mutate(alleles_regex = str_c(str_escape(alleles), "(?=(\\?|\\^|\\||\\+|\\~|/|:|$))")) # The regex includes all the delimiters in a GL string, a colon, which separates fields, and the end of a string.
   return(table$alleles_regex)
 }
