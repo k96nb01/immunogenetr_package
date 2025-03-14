@@ -48,6 +48,4 @@ HLA_match_summary_HCT(GL_string_recip, GL_string_donor,
   direction = "bidirectional", match_grade = "Xof8"
 )
 
-
-
 }

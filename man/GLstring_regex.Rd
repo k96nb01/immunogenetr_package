@@ -44,10 +44,10 @@ GL_string <- "HLA-A*02:01:01+HLA-A*68:01^HLA-B*07:01+HLA-B*15:01"
 
 # We can match any allele accurately:
 
-str_view(GL_string, GLstring_regex("HLA-A*68:01"), match =  NA)
+str_view(GL_string, GLstring_regex("HLA-A*68:01"), match = NA)
 
 # Note that alleles supplied with fewer fields than in the GL string will also match:
 
-str_view(GL_string, GLstring_regex("HLA-A*02:01"), match =  NA)
+str_view(GL_string, GLstring_regex("HLA-A*02:01"), match = NA)
 
 }

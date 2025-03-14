@@ -29,8 +29,9 @@ print(HLA_typing_LIS)
 # The `HLA_prefix_add` function can be used to add the correct HLA prefixes to the table:
 library(dplyr)
 HLA_typing_LIS \%>\% mutate(
-  across(mA1Cd.recipient:mA2Cd.recipient,
-         ~HLA_prefix_add(., "HLA-A*")
+  across(
+    mA1Cd.recipient:mA2Cd.recipient,
+    ~ HLA_prefix_add(., "HLA-A*")
   )
 )
 

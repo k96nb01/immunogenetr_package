@@ -26,7 +26,7 @@ locus into a single column in the appropriate GL string format.
 \examples{
 library(dplyr)
 HLA_typing_1 \%>\%
-mutate(across(A1:B2, ~HLA_prefix_add(.))) \%>\%
-GLstring_gene_copies_combine(c(A1:B2), sample_column = patient)
+  mutate(across(A1:B2, ~ HLA_prefix_add(.))) \%>\%
+  GLstring_gene_copies_combine(c(A1:B2), sample_column = patient)
 
 }
