@@ -18,10 +18,11 @@
 #' GLstring_regex("HLA-A*02:01")
 #'
 #' # The result is the same allele with extra formatting to escape special characters found
-#' in a GL string, as well as the ability to accurately search for an allele in a GL string.
-#' For example, we would not want the allele "HLA-A*02:14" to match to "HLA-A*02:149:01",
-#' which would happen if we simply escaped the special characters:
+#' # in a GL string, as well as the ability to accurately search for an allele in a GL string.
+#' # For example, we would not want the allele "HLA-A*02:14" to match to "HLA-A*02:149:01",
+#' # which would happen if we simply escaped the special characters:
 #'
+#' library(stringr)
 #' str_view("HLA-A*02:149:01", str_escape("HLA-A*02:14"), match = NA)
 #'
 #' # Using `GLstring_regex` prevents this:
