@@ -1,9 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# immunogenetr
-
-<img src="man/figures/immunogenetr_sticker.png" style="float: right; height: 139px;">
+# immunogenetr <img src='man/figures/immunogenetr_sticker.png' align="right" height="139" />
 
 <!-- badges: start -->
 
@@ -267,5 +265,4 @@ This project is licensed under the GNU General Public License v3.0. See
 the [LICENSE](LICENSE) file for details.
 
 </div>
-
 </div>
