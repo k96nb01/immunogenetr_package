@@ -36,26 +36,34 @@ and `suffix_to_remove` arguments can be used to clean up the column names. See t
 how these arguments are used.
 }
 \examples{
-#
-typing_table <- data.frame(
-  patient = c("patient1", "patient2", "patient3"),
-  mA1cd = c("A*01:01", "A*02:01", "A*03:01"),
-  mA2cd = c("A*11:01", "blank", "A*26:01"),
-  mB1cd = c("B*07:02", "B*08:01", "B*15:01"),
-  mB2cd = c("B*44:02", "B*40:01", "-"),
-  mC1cd = c("C*03:04", "C*04:01", "C*05:01"),
-  mC2cd = c("C*07:01", "C*07:02", "C*08:01"),
-  stringsAsFactors = FALSE
-)
+# The HLA_typing_LIS dataset contains a table as might be found in a clinical laboratory
+# information system:
+print(HLA_typing_LIS)
 
-print(typing_table$GL_string <- HLA_columns_to_GLstring(typing_table,
-  HLA_typing_columns =
-    c("mA1cd", "mA2cd", "mB1cd", "mB2cd", "mC1cd", "mC2cd"),
-  prefix_to_remove = "m", suffix_to_remove = "cd"
-))
+# The `HLA_columns_to_GLString` function can be used to coerce typing spread across
+# multiple columns into a GL string:
+library(dplyr)
+HLA_typing_LIS \%>\%
+  mutate(GL_string = HLA_columns_to_GLstring(
+    ., # Note that if this function is used inside a `mutate` call "." will have to be
+    # used as the first argument to extract data from the working data frame.
+    HLA_typing_columns = mA1Cd.recipient:mDPB12cd.recipient,
+    prefix_to_remove = "m",
+    suffix_to_remove = "Cd.recipient"
+  ),
+  .after = patient) \%>\%
+  select(patient, GL_string)
 
-# Can also be used on wild-caught data
-file <- HLA_typing_1[, -1]
-GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+# Using the base pipe:
+HLA_typing_LIS |>
+  mutate(GL_string = HLA_columns_to_GLstring(
+    HLA_typing_LIS, # If using the base pipe, the first argument will have to be
+    # the working data frame.
+    HLA_typing_columns = mA1Cd.recipient:mDPB12cd.recipient,
+    prefix_to_remove = "m",
+    suffix_to_remove = "Cd.recipient"
+  ),
+  .after = patient) |>
+  select(patient, GL_string)
 
 }
