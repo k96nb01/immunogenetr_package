@@ -21,10 +21,22 @@
 #'
 #' @examples
 #'
-#' file <- Haplotype_frequencies
-#' file$`HLA-A` <- HLA_prefix_add(file$`HLA-A`, "HLA-")
-#' file$`HLA-A` <- sapply(file$`HLA-A`, HLA_truncate)
-#' print(file$`HLA-A`)
+#' # The Haplotype_frequencies dataset contains a table with HLA typing spread across multiple columns:
+#' print(Haplotype_frequencies)
+#'
+#' # The `HLA_truncate` function can be used to truncate the typing results to 2 fields:
+#' library(dplyr)
+#' Haplotype_frequencies %>% mutate(
+#'   across(
+#'     "HLA-A":"HLA-DPB1",
+#'     ~ HLA_truncate(
+#'       .,
+#'       fields = 2,
+#'       keep_suffix = TRUE,
+#'       keep_G_P_group = FALSE
+#'     )
+#'   )
+#' )
 #'
 #' @export
 #'

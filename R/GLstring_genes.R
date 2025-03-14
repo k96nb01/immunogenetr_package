@@ -14,9 +14,11 @@
 #' @examples
 #'
 #' file <- HLA_typing_1[, -1]
-#' GL_string <- data.frame('GL_string' = HLA_columns_to_GLstring (
-#'   file, HLA_typing_columns = everything()))
-#' GL_string <- GL_string[1, , drop = FALSE]  # When considering first patient
+#' GL_string <- data.frame("GL_string" = HLA_columns_to_GLstring(
+#'   file,
+#'   HLA_typing_columns = everything()
+#' ))
+#' GL_string <- GL_string[1, , drop = FALSE] # When considering first patient
 #' result <- GLstring_genes(GL_string, "GL_string")
 #' print(result)
 #'

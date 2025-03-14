@@ -38,10 +38,6 @@
 #' mismatches <- HLA_mismatched_alleles(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 #' print(mismatches)
 #'
-#' # Output
-#' # "HLA-A:HLA-A*02:01+HLA-A*11:05, HLA-DR51/52/53:NA, HLA-DRB3/4/5:HLA-DRB3*01:03, HLA-DPB1:NA"
-
-#'
 #' @export
 #'
 #' @importFrom stringr str_c

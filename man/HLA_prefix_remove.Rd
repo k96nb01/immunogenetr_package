@@ -17,12 +17,16 @@ This function removes HLA and locus prefixes from a string of HLA typing:
 "HLA-A2" changes to "2".
 }
 \examples{
-df <- data.frame(
-  A1 = c("HLA-A2", "A2", "A*11:01", "A66", "HLA-DRB3*15:01"),
-  A2 = c("HLA-A1", "A1", "A*02:01", "A68", "HLA-DRB4*14:01"),
-  stringsAsFactors = FALSE
-)
+# The HLA_typing_1 dataset contains a table with HLA typing spread across multiple columns:
+print(HLA_typing_1)
 
-df <- HLA_prefix_remove(df)
+# The `HLA_prefix_remove` function can be used to get each column to have only the
+# colon-separated fields:
+library(dplyr)
+HLA_typing_1 \%>\% mutate(
+  across(A1:DPB1_2,
+         ~HLA_prefix_remove(.)
+  )
+)
 
 }

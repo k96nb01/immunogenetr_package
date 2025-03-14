@@ -31,9 +31,6 @@
 #' mismatches <- HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 #' print(mismatches)
 #'
-#' # Output
-#' # "HLA-A=TRUE"
-#'
 #' @export
 #'
 

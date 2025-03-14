@@ -31,8 +31,6 @@
 #'   direction = "bidirectional", match_grade = "Xof8"
 #' )
 #'
-#'
-#'
 #' @export
 #'
 

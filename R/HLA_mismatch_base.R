@@ -37,11 +37,6 @@
 #' mismatches <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 #' print(mismatches)
 #'
-#' # Output
-#' # "HLA-A=HLA-A*02:01+HLA-A*11:05, HLA-DR51/52/53=NA, HLA-DPB1=NA"
-#'
-#'
-#'
 #' @export
 #'
 #' @importFrom stringr str_split

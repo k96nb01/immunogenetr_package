@@ -43,7 +43,4 @@ loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
 mismatches <- HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 print(mismatches)
 
-# Output
-# "HLA-A=TRUE"
-
 }
