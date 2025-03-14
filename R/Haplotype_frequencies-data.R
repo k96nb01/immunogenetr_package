@@ -10,8 +10,8 @@
 #' \describe{
 #'   \item{HLA-A:HLA-DPB1}{HLA allele names}
 #'   \item{Global_Fq}{haplotype frequencies}
-#'   \item{Global_n}{haplottype observations}
-#'   \item{Global_rank}{haplottype rank}
+#'   \item{Global_n}{haplotype observations}
+#'   \item{Global_rank}{haplotype rank}
 #'     ...
 #' }
 #'

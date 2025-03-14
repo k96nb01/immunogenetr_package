@@ -31,7 +31,7 @@ mismatching in solid organ transplantation).}
 Defaults to 2, where homozygous alleles are treated as duplicated for
 mismatch calculations. Can be specified as 1, in which case homozygous
 alleles are treated as single occurrences without duplication (in other words,
-homozyougs mismatches are only "counted" once).}
+homozygous mismatches are only "counted" once).}
 }
 \value{
 A character vector, where each element is a string summarizing the
