@@ -8,8 +8,8 @@
 #' @return A tibble with the sample name and the GL string.
 #'
 #' @examples
-#' HML_1 <- system.file("extdata", "HML_1.hml", package="immunogenetr")
-#' HML_2 <- system.file("extdata", "hml_2.hml", package="immunogenetr")
+#' HML_1 <- system.file("extdata", "HML_1.hml", package = "immunogenetr")
+#' HML_2 <- system.file("extdata", "hml_2.hml", package = "immunogenetr")
 #'
 #' read_HML(HML_1)
 #' read_HML(HML_2)
@@ -31,26 +31,29 @@
 #' @importFrom tidyr pivot_wider
 #' @importFrom tidyr unite
 
-read_HML <- function(HML_file){
+read_HML <- function(HML_file) {
   # Validate input
   if (!file.exists(HML_file)) {
     stop("The file does not exist:", HML_file)
   }
 
   # Load the HML file
-  HML <- tryCatch({
-    read_xml(HML_file)
-  }, error = function(e){
-    stop("Failed to read HML; check that file is in compliant HML format.")
-  })
+  HML <- tryCatch(
+    {
+      read_xml(HML_file)
+    },
+    error = function(e) {
+      stop("Failed to read HML; check that file is in compliant HML format.")
+    }
+  )
 
   # Filter for all the children in the HML file that represent a sample
   samples <- xml_find_all(HML, ".//d1:sample")
 
   # Get sample number and GL strings for each sample
-  GL_strings <- map(samples, function(node){
+  GL_strings <- map(samples, function(node) {
     # Get sample ID
-    sampleID <-  xml_attr(node, "id")
+    sampleID <- xml_attr(node, "id")
     # Get GL strings
     glstring <- xml_text(xml_find_all(node, ".//d1:glstring"))
     # Combine to a tibble
@@ -71,8 +74,6 @@ read_HML <- function(HML_file){
 
   # Combine to a single GL string per sample
   summarise(reduced, GL_string = str_flatten(glstring, collapse = "^"), .by = sampleID)
-
 }
 
 globalVariables(c("glstring", "sampleID"))
-

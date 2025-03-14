@@ -31,7 +31,7 @@
 #'   stringsAsFactors = FALSE
 #' )
 #'
-#' View(typing_table$GL_string <- HLA_columns_to_GLstring(typing_table,
+#' print(typing_table$GL_string <- HLA_columns_to_GLstring(typing_table,
 #'   HLA_typing_columns =
 #'     c("mA1cd", "mA2cd", "mB1cd", "mB2cd", "mC1cd", "mC2cd"),
 #'   prefix_to_remove = "m", suffix_to_remove = "cd"

@@ -1,5 +1,5 @@
-library(testthat)        # load testthat package
-library(immunogenetr)       # load our package
+library(testthat) # load testthat package
+library(immunogenetr) # load our package
 library(dplyr)
 
 # Test whether the output is a data frame

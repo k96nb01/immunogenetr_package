@@ -20,6 +20,3 @@
 #' @source <https://doi.org/10.1016/j.humimm.2021.04.007>
 #'
 "Haplotype_frequencies"
-
-
-

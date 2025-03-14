@@ -29,10 +29,14 @@
 #' string in the format "Locus1=Count1, Locus2=Count2, ...".
 #'
 #' @examples
-#' # Example recipient and donor GL strings
-#' GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-#' GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
-#' loci <- c("HLA-A", "HLA-B")
+#'
+#' file <- HLA_typing_1[, -1]
+#' GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+#'
+#' GL_string_recip <- GL_string[1]
+#' GL_string_donor <- GL_string[2]
+#'
+#' loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
 #'
 #' # Calculate mismatch numbers (Host vs. Graft)
 #' HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "HvG")
@@ -42,7 +46,9 @@
 #'
 #' # Calculate mismatch numbers (Bidirectional)
 #' HLA_mismatch_number(GL_string_recip, GL_string_donor,
-#' loci, direction = "bidirectional")
+#'   loci,
+#'   direction = "bidirectional"
+#' )
 #'
 #' @export
 #'
@@ -60,7 +66,7 @@
 #' @importFrom tidyr unite
 
 
-HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2){
+HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
   # Code to determine mismatch numbers if a single locus was supplied.
   if (length(loci) == 1) {
@@ -71,11 +77,11 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
     MM_table <- tibble(HvG, GvH) %>%
       mutate(bidirectional = pmax(HvG, GvH, na.rm = TRUE))
     # Return the result based on the direction argument.
-    if (direction == "HvG" | direction == "SOT"){
+    if (direction == "HvG" | direction == "SOT") {
       return(MM_table$HvG)
-    } else if (direction == "GvH"){
+    } else if (direction == "GvH") {
       return(MM_table$GvH)
-    } else if (direction == "bidirectional"){
+    } else if (direction == "bidirectional") {
       return(MM_table$bidirectional)
     }
   } else {
@@ -136,6 +142,7 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
   }
 }
 
-globalVariables(c("mismatches", "case", "HvG_number", "GvH_number", "MM", "bidirectional",
-                  "str_count", "left_join", "join_by"))
-
+globalVariables(c(
+  "mismatches", "case", "HvG_number", "GvH_number", "MM", "bidirectional",
+  "str_count", "left_join", "join_by"
+))

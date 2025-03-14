@@ -24,7 +24,7 @@
 #' file <- Haplotype_frequencies
 #' file$`HLA-A` <- HLA_prefix_add(file$`HLA-A`, "HLA-")
 #' file$`HLA-A` <- sapply(file$`HLA-A`, HLA_truncate)
-#' View(file$`HLA-A`)
+#' print(file$`HLA-A`)
 #'
 #' @export
 #'

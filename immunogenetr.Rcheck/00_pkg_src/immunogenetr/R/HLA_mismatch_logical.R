@@ -20,13 +20,19 @@
 #' - `FALSE` if there are no mismatches.
 #'
 #' @examples
-#' # Example recipient and donor GL strings
-#' GL_string_recip <- "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21"
-#' GL_string_donor <- "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01"
 #'
-#' # Check if there are mismatches for HLA-A (Graft vs. Host)
-#' HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci =
-#' "HLA-A", direction = "GvH")
+#' file <- HLA_typing_1[, -1]
+#' GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+#'
+#' GL_string_recip <- GL_string[1]
+#' GL_string_donor <- GL_string[2]
+#'
+#' loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
+#' mismatches <- HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci, direction = "HvG")
+#' print(mismatches)
+#'
+#' # Output
+#' # "HLA-A=TRUE"
 #'
 #' @export
 #'
@@ -42,11 +48,11 @@ HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, directi
     MM_table <- tibble(HvG, GvH) %>%
       mutate(bidirectional = HvG | GvH)
     # Return the result based on the direction argument.
-    if (direction == "HvG" | direction == "SOT"){
+    if (direction == "HvG" | direction == "SOT") {
       return(MM_table$HvG)
-    } else if (direction == "GvH"){
+    } else if (direction == "GvH") {
       return(MM_table$GvH)
-    } else if (direction == "bidirectional"){
+    } else if (direction == "bidirectional") {
       return(MM_table$bidirectional)
     }
   } else {

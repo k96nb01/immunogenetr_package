@@ -7,7 +7,7 @@ Authors@R: c(
     person("Busra", "Coskun", email = "bcoskun@sas.upenn.edu", role = "aut"))
 Description: Makes wrangling HLA data to WHO-approved nomenclature easier. 
   Uses GL string for encoding genotypes.
-License: GPL-3
+License: GPL-3 + file LICENSE
 URL: https://github.com/k96nb01/immunogenetr_package
 BugReports: https://github.com/k96nb01/immunogenetr_package/issues
 Depends: R (>= 3.5.0)
@@ -20,8 +20,8 @@ Config/testthat/edition: 3
 Imports: cli, dplyr, glue, purrr, rlang, stringr, tibble, tidyr,
         tidyselect, xml2, magrittr
 NeedsCompilation: no
-Packaged: 2025-02-16 00:13:38 UTC; busra
+Packaged: 2025-03-14 03:56:34 UTC; busra
 Author: Nicholas Brown [cre, aut],
   Busra Coskun [aut]
 Maintainer: Nicholas Brown <nicholas.brown@pennmedicine.upenn.edu>
-Built: R 4.4.1; ; 2025-02-16 00:13:52 UTC; unix
+Built: R 4.4.1; ; 2025-03-14 03:56:50 UTC; unix

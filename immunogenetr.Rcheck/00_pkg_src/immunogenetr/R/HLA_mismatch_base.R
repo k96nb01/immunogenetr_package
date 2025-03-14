@@ -27,17 +27,20 @@
 
 #'
 #' @examples
-#' GL_string_recip <- "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52
-#' ^HLA-DPB1*04:01"
-#' GL_string_donor <- "HLA-A3+HLA-A69^HLA-Cw10+HLA-Cw9^HLA-DR4+HLA-DR17^HLA-DR52
-#' +HLA-DR53^HLA-DPB1*04:01+HLA-DPB1*04:02"
-#' loci <- c("HLA-A", "HLA-Cw", "HLA-DR51/52/53", "HLA-DPB1")
+#' file <- HLA_typing_1[, -1]
+#' GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+#'
+#' GL_string_recip <- GL_string[1]
+#' GL_string_donor <- GL_string[2]
+#'
+#' loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
 #' mismatches <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 #' print(mismatches)
 #'
 #' # Output
-#' # "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"
-
+#' # "HLA-A=HLA-A*02:01+HLA-A*11:05, HLA-DR51/52/53=NA, HLA-DPB1=NA"
+#'
+#'
 #'
 #' @export
 #'
@@ -62,7 +65,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
   }
 
   # Check for ambiguity
-  if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]") )) {
+  if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]"))) {
     stop("The matching/mismatching functions do not support ambiguous GL strings containing | or /. Process your GL strings to result in unambiguous genotypes before using these functions.")
   }
 
@@ -83,7 +86,6 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
 
     # Return processed alleles as a single GL string
     return(str_flatten(alleles, collapse = "+", na.rm = TRUE))
-
   }
 
   # Function to process each pair of recipient/donor alleles
@@ -127,7 +129,8 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
         str_detect(.x, "\\*") ~ strsplit(.x, "\\*")[[1]][1],
         # Serologic nomenclature
         !str_detect(.x, "\\*") && str_detect(.x, "HLA-DR5[123]") ~ "HLA-DR51/52/53",
-        !str_detect(.x, "\\*") ~ str_extract(.x, "^HLA-[A-Za-z]+"))
+        !str_detect(.x, "\\*") ~ str_extract(.x, "^HLA-[A-Za-z]+")
+      )
     )
     names(donor_alleles_list_processed) <- map_chr(
       donor_alleles_list_processed,
@@ -137,7 +140,8 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
         str_detect(.x, "\\*") ~ strsplit(.x, "\\*")[[1]][1],
         # Serologic nomenclature
         !str_detect(.x, "\\*") && str_detect(.x, "HLA-DR5[123]") ~ "HLA-DR51/52/53",
-        !str_detect(.x, "\\*") ~ str_extract(.x, "^HLA-[A-Za-z]+"))
+        !str_detect(.x, "\\*") ~ str_extract(.x, "^HLA-[A-Za-z]+")
+      )
     )
 
     # Find which supplied loci are missing from recipient and donor genotypes
@@ -145,8 +149,10 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
 
     if (length(missing_loci_from_recipient) > 0 || length(missing_loci_from_donor) > 0) {
-      stop(paste("Either the recipient and/or donor GL strings are missing these loci:",
-                 paste(union(missing_loci_from_recipient, missing_loci_from_donor), collapse = ", ")))
+      stop(paste(
+        "Either the recipient and/or donor GL strings are missing these loci:",
+        paste(union(missing_loci_from_recipient, missing_loci_from_donor), collapse = ", ")
+      ))
     }
 
     # Mismatch results calculation
@@ -157,14 +163,14 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
 
       if (direction == "GvH") {
         # Calculate matches (Including nulls)
-        matched_allele_1 <- intersect(unlist(strsplit(donor_alleles_str,"\\+"))[1], unlist(strsplit(recip_alleles_str,"\\+")))
-        matched_allele_2 <- intersect(unlist(strsplit(donor_alleles_str,"\\+"))[2], unlist(strsplit(recip_alleles_str,"\\+")))
+        matched_allele_1 <- intersect(unlist(strsplit(donor_alleles_str, "\\+"))[1], unlist(strsplit(recip_alleles_str, "\\+")))
+        matched_allele_2 <- intersect(unlist(strsplit(donor_alleles_str, "\\+"))[2], unlist(strsplit(recip_alleles_str, "\\+")))
         matched_alleles <- discard(c(matched_allele_1, matched_allele_2), is.na)
         # Calculate mismatches (excluding nulls)
         recip_valid <- unlist(strsplit(recip_alleles_str, "\\+"))
         recip_valid <- recip_valid[!str_detect(recip_valid, "[Nn]$")]
-        mismatched_allele_1 <- setdiff(recip_valid[1], unlist(strsplit(donor_alleles_str,"\\+")))
-        mismatched_allele_2 <- setdiff(recip_valid[2], unlist(strsplit(donor_alleles_str,"\\+")))
+        mismatched_allele_1 <- setdiff(recip_valid[1], unlist(strsplit(donor_alleles_str, "\\+")))
+        mismatched_allele_2 <- setdiff(recip_valid[2], unlist(strsplit(donor_alleles_str, "\\+")))
         mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
         # Count number of matches and mismatches
         total_match_mismatch <- length(matched_alleles) + length(mismatched_alleles)
@@ -174,14 +180,14 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
         }
       } else if (direction == "HvG") {
         # Calculate matches (Including nulls)
-        matched_allele_1 <- intersect(unlist(strsplit(recip_alleles_str,"\\+"))[1], unlist(strsplit(donor_alleles_str,"\\+")))
-        matched_allele_2 <- intersect(unlist(strsplit(recip_alleles_str,"\\+"))[2], unlist(strsplit(donor_alleles_str,"\\+")))
+        matched_allele_1 <- intersect(unlist(strsplit(recip_alleles_str, "\\+"))[1], unlist(strsplit(donor_alleles_str, "\\+")))
+        matched_allele_2 <- intersect(unlist(strsplit(recip_alleles_str, "\\+"))[2], unlist(strsplit(donor_alleles_str, "\\+")))
         matched_alleles <- discard(c(matched_allele_1, matched_allele_2), is.na)
         # Calculate mismatches (excluding nulls)
         donor_valid <- unlist(strsplit(donor_alleles_str, "\\+"))
         donor_valid <- donor_valid[!str_detect(donor_valid, "[Nn]$")]
-        mismatched_allele_1 <- setdiff(donor_valid[1], unlist(strsplit(recip_alleles_str,"\\+")))
-        mismatched_allele_2 <- setdiff(donor_valid[2], unlist(strsplit(recip_alleles_str,"\\+")))
+        mismatched_allele_1 <- setdiff(donor_valid[1], unlist(strsplit(recip_alleles_str, "\\+")))
+        mismatched_allele_2 <- setdiff(donor_valid[2], unlist(strsplit(recip_alleles_str, "\\+")))
         mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
         # Count number of matches and mismatches
         total_match_mismatch <- length(matched_alleles) + length(mismatched_alleles)
@@ -206,7 +212,9 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
 
     # If only a single locus was selected in the arguments, output without starting with the locus name followed by an equal sign.
     if (length(loci) == 1) {
-      result %>% str_replace(str_c(loci, "="), "") %>% na_if("NA")
+      result %>%
+        str_replace(str_c(loci, "="), "") %>%
+        na_if("NA")
     } else {
       return(result)
     }
@@ -217,4 +225,3 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
 }
 
 globalVariables(c(".", "process_alleles"))
-

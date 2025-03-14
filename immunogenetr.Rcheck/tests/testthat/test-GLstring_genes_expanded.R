@@ -21,7 +21,7 @@ test_that("GLstring_genes_expanded correctly expands GL strings into separate lo
   expect_equal(sum(result$C == "HLA-C*07:01"), 1)
   expect_equal(sum(result$B == "HLA-B*08:01"), 1)
   expect_equal(sum(result$B == "HLA-B*13:02"), 1)
-  #expect_equal(sum(result$DRB4 == "HLA-DRB4*01:03"), 1) #expected to be 2??
+  # expect_equal(sum(result$DRB4 == "HLA-DRB4*01:03"), 1) #expected to be 2??
   expect_equal(sum(result$DRB1 == "HLA-DRB1*04:01"), 1)
   expect_equal(sum(result$DRB1 == "HLA-DRB1*07:01"), 1)
 })

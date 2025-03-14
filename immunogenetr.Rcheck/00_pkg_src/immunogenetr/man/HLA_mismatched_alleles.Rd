@@ -46,15 +46,17 @@ mismatches based on the direction of comparison specified in the inputs
 and also handles homozygosity.
 }
 \examples{
-GL_string_recip <- "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52
-^HLA-DPB1*04:01"
-GL_string_donor <- "HLA-A3+HLA-A69^HLA-Cw10+HLA-Cw9^HLA-DR4+HLA-DR17^HLA-DR52
-+HLA-DR53^HLA-DPB1*04:01+HLA-DPB1*04:02"
-loci <- c("HLA-A", "HLA-Cw", "HLA-DR51/52/53", "HLA-DPB1")
-mismatches <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction = "HvG")
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+
+GL_string_recip <- GL_string[1]
+GL_string_donor <- GL_string[2]
+
+loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
+mismatches <- HLA_mismatched_alleles(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 print(mismatches)
 
 # Output
-# "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"
+# "HLA-A:HLA-A*02:01+HLA-A*11:05, HLA-DR51/52/53:NA, HLA-DRB3/4/5:HLA-DRB3*01:03, HLA-DPB1:NA"
 
 }

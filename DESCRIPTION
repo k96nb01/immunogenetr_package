@@ -7,7 +7,7 @@ Authors@R: c(
     person("Busra", "Coskun", email = "bcoskun@sas.upenn.edu", role = "aut"))
 Description: Makes wrangling HLA data to WHO-approved nomenclature easier. 
   Uses GL string for encoding genotypes.
-License: GPL-3
+License: GPL-3 + file LICENSE
 URL: https://github.com/k96nb01/immunogenetr_package
 BugReports: https://github.com/k96nb01/immunogenetr_package/issues
 Depends:

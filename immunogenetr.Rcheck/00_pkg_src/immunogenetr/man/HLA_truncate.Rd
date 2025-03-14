@@ -31,8 +31,10 @@ will work on individual alleles (e.g. "HLA-A*02:01:01:01") or on all alleles
 in a GL string (e.g. "HLA-A*02:01:01:01+HLA-A*68:01:01^HLA-DRB1*01:01:01+HLA-DRB1*03:01:01").
 }
 \examples{
-typing <- "A*01:01:01:02N"
-HLA_truncate(typing) # "A*01:01"
 
+file <- Haplotype_frequencies
+file$`HLA-A` <- HLA_prefix_add(file$`HLA-A`, "HLA-")
+file$`HLA-A` <- sapply(file$`HLA-A`, HLA_truncate)
+print(file$`HLA-A`)
 
 }

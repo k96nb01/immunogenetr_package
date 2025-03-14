@@ -13,14 +13,13 @@
 #' allele for a specific locus.
 #'
 #' @examples
-#' table <- data.frame(
-#' GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^
-#' HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01",
-#' stringsAsFactors = FALSE
-#' )
 #'
-#' GLstring_genes_expanded(table, "GL_string")
-
+#' file <- HLA_typing_1[, -1]
+#' GL_string <- data.frame('GL_string' = HLA_columns_to_GLstring (
+#'   file, HLA_typing_columns = everything()))
+#' GL_string <- GL_string[1, , drop = FALSE]  # When considering first patient
+#' result <- GLstring_genes_expanded(GL_string, "GL_string")
+#' print(result)
 #'
 #' @export
 #'
@@ -35,12 +34,11 @@
 GLstring_genes_expanded <- function(data, gl_string) {
   data %>%
     GLstring_genes(all_of(gl_string)) %>%
-    pivot_longer(cols = everything(), names_to = "locus", values_to = "alleles") %>%  # Pivot to long format
-    mutate(locus = gsub("HLA-|HLA_", "", locus)) %>%  # Normalize locus names
-    separate_rows(alleles, sep = "\\+") %>%  # Separate rows by "+"
-    pivot_wider(names_from = locus, values_from = alleles, values_fn = list(alleles = list)) %>%  # Pivot back to wide format
-    unnest(cols = everything())  # Unnest the columns
+    pivot_longer(cols = everything(), names_to = "locus", values_to = "alleles") %>% # Pivot to long format
+    mutate(locus = gsub("HLA-|HLA_", "", locus)) %>% # Normalize locus names
+    separate_rows(alleles, sep = "\\+") %>% # Separate rows by "+"
+    pivot_wider(names_from = locus, values_from = alleles, values_fn = list(alleles = list)) %>% # Pivot back to wide format
+    unnest(cols = everything()) # Unnest the columns
 }
 
 globalVariables(c("alleles", "everything"))
-

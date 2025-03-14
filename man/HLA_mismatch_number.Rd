@@ -55,7 +55,7 @@ GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
 GL_string_recip <- GL_string[1]
 GL_string_donor <- GL_string[2]
 
-loci <- c("HLA-A", "HLA-DR51/52/53", "HLA-DRB3/4/5", "HLA-DPB1")
+loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
 
 # Calculate mismatch numbers (Host vs. Graft)
 HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "HvG")

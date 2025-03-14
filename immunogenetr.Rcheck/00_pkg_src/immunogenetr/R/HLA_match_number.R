@@ -23,9 +23,12 @@
 #' string in the format "Locus1=Count1, Locus2=Count2, ...".
 #'
 #' @examples
-#' # Example recipient and donor GL strings
-#' GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-#' GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
+#'
+#' file <- HLA_typing_1[, -1]
+#' GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+#' GL_string_recip <- GL_string[1]
+#' GL_string_donor <- GL_string[2]
+#'
 #' loci <- c("HLA-A", "HLA-B")
 #'
 #' # Calculate mismatch numbers (Host vs. Graft)
@@ -36,12 +39,14 @@
 #'
 #' # Calculate mismatch numbers (Bidirectional)
 #' HLA_match_number(GL_string_recip, GL_string_donor,
-#' loci, direction = "bidirectional")
+#'   loci,
+#'   direction = "bidirectional"
+#' )
 #'
 #' @export
 #'
 
-HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction = "bidirectional"){
+HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction = "bidirectional") {
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
   # Code to determine match numbers if a single locus was supplied.
   if (length(loci) == 1) {

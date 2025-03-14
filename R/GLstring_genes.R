@@ -18,7 +18,7 @@
 #'   file, HLA_typing_columns = everything()))
 #' GL_string <- GL_string[1, , drop = FALSE]  # When considering first patient
 #' result <- GLstring_genes(GL_string, "GL_string")
-#' View(result)
+#' print(result)
 #'
 #' @export
 #'

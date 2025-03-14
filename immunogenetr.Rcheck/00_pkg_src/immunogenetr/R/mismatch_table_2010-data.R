@@ -18,6 +18,3 @@
 #' @source <https://www.nature.com/articles/bmt2010132>
 #'
 "mismatch_table_2010"
-
-
-

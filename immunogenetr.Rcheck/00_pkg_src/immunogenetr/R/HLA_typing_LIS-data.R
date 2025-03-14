@@ -19,6 +19,3 @@
 #' @source Synthetic data from Nicholas K. Brown.
 #'
 "HLA_typing_LIS"
-
-
-

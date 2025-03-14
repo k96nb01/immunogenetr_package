@@ -13,13 +13,10 @@
 #' for each locus, in GL string format.
 #'
 #' @examples
-#' HLA_type <- data.frame(
-#'   sample = c("sample1", "sample2"),
-#'   HLA_A1 = c("HLA-A*01:01", "HLA-A*02:01"),
-#'   HLA_A2 = c("HLA-A*01:02", "HLA-A*02:02"),
-#'   stringsAsFactors = FALSE
-#' )
-#' GLstring_gene_copies_combine(HLA_type, columns = c("HLA_A1", "HLA_A2"))
+#' library(dplyr)
+#' HLA_typing_1 %>%
+#' mutate(across(A1:B2, ~HLA_prefix_add(.))) %>%
+#' GLstring_gene_copies_combine(c(A1:B2), sample_column = patient)
 #'
 #' @export
 #'
@@ -36,15 +33,15 @@
 #' @importFrom stringr str_replace
 
 
-GLstring_gene_copies_combine <- function(.data, columns, sample_column = "sample"){
+GLstring_gene_copies_combine <- function(.data, columns, sample_column = "sample") {
   # Identify the columns to modify
-  cols2mod <- names(select(.data, {{columns}}))
+  cols2mod <- names(select(.data, {{ columns }}))
 
   .data %>%
     pivot_longer(all_of(cols2mod), names_to = "locus", values_to = "allele") %>%
     mutate(locus = str_extract(allele, "HLA-[:alnum:]+")) %>%
     filter(!is.na(locus)) %>%
-    summarise(allele = str_c(allele, collapse = "+"), .by = c({{sample_column}}, locus)) %>%
+    summarise(allele = str_c(allele, collapse = "+"), .by = c({{ sample_column }}, locus)) %>%
     pivot_wider(names_from = locus, values_from = allele) %>%
     rename_with(~ str_replace(., "HLA\\-", "HLA_"))
 }

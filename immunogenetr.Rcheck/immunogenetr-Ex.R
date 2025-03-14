@@ -30,12 +30,9 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-GL_string <- "HLA-A*01:01:01:01/HLA-A*01:02/HLA-A*01:03/HLA-A
-  *01:95+HLA-A*24:02:01:01|HLA-A*01:01:01:01/HLA-A*01:03+HLA-A*24:03:01:01
-  ^HLA-B*07:01:01+B*15:01:01/B*15:02:01|B*07:03+B*15:99:01^HLA-DRB1*03:01:02
-  ~HLA-DRB5*01:01:01+HLA-KIR2DL5A*0010101+HLA-KIR2DL5A*0010201?
-  HLA-KIR2DL5B*0010201+HLA-KIR2DL5B*0010301"
-result <- GLstring_expand_longer(GL_string)
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+result <- GLstring_expand_longer(GL_string[1])
 print(result)
 
 
@@ -56,13 +53,10 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-HLA_type <- data.frame(
-  sample = c("sample1", "sample2"),
-  HLA_A1 = c("HLA-A*01:01", "HLA-A*02:01"),
-  HLA_A2 = c("HLA-A*01:02", "HLA-A*02:02"),
-  stringsAsFactors = FALSE
-)
-GLstring_gene_copies_combine(HLA_type, columns = c("HLA_A1", "HLA_A2"))
+library(dplyr)
+HLA_typing_1 %>%
+mutate(across(A1:B2, ~HLA_prefix_add(.))) %>%
+GLstring_gene_copies_combine(c(A1:B2), sample_column = patient)
 
 
 
@@ -82,12 +76,13 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-table <- data.frame(
-  GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*
-  08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01",
-  stringsAsFactors = FALSE
-)
-GLstring_genes(table, "GL_string")
+
+file <- HLA_typing_1[, -1]
+GL_string <- data.frame('GL_string' = HLA_columns_to_GLstring (
+  file, HLA_typing_columns = everything()))
+GL_string <- GL_string[1, , drop = FALSE]  # When considering first patient
+result <- GLstring_genes(GL_string, "GL_string")
+print(result)
 
 
 
@@ -107,13 +102,13 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-table <- data.frame(
-GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^
-HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03+HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01",
-stringsAsFactors = FALSE
-)
 
-GLstring_genes_expanded(table, "GL_string")
+file <- HLA_typing_1[, -1]
+GL_string <- data.frame('GL_string' = HLA_columns_to_GLstring (
+  file, HLA_typing_columns = everything()))
+GL_string <- GL_string[1, , drop = FALSE]  # When considering first patient
+result <- GLstring_genes_expanded(GL_string, "GL_string")
+print(result)
 
 
 
@@ -134,10 +129,10 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 ### ** Examples
 
 HLA_type <- data.frame(
-sample = c("sample1", "sample2"),
-HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55|A*01:99+A*68:66", "A*02:01+A*03:01|A*02:02+A*03:03"),
-HLA_B = c("B*07:02+B*58:01|B*07:03+B*58:09", "B*08:01+B*15:01|B*08:02+B*15:17"),
-stringsAsFactors = FALSE
+  sample = c("sample1", "sample2"),
+  HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55|A*01:99+A*68:66", "A*02:01+A*03:01|A*02:02+A*03:03"),
+  HLA_B = c("B*07:02+B*58:01|B*07:03+B*58:09", "B*08:01+B*15:01|B*08:02+B*15:17"),
+  stringsAsFactors = FALSE
 )
 
 GLstring_genotype_ambiguity(HLA_type, columns = c("HLA_A", "HLA_B"), keep_ambiguities = TRUE)
@@ -182,10 +177,10 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 ### ** Examples
 
 HLA_type <- data.frame(
-"HLA-A*" = c("01:01", "02:01"),
-"HLA-B*" = c("07:02", "08:01"),
-"HLA-C*" = c("03:04", "04:01"),
-stringsAsFactors = FALSE
+  "HLA-A*" = c("01:01", "02:01"),
+  "HLA-B*" = c("07:02", "08:01"),
+  "HLA-C*" = c("03:04", "04:01"),
+  stringsAsFactors = FALSE
 )
 
 HLA_column_repair(HLA_type, format = "tidyverse")
@@ -208,20 +203,27 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
+#
 typing_table <- data.frame(
-patient = c("patient1", "patient2", "patient3"),
-mA1cd = c("A*01:01", "A*02:01", "A*03:01"),
-mA2cd = c("A*11:01", "blank", "A*26:01"),
-mB1cd = c("B*07:02", "B*08:01", "B*15:01"),
-mB2cd = c("B*44:02", "B*40:01", "-"),
-mC1cd = c("C*03:04", "C*04:01", "C*05:01"),
-mC2cd = c("C*07:01", "C*07:02", "C*08:01"),
-stringsAsFactors = FALSE
+  patient = c("patient1", "patient2", "patient3"),
+  mA1cd = c("A*01:01", "A*02:01", "A*03:01"),
+  mA2cd = c("A*11:01", "blank", "A*26:01"),
+  mB1cd = c("B*07:02", "B*08:01", "B*15:01"),
+  mB2cd = c("B*44:02", "B*40:01", "-"),
+  mC1cd = c("C*03:04", "C*04:01", "C*05:01"),
+  mC2cd = c("C*07:01", "C*07:02", "C*08:01"),
+  stringsAsFactors = FALSE
 )
 
-typing_table$GL_string <- HLA_columns_to_GLstring(typing_table, HLA_typing_columns =
-c("mA1cd", "mA2cd", "mB1cd", "mB2cd", "mC1cd", "mC2cd"),
-prefix_to_remove = "m", suffix_to_remove = "cd")
+print(typing_table$GL_string <- HLA_columns_to_GLstring(typing_table,
+  HLA_typing_columns =
+    c("mA1cd", "mA2cd", "mB1cd", "mB2cd", "mC1cd", "mC2cd"),
+  prefix_to_remove = "m", suffix_to_remove = "cd"
+))
+
+# Can also be used on wild-caught data
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
 
 
 
@@ -241,9 +243,12 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-# Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
+
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+GL_string_recip <- GL_string[1]
+GL_string_donor <- GL_string[2]
+
 loci <- c("HLA-A", "HLA-B")
 
 # Calculate mismatch numbers (Host vs. Graft)
@@ -254,7 +259,9 @@ HLA_match_number(GL_string_recip, GL_string_donor, loci, direction = "GvH")
 
 # Calculate mismatch numbers (Bidirectional)
 HLA_match_number(GL_string_recip, GL_string_donor,
-loci, direction = "bidirectional")
+  loci,
+  direction = "bidirectional"
+)
 
 
 
@@ -275,16 +282,18 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 ### ** Examples
 
 # Example recipient and donor GL strings
-GL_string_recip <-
-"HLA-A*29:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB1*04:01+
-HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
-GL_string_donor <-
-"HLA-A*02:01+HLA-A*29:02^HLA-C*06:01+HLA-C*07:02^HLA-B*08:01+
-HLA-B*13:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQB1*02:02+HLA-DQB1*03:02"
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+
+GL_string_recip <- GL_string[1]
+GL_string_donor <- GL_string[2]
 
 # Calculate mismatch numbers
 HLA_match_summary_HCT(GL_string_recip, GL_string_donor,
-direction = "bidirectional", match_grade = "Xof8")
+  direction = "bidirectional", match_grade = "Xof8"
+)
+
+
 
 
 
@@ -304,16 +313,20 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-GL_string_recip <- "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52
-^HLA-DPB1*04:01"
-GL_string_donor <- "HLA-A3+HLA-A69^HLA-Cw10+HLA-Cw9^HLA-DR4+HLA-DR17^HLA-DR52
-+HLA-DR53^HLA-DPB1*04:01+HLA-DPB1*04:02"
-loci <- c("HLA-A", "HLA-Cw", "HLA-DR51/52/53", "HLA-DPB1")
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+
+GL_string_recip <- GL_string[1]
+GL_string_donor <- GL_string[2]
+
+loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
 mismatches <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 print(mismatches)
 
 # Output
-# "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"
+# "HLA-A=HLA-A*02:01+HLA-A*11:05, HLA-DR51/52/53=NA, HLA-DPB1=NA"
+
+
 
 
 
@@ -333,13 +346,19 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-# Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*03:01+HLA-A*74:01^HLA-DRB3*03:01^HLA-DRB5*02:21"
-GL_string_donor <- "HLA-A*03:02+HLA-A*20:01^HLA-DRB3*03:01"
 
-# Check if there are mismatches for HLA-A (Graft vs. Host)
-HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci =
-"HLA-A", direction = "GvH")
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+
+GL_string_recip <- GL_string[1]
+GL_string_donor <- GL_string[2]
+
+loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
+mismatches <- HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci, direction = "HvG")
+print(mismatches)
+
+# Output
+# "HLA-A=TRUE"
 
 
 
@@ -359,10 +378,14 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-# Example recipient and donor GL strings
-GL_string_recip <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
-GL_string_donor <- "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
-loci <- c("HLA-A", "HLA-B")
+
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+
+GL_string_recip <- GL_string[1]
+GL_string_donor <- GL_string[2]
+
+loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
 
 # Calculate mismatch numbers (Host vs. Graft)
 HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "HvG")
@@ -372,7 +395,9 @@ HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, direction = "GvH")
 
 # Calculate mismatch numbers (Bidirectional)
 HLA_mismatch_number(GL_string_recip, GL_string_donor,
-loci, direction = "bidirectional")
+  loci,
+  direction = "bidirectional"
+)
 
 
 
@@ -392,16 +417,18 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-GL_string_recip <- "HLA-A2+HLA-A68^HLA-Cw1+HLA-Cw17^HLA-DR1+HLA-DR17^HLA-DR52
-^HLA-DPB1*04:01"
-GL_string_donor <- "HLA-A3+HLA-A69^HLA-Cw10+HLA-Cw9^HLA-DR4+HLA-DR17^HLA-DR52
-+HLA-DR53^HLA-DPB1*04:01+HLA-DPB1*04:02"
-loci <- c("HLA-A", "HLA-Cw", "HLA-DR51/52/53", "HLA-DPB1")
-mismatches <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction = "HvG")
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+
+GL_string_recip <- GL_string[1]
+GL_string_donor <- GL_string[2]
+
+loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
+mismatches <- HLA_mismatched_alleles(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 print(mismatches)
 
 # Output
-# "HLA-A=HLA-A3+HLA-A69, HLA-Cw=HLA-Cw10+HLA-Cw9, HLA-DR51/52/53=HLA-DR53, HLA-DPB1=HLA-DPB1*04:02"
+# "HLA-A:HLA-A*02:01+HLA-A*11:05, HLA-DR51/52/53:NA, HLA-DRB3/4/5:HLA-DRB3*01:03, HLA-DPB1:NA"
 
 
 
@@ -421,17 +448,12 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-df <- data.frame(
-  A1 = c("01:01", "02:01"),
-  A2 = c("03:01", "11:01"),
-  B1 = c("07:02", "08:01"),
-  B2 = c("15:01", "44:02"),
-  stringsAsFactors = FALSE
-)
 
-# Add "HLA-A*" prefix to columns A1 and A2
-df$A1 <- HLA_prefix_add(df$A1, "HLA-A*")
-df$A2 <- HLA_prefix_add(df$A2, "HLA-A*")
+file <- HLA_typing_1[, -1]
+
+# Add "HLA-" prefix to columns A1 and A2
+file$A1 <- HLA_prefix_add(file$A1, "HLA-")
+file$A2 <- HLA_prefix_add(file$A2, "HLA-")
 
 
 
@@ -477,9 +499,11 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-typing <- "A*01:01:01:02N"
-HLA_truncate(typing) # "A*01:01"
 
+file <- Haplotype_frequencies
+file$`HLA-A` <- HLA_prefix_add(file$`HLA-A`, "HLA-")
+file$`HLA-A` <- sapply(file$`HLA-A`, HLA_truncate)
+print(file$`HLA-A`)
 
 
 
@@ -533,46 +557,46 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 # Example data frame input
 data <- tibble::tribble(
-~value,                  ~entry, ~possible_gene_location,
-~locus, ~genotype_ambiguity, ~genotype, ~haplotype, ~allele,
-"HLA-A*01:01:01:01",     1,      1,
-1,      1,                   1,         1,          1,
-"HLA-A*01:02",           1,      1,
-1,      1,                   1,         1,          2,
-"HLA-A*01:03",           1,      1,
-1,      1,                   1,         1,          3,
-"HLA-A*01:95",           1,      1,
-1,      1,                   1,         1,          4,
-"HLA-A*24:02:01:01",     1,      1,
-1,      1,                   2,         1,          1,
-"HLA-A*01:01:01:01",     1,      1,
-1,      2,                   1,         1,          1,
-"HLA-A*01:03",           1,      1,
-1,      2,                   1,         1,          2,
-"HLA-A*24:03:01:01",     1,      1,
-1,      2,                   2,         1,          1,
-"HLA-B*07:01:01",        1,      1,
-2,      1,                   1,         1,          1,
-"B*15:01:01",            1,      1,
-2,      1,                   2,         1,          1,
-"B*15:02:01",            1,      1,
-2,      1,                   2,         1,          2,
-"B*07:03",               1,      1,
-2,      2,                   1,         1,          1,
-"B*15:99:01",            1,      1,
-2,      2,                   2,         1,          1,
-"HLA-DRB1*03:01:02",     1,      1,
-3,      1,                   1,         1,          1,
-"HLA-DRB5*01:01:01",     1,      1,
-3,      1,                   1,         2,          1,
-"HLA-KIR2DL5A*0010101",  1,      1,
-3,      1,                   2,         1,          1,
-"HLA-KIR2DL5A*0010201",  1,      1,
-3,      1,                   3,         1,          1,
-"HLA-KIR2DL5B*0010201",  1,      2,
-1,      1,                   1,         1,          1,
-"HLA-KIR2DL5B*0010301",  1,      2,
-1,      1,                   2,         1,          1
+  ~value, ~entry, ~possible_gene_location,
+  ~locus, ~genotype_ambiguity, ~genotype, ~haplotype, ~allele,
+  "HLA-A*01:01:01:01", 1, 1,
+  1, 1, 1, 1, 1,
+  "HLA-A*01:02", 1, 1,
+  1, 1, 1, 1, 2,
+  "HLA-A*01:03", 1, 1,
+  1, 1, 1, 1, 3,
+  "HLA-A*01:95", 1, 1,
+  1, 1, 1, 1, 4,
+  "HLA-A*24:02:01:01", 1, 1,
+  1, 1, 2, 1, 1,
+  "HLA-A*01:01:01:01", 1, 1,
+  1, 2, 1, 1, 1,
+  "HLA-A*01:03", 1, 1,
+  1, 2, 1, 1, 2,
+  "HLA-A*24:03:01:01", 1, 1,
+  1, 2, 2, 1, 1,
+  "HLA-B*07:01:01", 1, 1,
+  2, 1, 1, 1, 1,
+  "B*15:01:01", 1, 1,
+  2, 1, 2, 1, 1,
+  "B*15:02:01", 1, 1,
+  2, 1, 2, 1, 2,
+  "B*07:03", 1, 1,
+  2, 2, 1, 1, 1,
+  "B*15:99:01", 1, 1,
+  2, 2, 2, 1, 1,
+  "HLA-DRB1*03:01:02", 1, 1,
+  3, 1, 1, 1, 1,
+  "HLA-DRB5*01:01:01", 1, 1,
+  3, 1, 1, 2, 1,
+  "HLA-KIR2DL5A*0010101", 1, 1,
+  3, 1, 2, 1, 1,
+  "HLA-KIR2DL5A*0010201", 1, 1,
+  3, 1, 3, 1, 1,
+  "HLA-KIR2DL5B*0010201", 1, 2,
+  1, 1, 1, 1, 1,
+  "HLA-KIR2DL5B*0010301", 1, 2,
+  1, 1, 2, 1, 1
 )
 
 ambiguity_table_to_GLstring(data)
@@ -595,8 +619,8 @@ base::assign(".ptime", proc.time(), pos = "CheckExEnv")
 
 ### ** Examples
 
-HML_1 <- system.file("extdata", "HML_1.hml", package="immunogenetr")
-HML_2 <- system.file("extdata", "hml_2.hml", package="immunogenetr")
+HML_1 <- system.file("extdata", "HML_1.hml", package = "immunogenetr")
+HML_2 <- system.file("extdata", "hml_2.hml", package = "immunogenetr")
 
 read_HML(HML_1)
 read_HML(HML_2)

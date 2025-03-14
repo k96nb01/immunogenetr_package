@@ -19,6 +19,8 @@ test_that("HLA_mismatch_base correctly identifies mismatches", {
   result_HvG_homo1 <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction = "HvG", homozygous_count = 1)
   expect_equal(result_HvG_homo1, "HLA-A=HLA-A*01:01, HLA-B=HLA-B*44:02, HLA-DRB1=HLA-DRB1*13:01")
 
-  expect_error(HLA_mismatch_base(c(GL_string_recip, GL_string_recip), GL_string_donor, loci, direction = "HvG"),
-               "Recipient and donor GL strings must be of equal length")
+  expect_error(
+    HLA_mismatch_base(c(GL_string_recip, GL_string_recip), GL_string_donor, loci, direction = "HvG"),
+    "Recipient and donor GL strings must be of equal length"
+  )
 })
