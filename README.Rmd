@@ -250,8 +250,7 @@ We can see that donor 3 is the only donor with an 8/8 match for the recipient.
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0. See
-the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0.
 
 </div>
 
