@@ -1,6 +1,6 @@
 Type: Package
 Package: immunogenetr
-Title: A comprehensive toolkit for clinical HLA informatics
+Title: A Comprehensive Toolkit for Clinical HLA Informatics
 Version: 0.1.0
 Authors@R: c(
     person("Nicholas", "Brown", , "nicholas.brown@pennmedicine.upenn.edu", role = c("cre", "aut"),
@@ -8,22 +8,13 @@ Authors@R: c(
     person("Busra", "Coskun", , "bcoskun@sas.upenn.edu", role = "aut",
            comment = c(ORCID = "0009-0008-6828-3453"))
   )
-Description: immunogenetr is a comprehensive toolkit for clinical HLA
-    informatics. It is built on tidyverse
-    <https://tidyverse.tidyverse.org/> principles and makes use of
-    genotype list string (GL string, <https://glstring.org/>) for storing
-    and using HLA genotype data.  Specific functionalities of this library
-    include: coercion of HLA data in tabular format to and from GL string;
-    calculation of matching and mismatching in all directions, with
-    multiple output formats; automatic formatting of HLA data for
-    searching within a GL string; truncation of molecular HLA data to a
-    specific number of fields; and reading HLA genotypes in HML files and
-    extracting the GL string.
-License: GPL-3 + file LICENSE
+Maintainer: Nicholas Brown <nicholas.brown@pennmedicine.upenn.edu>
+Description: A comprehensive toolkit for clinical HLA informatics, built on tidyverse <https://tidyverse.tidyverse.org/> principles and making use of genotype list string (GL string, <https://glstring.org/>) for storing and computing HLA genotype data.  Specific functionalities include: coercion of HLA data in tabular format to and from GL string; calculation of matching and mismatching in all directions, with multiple output formats; automatic formatting of HLA data for searching within a GL string; truncation of molecular HLA data to a specific number of fields; and reading HLA genotypes in HML files and extracting the GL string.
+License: GPL (>= 3)
 URL: https://github.com/k96nb01/immunogenetr_package
 BugReports: https://github.com/k96nb01/immunogenetr_package/issues
 Depends:
-    R (>= 3.5.0)
+    R (>= 4.1.0)
 Imports: 
     cli,
     dplyr,
