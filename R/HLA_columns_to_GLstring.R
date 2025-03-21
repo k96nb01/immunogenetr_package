@@ -159,8 +159,10 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 
   if (nrow(error_table) != 0) {
     # Print the columns that caused the error to assist in debugging
-    print(glue::glue("Columns that could not be parsed: {paste(error_column_names, collapse = ', ')}"))
-    abort(format_error("The column(s) {paste(error_column_names, collapse = ', ')} could not be parsed to determine HLA loci."))
+    if (verbose) {
+      message(glue::glue("Columns that could not be parsed: {paste(error_column_names, collapse = ', ')}"))
+    }
+    abort(format_error(glue::glue("The column(s) {paste(error_column_names, collapse = ', ')} could not be parsed to determine HLA loci.")))
   }
 
   # Assemble the final type

@@ -52,7 +52,7 @@
 GLstring_regex <- function(data) {
   # This regex will only work if the full HLA allele, including the "HLA-" prefix is present. This will throw an error if "HLA-" is not detected in the allele to be modified.
   if (any(!str_detect(data, "HLA-"))) {
-    stop(print("In order for the regex expression to work properly, all alleles must have the full HLA- prefix. Process your data to add the full HLA allele name before passing the results to `GLstring_regex`."))
+    stop("In order for the regex expression to work properly, all alleles must have the full HLA- prefix. Process your data to add the full HLA allele name before passing the results to `GLstring_regex`.")
   }
   # Format the HLA alleles for searching within a GL string.
   table <- tibble(alleles = data) %>%
