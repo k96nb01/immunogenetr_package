@@ -18,8 +18,8 @@ selected columns.
 }
 \description{
 This function adds a specified prefix to the beginning of
-each value in the identified columns of the given data frame. Useful for adding
-HLA or gene prefixes.
+each HLA type, and works on a single allele or all alleles in a GL string.
+Useful for adding HLA or gene prefixes.
 }
 \examples{
 # The HLA_typing_LIS dataset contains a table as might be found in a clinical
