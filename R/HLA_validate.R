@@ -10,7 +10,7 @@
 #'
 #' @param data A string containing an HLA allele.
 #'
-#' @return A string with a valid HLA allele.
+#' @return A string with a valid HLA allele or NA if no valid allele was present.
 #'
 #' @examples
 #' HLA_validate("HLA-A2")
