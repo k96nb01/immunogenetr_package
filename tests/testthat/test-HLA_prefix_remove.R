@@ -31,5 +31,4 @@ test_that("HLA_prefix_remove correctly removes prefixes", {
 
   result_GL_string_2 <- HLA_prefix_remove(c("HLA-A*02:01", "HLA-A2", "HLA-A*02:01/HLA-A*02:02+HLA-A*68:01^HLA-B*57:01+HLA-B*07:02"), keep_locus = FALSE)
   expect_equal(result_GL_string_2, c("02:01", "2", "02:01/02:02+68:01^57:01+07:02"))
-
 })
