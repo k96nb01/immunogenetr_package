@@ -9,6 +9,9 @@ HLA_prefix_remove(data, keep_locus = FALSE)
 \arguments{
 \item{data}{A string with a single HLA allele, a GL string of HLA alleles,
 or a character vector containing either of the previous.}
+
+\item{keep_locus}{A logical value indicating whether to retain any locus values.
+The default value is FALSE.}
 }
 \value{
 A vector modified to remove HLA and optionally locus prefixes.
