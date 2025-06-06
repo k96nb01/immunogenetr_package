@@ -4,12 +4,12 @@
 #' each HLA type, and works on a single allele or all alleles in a GL string.
 #' Useful for adding HLA or gene prefixes.
 #'
-#' @param data A string with a single HLA allele.
-#' @param prefix A character string to be added as a prefix to the column values.
+#' @param data A string with a single HLA allele, a GL string of HLA alleles,
+#' or a character vector containing either of the previous.
+#' @param prefix A character string to be added as a prefix to the alleles.
 #' Default is "HLA-".
 #'
-#' @return A data frame with the specified prefix added to the values in the
-#' selected columns.
+#' @return A vector with the specified prefix added to the values.
 #'
 #' @examples
 #' # The HLA_typing_LIS dataset contains a table as might be found in a clinical
