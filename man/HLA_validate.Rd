@@ -10,7 +10,7 @@ HLA_validate(data)
 \item{data}{A string containing an HLA allele.}
 }
 \value{
-A string with a valid HLA allele.
+A string with a valid HLA allele or NA if no valid allele was present.
 }
 \description{
 Returns only HLA alleles in valid nomenclature, either serologic or molecular.
