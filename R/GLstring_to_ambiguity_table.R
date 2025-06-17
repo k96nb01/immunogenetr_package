@@ -30,4 +30,3 @@
 GLstring_to_ambiguity_table <- function(GL_string) {
   GLstring_expand_longer(GL_string)
 }
-
