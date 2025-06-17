@@ -18,4 +18,8 @@ test_that("HLA_truncate correctly truncates HLA alleles", {
   gl_string <- "HLA-A*02:01:01:01+HLA-A*68:01:01^HLA-B*07:02+HLA-B*44:02:01^HLA-DRB1*04:01:01+HLA-DRB1*13:01"
   expected_truncated <- "HLA-A*02:01+HLA-A*68:01^HLA-B*07:02+HLA-B*44:02^HLA-DRB1*04:01+HLA-DRB1*13:01"
   expect_equal(HLA_truncate(gl_string), expected_truncated)
+
+  GL_string_duplicates <- "HLA-A*02:01:03/HLA-A*02:01:06"
+  expect_equal(HLA_truncate(GL_string_duplicates, remove_duplicates = FALSE), "HLA-A*02:01/HLA-A*02:01")
+  expect_equal(HLA_truncate(GL_string_duplicates, remove_duplicates = TRUE), "HLA-A*02:01")
 })
