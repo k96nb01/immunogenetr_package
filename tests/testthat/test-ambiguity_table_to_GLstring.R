@@ -31,4 +31,16 @@ test_that("ambiguity_table_to_GLstring correctly converts data frame to GL strin
   expected <- "HLA-A*01:01:01:01/HLA-A*01:02/HLA-A*01:03/HLA-A*01:95+HLA-A*24:02:01:01|HLA-A*01:01:01:01/HLA-A*01:03+HLA-A*24:03:01:01^HLA-B*07:01:01+B*15:01:01/B*15:02:01|B*07:03+B*15:99:01^HLA-DRB1*03:01:02~HLA-DRB5*01:01:01+HLA-KIR2DL5A*0010101+HLA-KIR2DL5A*0010201?HLA-KIR2DL5B*0010201+HLA-KIR2DL5B*0010301"
 
   expect_equal(result, expected)
+
+  data_duplicates <- tribble(
+    ~value,                  ~entry, ~possible_gene_location, ~locus, ~genotype_ambiguity, ~genotype, ~haplotype, ~allele,
+    "HLA-A*02:01",           1,      1,                       1,      1,                   1,         1,          1,
+    "HLA-A*02:01",           1,      1,                       1,      1,                   1,         1,          2,
+  )
+
+  result_FALSE <- ambiguity_table_to_GLstring(data_duplicates)
+  result_TRUE <- ambiguity_table_to_GLstring(data_duplicates, remove_duplicates = TRUE)
+
+  expect_equal(result_FALSE, "HLA-A*02:01/HLA-A*02:01")
+  expect_equal(result_TRUE, "HLA-A*02:01")
 })

@@ -4,7 +4,13 @@
 \alias{HLA_truncate}
 \title{HLA_truncate}
 \usage{
-HLA_truncate(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = FALSE)
+HLA_truncate(
+  data,
+  fields = 2,
+  keep_suffix = TRUE,
+  keep_G_P_group = FALSE,
+  remove_duplicates = FALSE
+)
 }
 \arguments{
 \item{data}{A string containing an HLA allele or a GL string.}
@@ -17,6 +23,9 @@ WHO-recognized suffixes. Default is TRUE.}
 
 \item{keep_G_P_group}{A logical value indicating whether to retain any
 G or P group designations. Default is FALSE.}
+
+\item{remove_duplicates}{A logical value indicating whether to remove duplicated
+values from a GL string after truncation. Default is FALSE.}
 }
 \value{
 A string with the HLA typing truncated according to
