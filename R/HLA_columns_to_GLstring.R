@@ -97,7 +97,8 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     # Remove prefixes and suffixes from column names
     mutate(
       truncated_names = str_replace(names, prefix_regex, ""),
-      truncated_names = str_replace(truncated_names, suffix_regex, "")
+      truncated_names = str_replace(truncated_names, suffix_regex, ""),
+      truncated_names = HLA_prefix_remove(truncated_names, keep_locus = TRUE)
     ) %>%
     # Use the HLA_validate function to clean up the typing
     mutate(allele = HLA_validate(allele)) %>%
@@ -165,7 +166,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 
   if (nrow(error_table) != 0) {
     # Print the columns that caused the error to assist in debugging
-    abort(format_error(glue::glue("The column(s) {paste(error_column_names, collapse = ', ')} could not be parsed to determine HLA loci.")))
+    rlang::abort(cli::format_error(glue::glue("The column(s) {paste(error_column_names, collapse = ', ')} could not be parsed to determine HLA loci.")))
   }
 
   # Assemble the final type
