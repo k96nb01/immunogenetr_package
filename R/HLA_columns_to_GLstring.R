@@ -104,11 +104,9 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     mutate(
       DRB_locus_raw = case_when(
         # When the allele starts with “DRB3*”, “DRB4*” or “DRB5*”
-        str_detect(allele, regex("DRB[345]\\*", ignore_case=TRUE)) ~
-          str_c("HLA-DRB", str_extract(allele, "(?<=DRB)[345]")),
+        str_detect(allele, regex("DRB[345]\\*", ignore_case = TRUE)) ~ str_c("HLA-DRB", str_extract(allele, "(?<=DRB)[345]")),
         # When the allele does not have a "DRB" prefix, instead only has a number prefix
-        str_detect(allele, regex("^[345]\\*", ignore_case=TRUE)) ~
-          str_c("HLA-DRB", str_extract(allele, "^[345]")),
+        str_detect(allele, regex("^[345]\\*", ignore_case = TRUE)) ~ str_c("HLA-DRB", str_extract(allele, "^[345]")),
         TRUE ~ NA_character_
       )
     ) %>%
@@ -122,7 +120,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
       str_detect(truncated_names, regex("^Cw[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-Cw", # Handle Cw locus
       str_detect(truncated_names, regex("^C[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-C", # Handle C locus
       str_detect(truncated_names, regex("^DRB1[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-DRB1", # Handle molecular DRB1 locus
-      str_detect(truncated_names, regex("^DRB345", ignore_case=TRUE)) ~ "HLA-DRB345", # Handle column with molecular DRB3/4/5 loci
+      str_detect(truncated_names, regex("^DRB345", ignore_case = TRUE)) ~ "HLA-DRB345", # Handle column with molecular DRB3/4/5 loci
       str_detect(truncated_names, regex("^DRB3[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-DRB3", # Handle molecular DRB3 locus
       str_detect(truncated_names, regex("^DRB4[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-DRB4", # Handle molecular DRB4 locus
       str_detect(truncated_names, regex("^DRB5[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-DRB5", # Handle molecular DRB5 locus
