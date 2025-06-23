@@ -36,4 +36,58 @@ test_that("HLA_columns_to_GLstring correctly converts HLA columns into a GL stri
   test_freq <- HLA_columns_to_GLstring(Haplotype_frequencies, c("HLA-A":"HLA-DPB1"))
   result_freq <- c("HLA-A*24:02:01:01^HLA-C*03:04:01:01^HLA-B*40:01:02^HLA-DRB1*08:01:01^HLA-DQA1*04:01:01^HLA-DQB1*04:02:01^HLA-DPA1*01:03:01:04^HLA-DPB1*04:01:01:01", "HLA-A*03:01:01:05^HLA-C*06:02:01:01^HLA-B*47:01:01:03^HLA-DRB4*01:01:01:01^HLA-DRB1*07:01:01:01^HLA-DQA1*02:01:01:01^HLA-DQB1*02:02:01:01^HLA-DPA1*01:03:01:03^HLA-DPB1*06:01:01", "HLA-A*02:01:01:01^HLA-C*05:01:01:02^HLA-B*44:02:01:01^HLA-DRB3*01:01:02:01^HLA-DRB1*03:01:01:01^HLA-DQA1*05:01:01:02^HLA-DQB1*02:01:01^HLA-DPA1*01:03:01:01^HLA-DPB1*02:01:02", "HLA-A*32:01:01^HLA-C*02:02:02:01^HLA-B*40:02:01^HLA-DRB3*02:02:01:02^HLA-DRB1*11:01:01:01^HLA-DQA1*05:05:01:01^HLA-DQB1*03:01:01:03^HLA-DPA1*01:03:01:01^HLA-DPB1*02:01:02", "HLA-A*02:01:01:01^HLA-C*05:01:01:02^HLA-B*44:02:01:01^HLA-DRB5*01:01:01^HLA-DRB1*15:01:01:01^HLA-DQA1*01:02:01:01^HLA-DQB1*06:02:01^HLA-DPA1*01:03:01:02^HLA-DPB1*04:01:01:01", "HLA-A*02:01:01:01^HLA-C*05:01:01:02^HLA-B*44:02:01:01^HLA-DRB4*01:03:01:01^HLA-DRB1*04:01:01:01^HLA-DQA1*03:03:01:01^HLA-DQB1*03:01:01:01^HLA-DPA1*01:03:01:05^HLA-DPB1*04:02:01:02", "HLA-A*02:06:01:01^HLA-C*08:01:01^HLA-B*40:06:01:01^HLA-DRB4*01:03:02^HLA-DRB1*09:01:02^HLA-DQA1*03:02^HLA-DQB1*03:03:02:02^HLA-DPA1*02:01:01:02^HLA-DPB1*09:01:01", "HLA-A*24:02:01:01^HLA-C*07:02:01:01^HLA-B*39:05:01^HLA-DRB5*02:02^HLA-DRB1*16:02:01:02^HLA-DQA1*05:05:01:05^HLA-DQB1*03:01:01:01^HLA-DPA1*01:03:01:05^HLA-DPB1*04:02:01:02", "HLA-A*02:01:01:01^HLA-C*02:02:02:01^HLA-B*40:02:01^HLA-DRB3*02:02:01:02^HLA-DRB1*13:01:01:01^HLA-DQA1*01:03:01:02^HLA-DQB1*06:03:01^HLA-DPA1*01:03:01:01^HLA-DPB1*02:01:02", "HLA-A*24:02:01:01^HLA-C*07:04:01:01^HLA-B*44:02:01:03^HLA-DRB3*02:02:01:02^HLA-DRB1*11:01:01:01^HLA-DQA1*05:05:01:01^HLA-DQB1*03:01:01:03^HLA-DPA1*01:03:01:01^HLA-DPB1*02:01:02")
   expect_equal(test_freq, result_freq)
+
+
+  test_separate_DRB_no_prefixes <- tibble(
+    patient = c("patient1", "patient2", "patient3"),
+    DRB3_1  = c("03:01", NA, "03:03"),
+    DRB4_1  = c(NA, "04:02", NA),
+    DRB5_1  = c(NA, NA, "05:03"))
+  result_separate_no_prefixes <- test_separate_DRB_no_prefixes %>%
+    mutate(GL = HLA_columns_to_GLstring(., HLA_typing_columns = DRB3_1:DRB5_1)) %>%
+    pull(GL)
+  expect_equal(result_separate_no_prefixes,
+               c("HLA-DRB3*03:01", "HLA-DRB4*04:02", "HLA-DRB3*03:03^HLA-DRB5*05:03"))
+
+  test_separate_DRB_numeric_only <- tibble(
+    patient = c("patient1", "patient2", "patient3"),
+    DRB3_1  = c("3*03:01", NA, "3*03:03"),
+    DRB4_1  = c(NA, "4*04:02", NA),
+    DRB5_1  = c(NA, NA, "5*05:03"))
+  result_separate_numeric_only <- test_separate_DRB_numeric_only %>%
+    mutate(GL = HLA_columns_to_GLstring(., HLA_typing_columns = DRB3_1:DRB5_1)) %>%
+    pull(GL)
+  expect_equal(result_separate_numeric_only,
+               c("HLA-DRB3*03:01", "HLA-DRB4*04:02", "HLA-DRB3*03:03^HLA-DRB5*05:03"))
+
+  test_separate_DRB_full_prefix <- tibble(
+    patient = c("patient1", "patient2", "patient3"),
+    DRB3_1  = c("DRB3*03:01", NA, "DRB3*03:03"),
+    DRB4_1  = c(NA, "DRB4*04:02", NA),
+    DRB5_1  = c(NA, NA, "DRB5*05:03"))
+  result_separate_full_prefix <- test_separate_DRB_full_prefix %>%
+    mutate(GL = HLA_columns_to_GLstring(., HLA_typing_columns = DRB3_1:DRB5_1)) %>%
+    pull(GL)
+  expect_equal(result_separate_full_prefix,
+               c("HLA-DRB3*03:01", "HLA-DRB4*04:02", "HLA-DRB3*03:03^HLA-DRB5*05:03"))
+
+  test_mixed_DRB_with_prefixes <- tibble(
+    patient = c("patient1", "patient2", "patient3"),
+    DRB345_1  = c("DRB3*01:01", "DRB4*04:01", "DRB5*05:01"),
+    DRB345_2  = c("DRB4*01:01", "DRB5*04:01", "DRB5*05:02"))
+  result_mixed_with_prefixes <- test_mixed_DRB_with_prefixes %>%
+    mutate(GL = HLA_columns_to_GLstring(., HLA_typing_columns = DRB345_1:DRB345_2)) %>%
+    pull(GL)
+  expect_equal(result_mixed_with_prefixes,
+               c("HLA-DRB3*01:01^HLA-DRB4*01:01", "HLA-DRB4*04:01^HLA-DRB5*04:01",
+                 "HLA-DRB5*05:01+HLA-DRB5*05:02"))
+
+  test_mixed_DRB_no_prefixes <- tibble(
+    patient = c("patient1", "patient2", "patient3"),
+    DRB345_1  = c("3*01:01", "4*04:01", "5*05:01"))
+  result_mixed_no_prefixes <- test_mixed_DRB_no_prefixes %>%
+    mutate(GL = HLA_columns_to_GLstring(., HLA_typing_columns = DRB345_1)) %>%
+    pull(GL)
+  expect_equal(result_mixed_no_prefixes,
+               c("HLA-DRB3*01:01", "HLA-DRB4*04:01","HLA-DRB5*05:01"))
 })
