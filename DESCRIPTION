@@ -1,7 +1,7 @@
 Type: Package
 Package: immunogenetr
 Title: A Comprehensive Toolkit for Clinical HLA Informatics
-Version: 0.3.0
+Version: 0.3.1
 Authors@R: c(
     person("Nicholas", "Brown", , "nicholas.brown@pennmedicine.upenn.edu", role = c("cre", "aut"),
            comment = c(ORCID = "0000-0002-0046-2315")),
