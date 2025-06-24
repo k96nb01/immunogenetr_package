@@ -31,12 +31,10 @@ Specific functionalities of this library include:
 
 ## Installation
 
-You may install immunogenetr from GitHub with the below lines of code.
-Devtools is necessary for installation. If devtools is not installed,
-you may run `install.packages("devtools")` first.
+You may install immunogenetr from CRAN with the below line of code:
 
 ``` r
-devtools::install_github("k96nb01/immunogenetr_package")
+install.packages("immunogenetr")
 ```
 
 ## Usage
@@ -264,4 +262,5 @@ recipient.
 This project is licensed under the GNU General Public License v3.0.
 
 </div>
+
 </div>

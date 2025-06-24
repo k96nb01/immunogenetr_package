@@ -15,6 +15,8 @@
 #' WHO-recognized suffixes. Default is TRUE.
 #' @param keep_G_P_group A logical value indicating whether to retain any
 #' G or P group designations. Default is FALSE.
+#' @param remove_duplicates A logical value indicating whether to remove duplicated
+#' values from a GL string after truncation. Default is FALSE.
 #'
 #' @return A string with the HLA typing truncated according to
 #' the specified number of fields and optional suffix retention.
@@ -51,7 +53,7 @@
 #' @importFrom tidyr unite
 
 
-HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = FALSE) {
+HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = FALSE, remove_duplicates = FALSE) {
   # Expand the GL string
   alleles <- GLstring_expand_longer(data) %>%
     # Extract any WHO-recognized suffixes
@@ -108,10 +110,17 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = 
   }
 
   # Combine everything back to a GL string.
-  final <- with_g_p %>%
-    rename(value = gene) %>%
-    ambiguity_table_to_GLstring()
-  return(final)
+  if (remove_duplicates) {
+    final <- with_g_p %>%
+      rename(value = gene) %>%
+      ambiguity_table_to_GLstring(., remove_duplicates = TRUE)
+    return(final)
+  } else {
+    final <- with_g_p %>%
+      rename(value = gene) %>%
+      ambiguity_table_to_GLstring(., remove_duplicates = FALSE)
+    return(final)
+  }
 }
 
 

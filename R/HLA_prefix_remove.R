@@ -1,11 +1,15 @@
 #' @title HLA_prefix_remove
 #'
-#' @description This function removes HLA and locus prefixes from a string of HLA typing:
-#' "HLA-A2" changes to "2".
+#' @description This function removes HLA and optionally locus prefixes from a string of HLA typing:
+#' "HLA-A2" changes to "A2" or "2". By default, HLA and locus prefixes are removed. This function
+#' also works on each allele in a GL string.
 #'
-#' @param data A string with a single HLA allele.
+#' @param data A string with a single HLA allele, a GL string of HLA alleles,
+#' or a character vector containing either of the previous.
+#' @param keep_locus A logical value indicating whether to retain any locus values.
+#' The default value is FALSE.
 #'
-#' @return A string modified to remove HLA and locus prefixes.
+#' @return A vector modified to remove HLA and optionally locus prefixes.
 #'
 #' @examples
 #' # The HLA_typing_1 dataset contains a table with HLA typing spread across multiple columns:
@@ -24,17 +28,29 @@
 #' @export
 #'
 #' @importFrom dplyr %>%
+#' @importFrom dplyr mutate
 #' @importFrom stringr str_replace
 
-HLA_prefix_remove <- function(data) {
+HLA_prefix_remove <- function(data, keep_locus = FALSE) {
   # Removes any HLA and locus prefixes from typing results.
-  data %>%
+  step_1 <- data %>%
+    GLstring_expand_longer() %>%
     # replaces "HLA-" with an empty string in each cell.
-    str_replace("HLA-", "") %>%
-    # replaces any sequences of alphabetic characters at the start of the string with an empty string
-    str_replace("^[:alpha:]+", "") %>%
-    # replaces any sequences of digits followed by an asterisk with an empty string
-    str_replace(., "[:digit:]*\\*", "")
+    mutate(value = str_replace(value, "HLA-", ""))
+
+  if (keep_locus) {
+    step_2 <- step_1
+  } else {
+    # Remove the locus.
+    step_2 <- step_1 %>%
+      # replaces any sequences of alphabetic characters at the start of the string with an empty string
+      mutate(value = str_replace(value, "^[:alpha:]+", "")) %>%
+      # replaces any sequences of digits followed by an asterisk with an empty string
+      mutate(value = str_replace(value, "[:digit:]*\\*", ""))
+  }
+
+  # Reassemble the GL string
+  ambiguity_table_to_GLstring(step_2)
 }
 
-globalVariables(c("."))
+globalVariables(c("step_1", "step_2"))

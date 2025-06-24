@@ -25,4 +25,10 @@ test_that("HLA_prefix_add correctly adds prefixes", {
 
   result_special_chars <- HLA_prefix_add("**01:01", "HLA-")
   expect_equal(result_special_chars, "HLA-**01:01")
+
+  result_gl_string <- HLA_prefix_add("A*02:01/A*02:02+A*68:01^B*57:01+B*07:02", "HLA-")
+  expect_equal(result_gl_string, "HLA-A*02:01/HLA-A*02:02+HLA-A*68:01^HLA-B*57:01+HLA-B*07:02")
+
+  result_gl_string_vector <- HLA_prefix_add(c("A*02:01/A*02:02+A*68:01^B*57:01+B*07:02", "A*02:01", "B*07:01/B*07:02+B*15:01"), "HLA-")
+  expect_equal(result_gl_string_vector, c("HLA-A*02:01/HLA-A*02:02+HLA-A*68:01^HLA-B*57:01+HLA-B*07:02", "HLA-A*02:01", "HLA-B*07:01/HLA-B*07:02+HLA-B*15:01"))
 })
