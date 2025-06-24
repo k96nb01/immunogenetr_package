@@ -90,4 +90,17 @@ test_that("HLA_columns_to_GLstring correctly converts HLA columns into a GL stri
     pull(GL)
   expect_equal(result_mixed_no_prefixes,
                c("HLA-DRB3*01:01", "HLA-DRB4*04:01","HLA-DRB5*05:01"))
+
+  test_sero <- tibble(
+    patient = c("patient1", "patient2", "patient3"),
+    A_1 = c("2", "3", "68"),
+    A_2 = c("", "1", "69"),
+    DR_1  = c("7", 4, "9"),
+    DR_2  = c("6", "4", NA),
+    DRw_1  = c(NA, NA, "52"),
+    DRw_2 = c("51", "52", "53"))
+
+  test_sero_code <- test_sero %>% HLA_columns_to_GLstring(HLA_typing_columns = A_1:DRw_2)
+  test_sero_result <- c("HLA-A2^HLA-DR7+HLA-DR6^HLA-DR51", "HLA-A3+HLA-A1^HLA-DR4+HLA-DR4^HLA-DR52", "HLA-A68+HLA-A69^HLA-DR9^HLA-DR52+HLA-DR53")
+  expect_equal(test_sero_code, test_sero_result)
 })
