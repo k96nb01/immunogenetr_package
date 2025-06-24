@@ -97,10 +97,20 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     # Remove prefixes and suffixes from column names
     mutate(
       truncated_names = str_replace(names, prefix_regex, ""),
-      truncated_names = str_replace(truncated_names, suffix_regex, "")
+      truncated_names = str_replace(truncated_names, suffix_regex, ""),
+      truncated_names = HLA_prefix_remove(truncated_names, keep_locus = TRUE)
     ) %>%
     # Use the HLA_validate function to clean up the typing
     mutate(allele = HLA_validate(allele)) %>%
+    mutate(
+      DRB_locus_raw = case_when(
+        # When the allele starts with “DRB3*”, “DRB4*” or “DRB5*”
+        str_detect(allele, regex("DRB[345]\\*", ignore_case = TRUE)) ~ str_c("HLA-DRB", str_extract(allele, "(?<=DRB)[345]")),
+        # When the allele does not have a "DRB" prefix, instead only has a number prefix
+        str_detect(allele, regex("^[345]\\*", ignore_case = TRUE)) ~ str_c("HLA-DRB", str_extract(allele, "^[345]")),
+        TRUE ~ NA_character_
+      )
+    ) %>%
     # Remove any prefixes in alleles
     mutate(allele = HLA_prefix_remove(allele)) %>%
     # Determine locus name using extended logic
@@ -111,6 +121,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
       str_detect(truncated_names, regex("^Cw[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-Cw", # Handle Cw locus
       str_detect(truncated_names, regex("^C[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-C", # Handle C locus
       str_detect(truncated_names, regex("^DRB1[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-DRB1", # Handle molecular DRB1 locus
+      str_detect(truncated_names, regex("^DRB345", ignore_case = TRUE)) ~ "HLA-DRB345", # Handle column with molecular DRB3/4/5 loci
       str_detect(truncated_names, regex("^DRB3[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-DRB3", # Handle molecular DRB3 locus
       str_detect(truncated_names, regex("^DRB4[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-DRB4", # Handle molecular DRB4 locus
       str_detect(truncated_names, regex("^DRB5[:digit:]?\\*?", ignore_case = TRUE)) ~ "HLA-DRB5", # Handle molecular DRB5 locus
@@ -138,11 +149,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     # Determine if the DR typing is one of the DR51/52/53 loci
     mutate(DRB345 = if_else(str_detect(allele, "^5") & locus_from_name == "HLA-DR", TRUE, FALSE)) %>%
     # Handle the final locus name for high-resolution DRB alleles
-    mutate(DRB_locus = if_else(
-      str_detect(locus_from_name, "DRB"), str_c("HLA-DRB", str_extract(allele, "[1345](?=\\*)")), NA_character_
-    )) %>%
-    # Determine the final molecular locus name
-    mutate(molecular_locus = coalesce(DRB_locus, locus_from_name)) %>%
+    mutate(molecular_locus = coalesce(DRB_locus_raw, locus_from_name)) %>%
     # Record "XX" if there is no typing at any of the selected loci.
     mutate(allele = if (all(is.na(allele))) "XX" else allele, .by = c(row_for_function, molecular_locus)) %>%
     # Remove any blank values
@@ -159,7 +166,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 
   if (nrow(error_table) != 0) {
     # Print the columns that caused the error to assist in debugging
-    abort(format_error(glue::glue("The column(s) {paste(error_column_names, collapse = ', ')} could not be parsed to determine HLA loci.")))
+    rlang::abort(cli::format_error(glue::glue("The column(s) {paste(error_column_names, collapse = ', ')} could not be parsed to determine HLA loci.")))
   }
 
   # Assemble the final type
@@ -170,7 +177,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
       str_glue("{serologic_name}{allele}")
     )) %>%
     # Group alleles within the same locus
-    summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c(row_for_function, locus_from_name, DRB345)) %>%
+    summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c(row_for_function, molecular_locus, DRB345)) %>%
     # Assemble GL string with each locus separated by "^"
     summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = row_for_function)
 
@@ -181,5 +188,5 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 globalVariables(c(
   ".", "truncated_names", "locus_from_name", "DRB_locus",
   "row_for_function", "molecular_locus", "molecular",
-  "final_type", "DRB345", "final_type_2", "GL_string"
+  "final_type", "DRB345", "final_type_2", "GL_string", "DRB_locus_raw"
 ))
