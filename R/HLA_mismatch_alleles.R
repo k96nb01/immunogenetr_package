@@ -1,4 +1,4 @@
-#' @title HLA_mismatched_alleles
+#' @title HLA_mismatch_alleles
 #'
 #' @description A function to return a string of mismatches between recipient
 #' and donor HLA genotypes represented as GL strings. The function finds
@@ -37,38 +37,11 @@
 #' GL_string_donor <- GL_string[2]
 #'
 #' loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
-#' mismatches <- HLA_mismatched_alleles(GL_string_recip, GL_string_donor, loci, direction = "HvG")
+#' mismatches <- HLA_mismatch_alleles(GL_string_recip, GL_string_donor, loci, direction = "HvG")
 #' print(mismatches)
 #'
 #' @export
-#'
-#' @importFrom stringr str_c
-#' @importFrom tibble tibble
-#' @importFrom magrittr  %>%
-#' @importFrom dplyr mutate
-#' @importFrom dplyr across
-#' @importFrom tidyr replace_na
-#' @importFrom stringr str_c
-#' @importFrom tidyr unite
 
-HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
-  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
-  # "HvG" or "GvH" can use the output of `HLA_mismatch_base` directly.
-  if (direction == "HvG" | direction == "GvH") {
-    HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction, homozygous_count)
-    # "SOT" defaults to "HvG".
-  } else if (direction == "SOT") {
-    HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
-    # "Bidirectional" will paste together the output of each direction.
-  } else if (direction == "bidirectional") {
-    HvG <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
-    GvH <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)
-    # Combine the results from each direction
-    bidirectional <- tibble("HvG" = HvG, "GvH" = GvH) %>%
-      mutate(across(HvG:GvH, ~ replace_na(., "NA"))) %>%
-      mutate(HvG = str_c("HvG;", HvG), GvH = str_c("GvH;", GvH)) %>%
-      unite(HvG, GvH, col = "bidirectional", sep = "<>")
-
-    return(bidirectional$bidirectional)
-  }
+HLA_mismatch_alleles <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
+  HLA_mismatched_alleles(GL_string_recip, GL_string_donor, loci, direction, homozygous_count)
 }
