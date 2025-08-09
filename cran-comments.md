@@ -2,4 +2,4 @@
 
 0 errors ✔ | 0 warnings ✔ | 0 notes ✔
 
-* Updated `HLA_columns_to_GLstring` to fix issues processing DRB3/4/5 alleles. 
+* Added `HLA_mismatch_alleles` as a synonym of `HLA_mismatched_alleles`. Added minimum versions in DESCRIPTION.

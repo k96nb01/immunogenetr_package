@@ -1,3 +1,7 @@
+# immunogenetr 1.0.0
+
+* Added `HLA_mismatch_alleles` as a synonym of `HLA_mismatched_alleles`. Added minimum versions in DESCRIPTION. Stable release; updated version to 1.0.0.
+
 # immunogenetr 0.3.1
 
 * Updated `HLA_columns_to_GLstring` to fix issues processing DRB3/4/5 alleles. 
