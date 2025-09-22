@@ -30,8 +30,9 @@ Specific functionalities of this library include:
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](##usage)
+- [Usage](#usage)
 - [License](#license)
+- [Disclaimer](#disclaimer)
 
 ## Installation
 
@@ -249,6 +250,10 @@ We can see that donor 3 is the only donor with an 8/8 match for the recipient.
 ## License
 
 This project is licensed under the GNU General Public License v3.0.
+
+## Disclaimer
+
+This library is intended for research use. Any application making use of this package in a clinical setting will need to be independently validated according to local regulations.
 
 </div>
 
