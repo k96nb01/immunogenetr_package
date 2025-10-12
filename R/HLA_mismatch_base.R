@@ -64,6 +64,14 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     stop("The matching/mismatching functions do not support ambiguous GL strings containing | or /. Process your GL strings to result in unambiguous genotypes before using these functions.")
   }
 
+  unify_locus <- function(x) stringr::str_replace(x, "^HLA-DR51/52/53$", "HLA-DRB3/4/5")
+  original_loci <- loci
+  loci <- unify_locus(loci)
+  display_name <- function(name) {
+    idx <- match(name, loci)
+    if (is.na(idx)) name else original_loci[[idx]]
+  }
+
   # Function to preprocess GL strings: handle null alleles and homozygosity
   preprocess_GL_string <- function(GL_string, homozygous_count) {
     # Split GL string into alleles
@@ -139,19 +147,30 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
       )
     )
 
+    names(recip_alleles_list_processed) <- unify_locus(names(recip_alleles_list_processed))
+    names(donor_alleles_list_processed) <- unify_locus(names(donor_alleles_list_processed))
+
     # Find which supplied loci are missing from recipient and donor genotypes
     missing_loci_from_recipient <- setdiff(loci, names(recip_alleles_list_processed))
     missing_loci_from_donor <- setdiff(loci, names(donor_alleles_list_processed))
+    missing_loci <- setdiff(union(missing_loci_from_recipient, missing_loci_from_donor), "HLA-DRB3/4/5")
 
-    if (length(missing_loci_from_recipient) > 0 || length(missing_loci_from_donor) > 0) {
+    if (length(missing_loci) > 0) {
       stop(paste(
         "Either the recipient and/or donor GL strings are missing these loci:",
-        paste(union(missing_loci_from_recipient, missing_loci_from_donor), collapse = ", ")
+        paste(missing_loci, collapse = ", ")
       ))
     }
 
     # Mismatch results calculation
     mismatch_results <- map(loci, function(locus_name) {
+
+      if (locus_name == "HLA-DRB3/4/5" &&
+          (!(locus_name %in% names(recip_alleles_list_processed)) ||
+           !(locus_name %in% names(donor_alleles_list_processed)))) {
+        return(paste0(display_name(locus_name), "=NA"))
+      }
+
       # Pull out the allele list for each locus.
       recip_alleles_str <- recip_alleles_list_processed[locus_name]
       donor_alleles_str <- donor_alleles_list_processed[locus_name]
@@ -197,9 +216,9 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
       # Create a string of mismatched alleles or 'NA' if no mismatches are found.
       allele_mismatches_str <-
         if (length(mismatched_alleles) > 0) {
-          paste0(locus_name, "=", paste(mismatched_alleles, collapse = "+"))
+          paste0(display_name(locus_name), "=", paste(mismatched_alleles, collapse = "+"))
         } else {
-          paste0(locus_name, "=", "NA")
+          paste0(display_name(locus_name), "=", "NA")
         }
     })
 
@@ -208,7 +227,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     # If only a single locus was selected in the arguments, output without starting with the locus name followed by an equal sign.
     if (length(loci) == 1) {
       result %>%
-        str_replace(str_c(loci, "="), "") %>%
+        str_replace(str_c(original_loci, "="), "") %>%
         na_if("NA")
     } else {
       return(result)
