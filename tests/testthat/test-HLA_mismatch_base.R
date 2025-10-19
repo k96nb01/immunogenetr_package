@@ -74,3 +74,16 @@ test_that("DRB3/4/5 or DR51/52/53 as the only tested allele", {
   out_ser <- HLA_mismatch_base(recip, donor, "HLA-DR51/52/53", direction = "HvG")
   expect_true(is.na(out_ser))
 })
+
+
+test_that("Matching across DRB3/4/5 (molecular) and DR51/52/53 (serologic)", {
+  recip <- "HLA-A*01:01+HLA-A*02:01^HLA-DRB3*01:01^HLA-DRB4*01:01"
+  donor <- "HLA-A*01:01+HLA-A*02:01^HLA-DR52^HLA-DR53"
+
+  out_mol <- HLA_mismatch_base(recip, donor, c("HLA-A", "HLA-DRB3/4/5"), direction = "HvG")
+  expect_equal(out_mol, "HLA-A=NA, HLA-DRB3/4/5=HLA-DR52+HLA-DR53")
+
+  out_ser <- HLA_mismatch_base(recip, donor, c("HLA-A", "HLA-DR51/52/53"), direction = "HvG")
+  expect_equal(out_ser, "HLA-A=NA, HLA-DR51/52/53=HLA-DR52+HLA-DR53")
+})
+
