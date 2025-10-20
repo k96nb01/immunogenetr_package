@@ -38,6 +38,11 @@ of fields specified and optionally retains any WHO-recognized suffixes
 (L, S, C, A, Q, or N) or G and P group designations (G or P). This function
 will work on individual alleles (e.g. "HLA-A*02:01:01:01") or on all alleles
 in a GL string (e.g. "HLA-A*02:01:01:01+HLA-A*68:01:01^HLA-DRB1*01:01:01+HLA-DRB1*03:01:01").
+
+Note: depending on arguments used, this function can output HLA alleles that do not
+exist in the IPD-IMGT/HLA database. For example, truncating the allele "DRB4*01:03:01:02N"
+to 2 fields would result in "DRB4*01:03N," which does not exist in the IPD-IMGT/HLA database.
+Users should take care in setting the parameters for this function.
 }
 \examples{
 
