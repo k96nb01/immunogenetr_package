@@ -105,7 +105,11 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
       # Process DRB3/4/5 or DR51/52/53 alleles to add them to a single locus "HLA-DRB3/4/5"
       alleles_list_DRB345 <- alleles_list %>%
         keep(str_detect(., "(HLA-DRB[345])|(HLA-DR5[123])")) %>%
-        paste(collapse = "+")
+        paste(collapse = "+") %>%
+        # If no DRB3/4/5 alleles are present, use a null placeholder, so that expressed alleles
+        # at this locus will be output as mismatches.
+        { if (. == "") "HLA-DRB3*XX:XXN" else . }
+
 
       # Remove DRB3/4/5 or DR51/52/53 alleles from the original list
       alleles_list_no_DRB345 <- alleles_list %>%
