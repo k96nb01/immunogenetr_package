@@ -26,8 +26,9 @@ Specific functionalities of this library include:
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](##usage)
+- [Usage](#usage)
 - [License](#license)
+- [Disclaimer](#disclaimer)
 
 ## Installation
 
@@ -260,6 +261,12 @@ recipient.
 ## License
 
 This project is licensed under the GNU General Public License v3.0.
+
+## Disclaimer
+
+This library is intended for research use. Any application making use of
+this package in a clinical setting will need to be independently
+validated according to local regulations.
 
 </div>
 
