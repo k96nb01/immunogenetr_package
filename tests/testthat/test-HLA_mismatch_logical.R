@@ -30,3 +30,49 @@ test_that("HLA_mismatch_logical correctly identifies presence of mismatches", {
   expect_match(result_no_mismatch, "HLA-A=FALSE")
   expect_match(result_no_mismatch, "HLA-DRB3/4/5=FALSE")
 })
+
+
+# --- Input validation tests ---
+
+test_that("HLA_mismatch_logical rejects NULL inputs", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatch_logical(NULL, gl, "HLA-A", "HvG"), "GL_string_recip")
+  expect_error(HLA_mismatch_logical(gl, NULL, "HLA-A", "HvG"), "GL_string_donor")
+  expect_error(HLA_mismatch_logical(gl, gl, NULL, "HvG"), "loci")
+})
+
+test_that("HLA_mismatch_logical rejects non-character GL strings", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatch_logical(123, gl, "HLA-A", "HvG"), "must be a character")
+})
+
+test_that("HLA_mismatch_logical rejects invalid direction", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatch_logical(gl, gl, "HLA-A", "invalid"))
+})
+
+test_that("HLA_mismatch_logical returns FALSE for perfect match", {
+  gl <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
+  # Single locus
+  expect_false(HLA_mismatch_logical(gl, gl, "HLA-A", "bidirectional"))
+  # Multiple loci
+  result <- HLA_mismatch_logical(gl, gl, c("HLA-A", "HLA-B"), "bidirectional")
+  expect_match(result, "HLA-A=FALSE")
+  expect_match(result, "HLA-B=FALSE")
+})
+
+test_that("HLA_mismatch_logical works with vectorized inputs", {
+  recip <- c(
+    "HLA-A*01:01+HLA-A*02:01",
+    "HLA-A*03:01+HLA-A*24:02"
+  )
+  donor <- c(
+    "HLA-A*01:01+HLA-A*03:01",
+    "HLA-A*03:01+HLA-A*24:02"
+  )
+  # Single locus: should return logical vector of length 2
+  result <- HLA_mismatch_logical(recip, donor, "HLA-A", "HvG")
+  expect_length(result, 2)
+  expect_true(result[1])
+  expect_false(result[2])
+})
