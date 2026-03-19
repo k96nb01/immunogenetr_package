@@ -49,12 +49,12 @@ HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, directi
     # Make a tibble with the results and determine bidirectional mismatch.
     MM_table <- tibble(HvG, GvH) %>%
       mutate(bidirectional = HvG | GvH)
-    # Return the result based on the direction argument.
+    # Return the column matching the requested direction.
     if (direction == "HvG" | direction == "SOT") {
       return(MM_table$HvG)
     } else if (direction == "GvH") {
       return(MM_table$GvH)
-    } else if (direction == "bidirectional") {
+    } else {
       return(MM_table$bidirectional)
     }
   } else {
@@ -88,29 +88,21 @@ HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, directi
 
     # Join the GvH and HvG tables
     MM_table <- HvG_table %>% left_join(GvH_table, join_by(locus, case)) %>%
-      # Determine bidirectional mismatch number.
+      # Determine bidirectional mismatch.
       mutate(bidirectional = HvG_MM | GvH_MM)
 
-    # Return appropriate direction.
-    # HvG
-    if (direction == "HvG") {
-      MM_table <- MM_table %>%
-        select(locus, case, HvG_MM) %>%
-        unite(locus, HvG_MM, col = "MM", sep = "=") %>%
-        summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
-      # GvH
+    # Select the column matching the requested direction.
+    if (direction == "HvG" | direction == "SOT") {
+      result_col <- "HvG_MM"
     } else if (direction == "GvH") {
-      MM_table <- MM_table %>%
-        select(locus, case, GvH_MM) %>%
-        unite(locus, GvH_MM, col = "MM", sep = "=") %>%
-        summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
-      # Bidirectional
-    } else if (direction == "bidirectional") {
-      MM_table <- MM_table %>%
-        select(locus, case, bidirectional) %>%
-        unite(locus, bidirectional, col = "MM", sep = "=") %>%
-        summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
+      result_col <- "GvH_MM"
+    } else {
+      result_col <- "bidirectional"
     }
+    MM_table <- MM_table %>%
+      select(locus, case, all_of(result_col)) %>%
+      unite(locus, all_of(result_col), col = "MM", sep = "=") %>%
+      summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
 
     return(MM_table$MM)
   }
