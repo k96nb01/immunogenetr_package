@@ -45,3 +45,5 @@ GLstring_gene_copies_combine <- function(.data, columns, sample_column = "sample
     pivot_wider(names_from = locus, values_from = allele) %>%
     rename_with(~ str_replace(., "HLA\\-", "HLA_"))
 }
+
+globalVariables(c("locus", "allele"))
