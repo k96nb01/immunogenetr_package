@@ -10,6 +10,8 @@
 
 * Refactored duplicated matching logic across `HLA_match_summary_HCT`, `HLA_match_number`, `HLA_mismatch_number`, and `HLA_mismatch_logical`. Replaced repeated direction-branching code blocks with parameterized pipelines, significantly reducing code duplication with no changes to behavior.
 
+* Optimized `HLA_mismatch_base`: consolidated duplicated GvH/HvG mismatch calculation into a single parameterized code path, eliminated repeated `strsplit()` calls within the mismatch loop, and extracted duplicated locus-naming logic into a shared helper function.
+
 # immunogenetr 1.0.1
 
 * Added a disclaimer to the package for it being for research use only. Added a disclaimer to the help file for `HLA_truncate` to warn users about the ability to make non-WHO-compliant allele names with certain settings. Updated `HLA_mismatch_base` to better handle missing loci at the DRB3/4/5 locus.
