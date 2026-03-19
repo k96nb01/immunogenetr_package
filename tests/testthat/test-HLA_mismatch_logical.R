@@ -61,6 +61,74 @@ test_that("HLA_mismatch_logical returns FALSE for perfect match", {
   expect_match(result, "HLA-B=FALSE")
 })
 
+test_that("HLA_mismatch_logical agrees with mismatch_table_2016 consensus (homozygous_count = 2)", {
+  # Note: HLA_mismatch_logical does not expose a homozygous_count parameter —
+  # it always uses the default of 2 via HLA_mismatch_base. Therefore,
+  # only the 2016 table (which expects homozygous_count = 2) is tested here.
+  # The 2010 table (homozygous_count = 1) is tested in test-HLA_mismatch_number.R.
+  # Define symbolic alleles to substitute into the table.
+  A <- "HLA-A*01:01"
+  B <- "HLA-A*02:05"
+  C <- "HLA-A*24:02"
+  D <- "HLA-A*31:03"
+  N <- "HLA-A*68:11N"
+
+  # Build GL strings from the 2016 table's symbolic allele pairs.
+  mismatch_table_2016_logical <- mismatch_table_2016 %>%
+    # Assign the example alleles based on symbolic codes.
+    mutate(recipient_1 = case_when(
+      str_detect(Patient, "^A") ~ A,
+      str_detect(Patient, "^N") ~ N
+    ), recipient_2 = case_when(
+      str_detect(Patient, "A$") ~ A,
+      str_detect(Patient, "B$") ~ B,
+      str_detect(Patient, "N$") ~ N
+    ), donor_1 = case_when(
+      str_detect(Donor, "^A") ~ A,
+      str_detect(Donor, "^B") ~ B,
+      str_detect(Donor, "^C") ~ C,
+      str_detect(Donor, "^N") ~ N
+    ), donor_2 = case_when(
+      str_detect(Donor, "A$") ~ A,
+      str_detect(Donor, "B$") ~ B,
+      str_detect(Donor, "C$") ~ C,
+      str_detect(Donor, "D$") ~ D,
+      str_detect(Donor, "N$") ~ N
+    )) %>%
+    # Turn the two alleles into a GL string.
+    mutate(
+      GL_string_recip = str_c(recipient_1, recipient_2, sep = "+"),
+      GL_string_donor = str_c(donor_1, donor_2, sep = "+")
+    ) %>%
+    select(Patient, Donor, GL_string_recip, GL_string_donor, "#GvH", "#HvG", "#Max") %>%
+    rename(GvH = "#GvH", HvG = "#HvG", Max = "#Max") %>%
+    # Calculate logical mismatch for each direction.
+    mutate(
+      GvH_logical = HLA_mismatch_logical(GL_string_recip, GL_string_donor, "HLA-A", "GvH"),
+      HvG_logical = HLA_mismatch_logical(GL_string_recip, GL_string_donor, "HLA-A", "HvG"),
+      bidir_logical = HLA_mismatch_logical(GL_string_recip, GL_string_donor, "HLA-A", "bidirectional")
+    ) %>%
+    # Derive expected logical values from the consensus mismatch counts.
+    mutate(
+      GvH_expected = (GvH > 0),
+      HvG_expected = (HvG > 0),
+      bidir_expected = (Max > 0)
+    ) %>%
+    # Check that calculated results match expected results.
+    mutate(
+      GvH_result = (GvH_logical == GvH_expected),
+      HvG_result = (HvG_logical == HvG_expected),
+      bidir_result = (bidir_logical == bidir_expected)
+    ) %>%
+    # Check that for each row all values are correct.
+    mutate(total_result = if_all(GvH_result:bidir_result)) %>%
+    # Summarize to a single value if all were true.
+    distinct(total_result) %>%
+    pull(total_result)
+
+  expect_equal(mismatch_table_2016_logical, TRUE)
+})
+
 test_that("HLA_mismatch_logical works with vectorized inputs", {
   recip <- c(
     "HLA-A*01:01+HLA-A*02:01",
