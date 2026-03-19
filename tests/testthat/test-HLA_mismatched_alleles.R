@@ -55,6 +55,137 @@ test_that("HLA_mismatched_alleles returns NA for perfect match at single locus",
   expect_true(is.na(result))
 })
 
+test_that("HLA_mismatched_alleles agrees with mismatch_table_2010 consensus (homozygous_count = 1)", {
+  # Define symbolic alleles to substitute into the table.
+  A <- "HLA-A*01:01"
+  B <- "HLA-A*02:05"
+  C <- "HLA-A*24:02"
+  D <- "HLA-A*31:03"
+  N <- "HLA-A*68:11N"
+
+  # Build GL strings from the 2010 table's symbolic allele pairs.
+  mismatch_table_2010_alleles <- mismatch_table_2010 %>%
+    rename(Patient = patient, Donor = donor) %>%
+    # Assign the example alleles based on symbolic codes.
+    mutate(recipient_1 = case_when(
+      str_detect(Patient, "^A") ~ A,
+      str_detect(Patient, "^N") ~ N
+    ), recipient_2 = case_when(
+      str_detect(Patient, "A$") ~ A,
+      str_detect(Patient, "B$") ~ B,
+      str_detect(Patient, "N$") ~ N
+    ), donor_1 = case_when(
+      str_detect(Donor, "^A") ~ A,
+      str_detect(Donor, "^B") ~ B,
+      str_detect(Donor, "^C") ~ C,
+      str_detect(Donor, "^N") ~ N
+    ), donor_2 = case_when(
+      str_detect(Donor, "A$") ~ A,
+      str_detect(Donor, "B$") ~ B,
+      str_detect(Donor, "C$") ~ C,
+      str_detect(Donor, "D$") ~ D,
+      str_detect(Donor, "N$") ~ N
+    )) %>%
+    # Turn the two alleles into a GL string.
+    mutate(
+      GL_string_recip = str_c(recipient_1, recipient_2, sep = "+"),
+      GL_string_donor = str_c(donor_1, donor_2, sep = "+")
+    ) %>%
+    select(Patient, Donor, GL_string_recip, GL_string_donor, "#GvH", "#HvG") %>%
+    rename(GvH_count = "#GvH", HvG_count = "#HvG") %>%
+    # Calculate mismatched alleles for each direction with homozygous_count = 1.
+    mutate(
+      GvH_alleles = HLA_mismatched_alleles(GL_string_recip, GL_string_donor, "HLA-A", "GvH", homozygous_count = 1),
+      HvG_alleles = HLA_mismatched_alleles(GL_string_recip, GL_string_donor, "HLA-A", "HvG", homozygous_count = 1)
+    ) %>%
+    # Verify: NA when mismatch count is 0, non-NA when count > 0.
+    mutate(
+      GvH_na_correct = (is.na(GvH_alleles) == (GvH_count == 0)),
+      HvG_na_correct = (is.na(HvG_alleles) == (HvG_count == 0))
+    ) %>%
+    # Verify: number of alleles returned matches the mismatch count.
+    # Count alleles by splitting on "+" delimiter.
+    mutate(
+      GvH_n_alleles = if_else(is.na(GvH_alleles), 0L, as.integer(str_count(GvH_alleles, "\\+") + 1)),
+      HvG_n_alleles = if_else(is.na(HvG_alleles), 0L, as.integer(str_count(HvG_alleles, "\\+") + 1))
+    ) %>%
+    mutate(
+      GvH_count_correct = (GvH_n_alleles == GvH_count),
+      HvG_count_correct = (HvG_n_alleles == HvG_count)
+    ) %>%
+    # Check that all validations pass for every row.
+    mutate(total_result = if_all(c(GvH_na_correct, HvG_na_correct, GvH_count_correct, HvG_count_correct))) %>%
+    distinct(total_result) %>%
+    pull(total_result)
+
+  expect_equal(mismatch_table_2010_alleles, TRUE)
+})
+
+test_that("HLA_mismatched_alleles agrees with mismatch_table_2016 consensus (homozygous_count = 2)", {
+  # Define symbolic alleles to substitute into the table.
+  A <- "HLA-A*01:01"
+  B <- "HLA-A*02:05"
+  C <- "HLA-A*24:02"
+  D <- "HLA-A*31:03"
+  N <- "HLA-A*68:11N"
+
+  # Build GL strings from the 2016 table's symbolic allele pairs.
+  mismatch_table_2016_alleles <- mismatch_table_2016 %>%
+    # Assign the example alleles based on symbolic codes.
+    mutate(recipient_1 = case_when(
+      str_detect(Patient, "^A") ~ A,
+      str_detect(Patient, "^N") ~ N
+    ), recipient_2 = case_when(
+      str_detect(Patient, "A$") ~ A,
+      str_detect(Patient, "B$") ~ B,
+      str_detect(Patient, "N$") ~ N
+    ), donor_1 = case_when(
+      str_detect(Donor, "^A") ~ A,
+      str_detect(Donor, "^B") ~ B,
+      str_detect(Donor, "^C") ~ C,
+      str_detect(Donor, "^N") ~ N
+    ), donor_2 = case_when(
+      str_detect(Donor, "A$") ~ A,
+      str_detect(Donor, "B$") ~ B,
+      str_detect(Donor, "C$") ~ C,
+      str_detect(Donor, "D$") ~ D,
+      str_detect(Donor, "N$") ~ N
+    )) %>%
+    # Turn the two alleles into a GL string.
+    mutate(
+      GL_string_recip = str_c(recipient_1, recipient_2, sep = "+"),
+      GL_string_donor = str_c(donor_1, donor_2, sep = "+")
+    ) %>%
+    select(Patient, Donor, GL_string_recip, GL_string_donor, "#GvH", "#HvG") %>%
+    rename(GvH_count = "#GvH", HvG_count = "#HvG") %>%
+    # Calculate mismatched alleles for each direction with homozygous_count = 2 (default).
+    mutate(
+      GvH_alleles = HLA_mismatched_alleles(GL_string_recip, GL_string_donor, "HLA-A", "GvH", homozygous_count = 2),
+      HvG_alleles = HLA_mismatched_alleles(GL_string_recip, GL_string_donor, "HLA-A", "HvG", homozygous_count = 2)
+    ) %>%
+    # Verify: NA when mismatch count is 0, non-NA when count > 0.
+    mutate(
+      GvH_na_correct = (is.na(GvH_alleles) == (GvH_count == 0)),
+      HvG_na_correct = (is.na(HvG_alleles) == (HvG_count == 0))
+    ) %>%
+    # Verify: number of alleles returned matches the mismatch count.
+    # Count alleles by splitting on "+" delimiter.
+    mutate(
+      GvH_n_alleles = if_else(is.na(GvH_alleles), 0L, as.integer(str_count(GvH_alleles, "\\+") + 1)),
+      HvG_n_alleles = if_else(is.na(HvG_alleles), 0L, as.integer(str_count(HvG_alleles, "\\+") + 1))
+    ) %>%
+    mutate(
+      GvH_count_correct = (GvH_n_alleles == GvH_count),
+      HvG_count_correct = (HvG_n_alleles == HvG_count)
+    ) %>%
+    # Check that all validations pass for every row.
+    mutate(total_result = if_all(c(GvH_na_correct, HvG_na_correct, GvH_count_correct, HvG_count_correct))) %>%
+    distinct(total_result) %>%
+    pull(total_result)
+
+  expect_equal(mismatch_table_2016_alleles, TRUE)
+})
+
 test_that("HLA_mismatched_alleles works with vectorized inputs", {
   recip <- c(
     "HLA-A*01:01+HLA-A*02:01",
