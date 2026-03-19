@@ -143,6 +143,5 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
 }
 
 globalVariables(c(
-  "mismatches", "case", "HvG_number", "GvH_number", "MM", "bidirectional",
-  "str_count", "left_join", "join_by"
+  "mismatches", "case", "HvG_number", "GvH_number", "MM", "bidirectional"
 ))
