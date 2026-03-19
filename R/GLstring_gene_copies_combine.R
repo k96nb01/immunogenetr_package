@@ -34,6 +34,9 @@
 
 
 GLstring_gene_copies_combine <- function(.data, columns, sample_column = "sample") {
+  # Validate input
+  check_data_frame(.data, ".data")
+
   # Identify the columns to modify
   cols2mod <- names(select(.data, {{ columns }}))
 

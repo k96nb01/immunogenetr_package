@@ -16,6 +16,7 @@
 #'
 #' @export
 #'
+#' @importFrom cli cli_abort
 #' @importFrom xml2 read_xml
 #' @importFrom dplyr %>%
 #' @importFrom xml2 xml_find_all
@@ -33,8 +34,9 @@
 
 read_HML <- function(HML_file) {
   # Validate input
+  check_gl_string(HML_file, "HML_file")
   if (!file.exists(HML_file)) {
-    stop("The file does not exist:", HML_file)
+    cli_abort("The file {.file {HML_file}} does not exist.")
   }
 
   # Load the HML file
@@ -43,7 +45,7 @@ read_HML <- function(HML_file) {
       read_xml(HML_file)
     },
     error = function(e) {
-      stop("Failed to read HML; check that file is in compliant HML format.")
+      cli_abort("Failed to read HML file {.file {HML_file}}. Check that file is in compliant HML format.")
     }
   )
 

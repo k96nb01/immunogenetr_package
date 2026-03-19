@@ -32,6 +32,10 @@
 #' @importFrom stringr str_replace
 
 HLA_prefix_remove <- function(data, keep_locus = FALSE) {
+  # Validate inputs
+  check_gl_string(data, "data")
+  check_logical_flag(keep_locus, "keep_locus")
+
   # Removes any HLA and locus prefixes from typing results.
   step_1 <- data %>%
     GLstring_expand_longer() %>%

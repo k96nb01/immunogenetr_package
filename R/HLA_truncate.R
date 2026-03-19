@@ -59,6 +59,13 @@
 
 
 HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = FALSE, remove_duplicates = FALSE) {
+  # Validate inputs
+  check_gl_string(data, "data")
+  check_fields(fields)
+  check_logical_flag(keep_suffix, "keep_suffix")
+  check_logical_flag(keep_G_P_group, "keep_G_P_group")
+  check_logical_flag(remove_duplicates, "remove_duplicates")
+
   # Expand the GL string
   alleles <- GLstring_expand_longer(data) %>%
     # Extract any WHO-recognized suffixes

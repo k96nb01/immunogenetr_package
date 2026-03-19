@@ -32,6 +32,9 @@
 
 
 GLstring_expand_longer <- function(GL_string) {
+  # Validate input
+  check_gl_string(GL_string, "GL_string")
+
   as_tibble(GL_string) %>%
     # Assign a unique identifier for each entry for the function
     mutate(entry = row_number()) %>%

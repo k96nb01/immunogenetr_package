@@ -39,6 +39,7 @@
 #'
 #' @export
 #'
+#' @importFrom cli cli_abort
 #' @importFrom stringr str_split
 #' @importFrom stringr str_flatten
 #' @importFrom stringr str_detect
@@ -53,15 +54,21 @@
 #'
 
 HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
+  # Validate inputs
+  check_gl_string(GL_string_recip, "GL_string_recip")
+  check_gl_string(GL_string_donor, "GL_string_donor")
+  check_loci(loci)
+  check_homozygous_count(homozygous_count)
+
   direction <- match.arg(direction, c("HvG", "GvH"))
   # Ensure input vectors are of the same length - each input should be a single GL string.
   if (length(GL_string_recip) != length(GL_string_donor)) {
-    stop("Recipient and donor GL strings must be of equal length")
+    cli_abort("{.arg GL_string_recip} and {.arg GL_string_donor} must be of equal length.")
   }
 
   # Check for ambiguity
   if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]"))) {
-    stop("The matching/mismatching functions do not support ambiguous GL strings containing | or /. Process your GL strings to result in unambiguous genotypes before using these functions.")
+    cli_abort("The matching/mismatching functions do not support ambiguous GL strings containing {.val |} or {.val /}. Process your GL strings to result in unambiguous genotypes before using these functions.")
   }
 
   # Maps the serologic naming of the DRB locus to molecular so that only one name is used
@@ -165,10 +172,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     missing_loci <- setdiff(union(missing_loci_from_recipient, missing_loci_from_donor), "HLA-DRB3/4/5")
 
     if (length(missing_loci) > 0) {
-      stop(paste(
-        "Either the recipient and/or donor GL strings are missing these loci:",
-        paste(missing_loci, collapse = ", ")
-      ))
+      cli_abort("The recipient and/or donor GL strings are missing these loci: {.val {missing_loci}}.")
     }
 
     # Mismatch results calculation
@@ -220,7 +224,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
           mismatched_alleles <- rep(mismatched_alleles, times = homozygous_count)
         }
       } else {
-        stop("Direction must either be 'GvH', or 'HvG'.")
+        cli_abort("{.arg direction} must be {.val GvH} or {.val HvG}.")
       }
 
       # Create a string of mismatched alleles or 'NA' if no mismatches are found.

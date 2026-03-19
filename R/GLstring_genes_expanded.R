@@ -34,6 +34,9 @@
 
 
 GLstring_genes_expanded <- function(data, gl_string) {
+  # Validate input
+  check_data_frame(data, "data")
+
   data %>%
     GLstring_genes(all_of(gl_string)) %>%
     pivot_longer(cols = everything(), names_to = "locus", values_to = "alleles") %>% # Pivot to long format

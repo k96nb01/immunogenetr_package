@@ -71,6 +71,10 @@
 #' @importFrom stringr str_flatten
 
 ambiguity_table_to_GLstring <- function(data, remove_duplicates = FALSE) {
+  # Validate inputs
+  check_data_frame(data, "data")
+  check_logical_flag(remove_duplicates, "remove_duplicates")
+
   data %>%
     # Remove any identical allele values if remove_duplicates is TRUE and then combine allele ambiguities.
     {

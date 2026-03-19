@@ -39,11 +39,15 @@
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_extract
 #' @importFrom stringr str_replace_all
+#' @importFrom cli cli_abort
 #' @importFrom stringr str_replace
-#' @importFrom rlang abort
 
 
 GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE) {
+  # Validate inputs
+  check_data_frame(data, "data")
+  check_logical_flag(keep_ambiguities, "keep_ambiguities")
+
   # Identify the columns to modify
   cols2mod <- names(select(data, {{ columns }}))
 
@@ -57,7 +61,7 @@ GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE)
 
   # Error code
   if (str_detect(genes_not_separated, "TRUE")) {
-    abort("Genes must be separated before `GLstring_genotype_ambiguity` can be used. Process GL strings with the `GLstring_gene_separate` function first.")
+    cli_abort("Genes must be separated before {.fn GLstring_genotype_ambiguity} can be used. Process GL strings with {.fn GLstring_genes} first.")
   }
 
   # Copy GL string to a new ambiguity column

@@ -35,6 +35,12 @@
 #'
 
 HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = "bidirectional", match_grade) {
+  # Validate inputs
+  check_gl_string(GL_string_recip, "GL_string_recip")
+  check_gl_string(GL_string_donor, "GL_string_donor")
+  match_grade <- match.arg(match_grade, c("Xof8", "Xof10"))
+  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
+
   if (match_grade == "Xof8") {
     if (direction == "HvG") {
       match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"), direction = "HvG")) %>%

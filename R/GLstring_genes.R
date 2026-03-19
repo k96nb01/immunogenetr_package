@@ -34,6 +34,9 @@
 
 
 GLstring_genes <- function(data, gl_string) {
+  # Validate input
+  check_data_frame(data, "data")
+
   # Identify the columns to modify
   col2mod <- names(select(data, {{ gl_string }}))
   data %>%

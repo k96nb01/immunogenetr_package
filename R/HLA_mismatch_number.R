@@ -67,6 +67,12 @@
 
 
 HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
+  # Validate inputs
+  check_gl_string(GL_string_recip, "GL_string_recip")
+  check_gl_string(GL_string_donor, "GL_string_donor")
+  check_loci(loci)
+  check_homozygous_count(homozygous_count)
+
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
   # Code to determine mismatch numbers if a single locus was supplied.
   if (length(loci) == 1) {

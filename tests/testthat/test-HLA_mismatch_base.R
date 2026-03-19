@@ -21,7 +21,7 @@ test_that("HLA_mismatch_base correctly identifies mismatches", {
 
   expect_error(
     HLA_mismatch_base(c(GL_string_recip, GL_string_recip), GL_string_donor, loci, direction = "HvG"),
-    "Recipient and donor GL strings must be of equal length"
+    "must be of equal length"
   )
 })
 
@@ -99,7 +99,7 @@ test_that("A genotype without any DRB3/4/5 alleles compared to a genotype with w
 
   expect_error(
     HLA_mismatch_base(recip, donor, loci = "HLA-B", direction = "HvG"),
-    "Either the recipient and/or donor GL strings are missing these loci: HLA-B"
+    "missing these loci"
   )
 
   recip <- "HLA-DR1^HLA-DR52^HLA-DRB53"

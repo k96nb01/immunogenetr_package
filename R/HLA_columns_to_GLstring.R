@@ -76,10 +76,12 @@
 #' @importFrom stringr str_flatten
 #' @importFrom tidyr pivot_longer
 #' @importFrom tidyselect all_of
-#' @importFrom cli format_error
-#' @importFrom rlang abort
+#' @importFrom cli cli_abort
 
 HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "") {
+  # Validate inputs
+  check_data_frame(data, "data")
+
   # Set up prefix and suffix regex to remove unwanted parts
   prefix_regex <- regex(str_c("^", str_escape(prefix_to_remove)), ignore_case = TRUE)
   suffix_regex <- regex(str_c(str_escape(suffix_to_remove), "$"), ignore_case = TRUE)
@@ -166,7 +168,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 
   if (nrow(error_table) != 0) {
     # Print the columns that caused the error to assist in debugging
-    rlang::abort(cli::format_error(glue::glue("The column(s) {paste(error_column_names, collapse = ', ')} could not be parsed to determine HLA loci.")))
+    cli_abort("The column(s) {.val {error_column_names}} could not be parsed to determine HLA loci.")
   }
 
   # Assemble the final type

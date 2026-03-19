@@ -52,6 +52,12 @@
 #' @importFrom tidyr unite
 
 HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
+  # Validate inputs
+  check_gl_string(GL_string_recip, "GL_string_recip")
+  check_gl_string(GL_string_donor, "GL_string_donor")
+  check_loci(loci)
+  check_homozygous_count(homozygous_count)
+
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
   # "HvG" or "GvH" can use the output of `HLA_mismatch_base` directly.
   if (direction == "HvG" | direction == "GvH") {
