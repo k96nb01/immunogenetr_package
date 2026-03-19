@@ -75,26 +75,26 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = 
 
   # Delete fields for truncating and reunite the alleles
   if (fields == 1) {
-    trunctated <- alleles %>%
+    truncated <- alleles %>%
       select(-four, -three, -two) %>%
       unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>%
       unite(gene, gene, one, sep = "*", na.rm = TRUE)
   } else if (fields == 2) {
-    trunctated <- alleles %>%
+    truncated <- alleles %>%
       select(-four, -three) %>%
       unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>%
       unite(code, one:two, sep = ":", na.rm = TRUE) %>%
       mutate(code = na_if(code, "")) %>%
       unite(gene, gene, code, sep = "*", na.rm = TRUE)
   } else if (fields == 3) {
-    trunctated <- alleles %>%
+    truncated <- alleles %>%
       select(-four) %>%
       unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>%
       unite(code, one:three, sep = ":", na.rm = TRUE) %>%
       mutate(code = na_if(code, "")) %>%
       unite(gene, gene, code, sep = "*", na.rm = TRUE)
   } else {
-    trunctated <- alleles %>%
+    truncated <- alleles %>%
       unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>%
       unite(code, one:four, sep = ":", na.rm = TRUE) %>%
       mutate(code = na_if(code, "")) %>%
@@ -103,9 +103,9 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = 
 
   # Retain suffix if desired
   if (keep_suffix) {
-    with_suffix <- trunctated %>% unite(gene, gene, suffix, sep = "", na.rm = TRUE)
+    with_suffix <- truncated %>% unite(gene, gene, suffix, sep = "", na.rm = TRUE)
   } else {
-    with_suffix <- trunctated %>% select(-suffix)
+    with_suffix <- truncated %>% select(-suffix)
   }
   # Retain P/G group designation if desired
   if (keep_G_P_group) {
