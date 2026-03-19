@@ -72,3 +72,5 @@ HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direc
     return(bidirectional$bidirectional)
   }
 }
+
+globalVariables(c("HvG", "GvH"))
