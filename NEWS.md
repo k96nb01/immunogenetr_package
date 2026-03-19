@@ -12,6 +12,10 @@
 
 * Optimized `HLA_mismatch_base`: consolidated duplicated GvH/HvG mismatch calculation into a single parameterized code path, eliminated repeated `strsplit()` calls within the mismatch loop, and extracted duplicated locus-naming logic into a shared helper function.
 
+* Optimized `HLA_mismatch_number` and `HLA_mismatch_logical` to only compute the requested direction(s). Previously both functions always computed GvH and HvG regardless of the requested direction; now HvG, GvH, and SOT requests only compute a single direction, cutting `HLA_mismatch_base` calls in half. Bidirectional requests still compute both as needed. Also extracted duplicated multi-locus table-building code into internal helper functions.
+
+* Expanded test coverage for `HLA_mismatch_logical`, `HLA_match_number`, and `HLA_mismatched_alleles` using the `mismatch_table_2010` and `mismatch_table_2016` consensus reference tables, matching the existing comprehensive table-based tests in `HLA_mismatch_number`.
+
 # immunogenetr 1.0.1
 
 * Added a disclaimer to the package for it being for research use only. Added a disclaimer to the help file for `HLA_truncate` to warn users about the ability to make non-WHO-compliant allele names with certain settings. Updated `HLA_mismatch_base` to better handle missing loci at the DRB3/4/5 locus.
