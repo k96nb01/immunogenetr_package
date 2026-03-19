@@ -16,7 +16,7 @@ BugReports: https://github.com/k96nb01/immunogenetr_package/issues
 Depends:
     R (>= 4.1.0)
 Imports: 
-    cli (>= 1.0.0),
+    cli (>= 3.0.0),
     dplyr (>= 1.1.1),
     glue (>= 1.8.0),
     magrittr (>= 2.0.3),
