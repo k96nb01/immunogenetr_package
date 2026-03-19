@@ -1,6 +1,12 @@
 # immunogenetr 1.1.0
 
-* Internal code quality improvements: fixed typos in internal variable names, corrected test filenames, cleaned up `globalVariables()` declarations, and standardized error handling across functions.
+* Internal code quality improvements: fixed typos in internal variable names, corrected test filenames, and cleaned up `globalVariables()` declarations.
+
+* Standardized all error messages to use `cli_abort()` for consistent, informative error reporting across the package. Bumped `cli` dependency to >= 3.0.0.
+
+* Added input validation to all exported functions. Functions now check for NULL, wrong types, and invalid parameter values before processing, providing clear error messages instead of cryptic failures. Added internal validation helper functions (`check_gl_string`, `check_data_frame`, `check_loci`, `check_logical_flag`, `check_homozygous_count`, `check_fields`).
+
+* Added `match.arg()` validation for `match_grade` and `direction` parameters in `HLA_match_summary_HCT`.
 
 # immunogenetr 1.0.1
 
