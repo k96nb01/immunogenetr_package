@@ -28,3 +28,46 @@ test_that("HLA_mismatched_alleles correctly identifies mismatched alleles", {
 
   expect_error(HLA_mismatched_alleles(GL_string_recip, GL_string_donor, loci, direction = "invalid"))
 })
+
+
+# --- Input validation tests ---
+
+test_that("HLA_mismatched_alleles rejects NULL inputs", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatched_alleles(NULL, gl, "HLA-A", "HvG"), "GL_string_recip")
+  expect_error(HLA_mismatched_alleles(gl, NULL, "HLA-A", "HvG"), "GL_string_donor")
+  expect_error(HLA_mismatched_alleles(gl, gl, NULL, "HvG"), "loci")
+})
+
+test_that("HLA_mismatched_alleles rejects non-character GL strings", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatched_alleles(123, gl, "HLA-A", "HvG"), "must be a character")
+})
+
+test_that("HLA_mismatched_alleles rejects invalid homozygous_count", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatched_alleles(gl, gl, "HLA-A", "HvG", homozygous_count = 0), "must be.*1.*or.*2")
+})
+
+test_that("HLA_mismatched_alleles returns NA for perfect match at single locus", {
+  gl <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
+  result <- HLA_mismatched_alleles(gl, gl, "HLA-A", "HvG")
+  expect_true(is.na(result))
+})
+
+test_that("HLA_mismatched_alleles works with vectorized inputs", {
+  recip <- c(
+    "HLA-A*01:01+HLA-A*02:01",
+    "HLA-A*03:01+HLA-A*24:02"
+  )
+  donor <- c(
+    "HLA-A*01:01+HLA-A*03:01",
+    "HLA-A*03:01+HLA-A*24:02"
+  )
+  result <- HLA_mismatched_alleles(recip, donor, "HLA-A", "HvG")
+  expect_length(result, 2)
+  # First pair has a mismatch
+  expect_equal(result[1], "HLA-A*03:01")
+  # Second pair is a perfect match
+  expect_true(is.na(result[2]))
+})
