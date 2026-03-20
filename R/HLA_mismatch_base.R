@@ -87,8 +87,12 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     # Split GL string into alleles
     alleles <- str_split(GL_string, "\\+", simplify = TRUE)
 
-    # Replace any allele that ends with "N" with "NullN".
-    alleles <- str_replace(alleles, "(?<=HLA-[:alnum:]{1,4}\\*).+N$", "XXN")
+    # Replace any null allele (ending with uppercase "N" expression suffix) with a
+    # placeholder "XXN". The WHO nomenclature defines "N" as the null expression suffix,
+    # appearing after the colon-separated allele fields (e.g. "HLA-A*01:01N").
+    # The lookbehind matches the locus prefix up to the asterisk, allowing locus names
+    # of any length (e.g. HLA-A, HLA-DRB1, HLA-DRB345).
+    alleles <- str_replace(alleles, "(?<=HLA-[:alnum:]{1,10}\\*).+N$", "XXN")
 
     # Handle homozygosity
     if (length(alleles) == 1 && homozygous_count == 2) {
