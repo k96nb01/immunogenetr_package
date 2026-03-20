@@ -98,6 +98,46 @@ test_that("read_HML errors on invalid XML", {
   unlink(bad_file)
 })
 
+test_that("read_HML handles HML files without XML namespace", {
+  # Create a minimal HML file with no namespace declaration,
+  # which exercises the else branch for unqualified XPath queries.
+  no_ns_file <- tempfile(fileext = ".hml")
+  writeLines(c(
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<hml>',
+    '  <sample id="DONOR001">',
+    '    <typing gene-family="HLA" gene="HLA-A" allele-db="IMGT/HLA" allele-version="3.25.0">',
+    '      <allele-assignment allele-db="IMGT/HLA" allele-version="3.25.0">',
+    '        <glstring>HLA-A*01:01+HLA-A*02:01</glstring>',
+    '      </allele-assignment>',
+    '    </typing>',
+    '    <typing gene-family="HLA" gene="HLA-B" allele-db="IMGT/HLA" allele-version="3.25.0">',
+    '      <allele-assignment allele-db="IMGT/HLA" allele-version="3.25.0">',
+    '        <glstring>HLA-B*07:02+HLA-B*08:01</glstring>',
+    '      </allele-assignment>',
+    '    </typing>',
+    '  </sample>',
+    '</hml>'
+  ), no_ns_file)
+
+  result <- read_HML(no_ns_file)
+
+  # Should return a tibble with the expected structure.
+  expect_s3_class(result, "tbl_df")
+  expect_true(all(c("sampleID", "GL_string") %in% colnames(result)))
+  # Should find 1 sample.
+  expect_equal(nrow(result), 1)
+  # GL string should contain both loci joined by "^".
+  expect_true(str_detect(result$GL_string, "HLA-A"))
+  expect_true(str_detect(result$GL_string, "HLA-B"))
+  expect_true(str_detect(result$GL_string, "\\^"))
+  # Sample ID should match.
+  expect_equal(result$sampleID, "DONOR001")
+
+  # Clean up.
+  unlink(no_ns_file)
+})
+
 test_that("read_HML validates input", {
   # NULL input should error.
   expect_error(read_HML(NULL))
