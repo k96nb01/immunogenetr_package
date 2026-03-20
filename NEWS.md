@@ -30,6 +30,12 @@
 
 * Fixed null allele detection regex in `HLA_mismatch_base` to support locus names longer than 4 characters (e.g. `HLA-DRB345`). The lookbehind now allows up to 10 alphanumeric characters after `HLA-`.
 
+* Added a "Getting Started" vignette covering all major workflows: tabular-to-GL-string conversion, locus splitting, mismatch/match calculation, allele name utilities, and HML file reading.
+
+* Added a package-level help page (`?immunogenetr`) organizing all exported functions and datasets by category.
+
+* Added `inst/CITATION` file for the package publication: Coskun & Brown (2026), "Immunogenetr: A comprehensive toolkit for clinical HLA informatics," *Human Immunology*, 87(1):111619. doi:10.1016/j.humimm.2025.111619.
+
 # immunogenetr 1.0.1
 
 * Added a disclaimer to the package for it being for research use only. Added a disclaimer to the help file for `HLA_truncate` to warn users about the ability to make non-WHO-compliant allele names with certain settings. Updated `HLA_mismatch_base` to better handle missing loci at the DRB3/4/5 locus.
