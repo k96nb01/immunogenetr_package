@@ -129,6 +129,21 @@ test_that("HLA_mismatch_logical agrees with mismatch_table_2016 consensus (homoz
   expect_equal(mismatch_table_2016_logical, TRUE)
 })
 
+test_that("HLA_mismatch_logical handles GvH direction with multiple loci", {
+  # This specifically tests the multi-loci GvH branch (lines 102-104),
+  # which was not covered by existing tests that only used GvH with a single locus.
+  GL_string_recip <- "HLA-A*03:01+HLA-A*74:01^HLA-B*07:02+HLA-B*08:01"
+  GL_string_donor <- "HLA-A*03:02+HLA-A*20:01^HLA-B*07:02+HLA-B*08:01"
+
+  result <- HLA_mismatch_logical(GL_string_recip, GL_string_donor,
+                                  loci = c("HLA-A", "HLA-B"), direction = "GvH")
+
+  # HLA-A should be mismatched (donor has different alleles).
+  expect_match(result, "HLA-A=TRUE")
+  # HLA-B should match (same alleles).
+  expect_match(result, "HLA-B=FALSE")
+})
+
 test_that("HLA_mismatch_logical works with vectorized inputs", {
   recip <- c(
     "HLA-A*01:01+HLA-A*02:01",
