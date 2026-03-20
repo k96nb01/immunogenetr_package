@@ -24,6 +24,8 @@
 
 * Optimized `GLstring_genotype_ambiguity`: simplified the gene-separator error detection from a multi-step pipeline to a single vectorized check, and combined two separate `str_replace()` + `na_if()` calls into one operation.
 
+* Expanded test coverage for `HLA_column_repair`, `GLstring_genes`, `GLstring_regex`, and `read_HML` with comprehensive tests covering format conversions, parameter combinations, edge cases, input validation, and error handling.
+
 # immunogenetr 1.0.1
 
 * Added a disclaimer to the package for it being for research use only. Added a disclaimer to the help file for `HLA_truncate` to warn users about the ability to make non-WHO-compliant allele names with certain settings. Updated `HLA_mismatch_base` to better handle missing loci at the DRB3/4/5 locus.
