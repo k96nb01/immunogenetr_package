@@ -16,6 +16,8 @@
 
 * Expanded test coverage for `HLA_mismatch_logical`, `HLA_match_number`, and `HLA_mismatched_alleles` using the `mismatch_table_2010` and `mismatch_table_2016` consensus reference tables, matching the existing comprehensive table-based tests in `HLA_mismatch_number`.
 
+* Optimized `HLA_columns_to_GLstring`: replaced 16 case-insensitive regex calls for locus detection with a single `tolower()` plus `startsWith()` lookups (~7.5x faster), replaced the serologic name `case_when` with a named vector lookup (~37x faster), and combined multiple `str_detect()` calls for molecular typing detection into single patterns.
+
 # immunogenetr 1.0.1
 
 * Added a disclaimer to the package for it being for research use only. Added a disclaimer to the help file for `HLA_truncate` to warn users about the ability to make non-WHO-compliant allele names with certain settings. Updated `HLA_mismatch_base` to better handle missing loci at the DRB3/4/5 locus.
