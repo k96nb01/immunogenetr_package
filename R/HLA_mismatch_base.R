@@ -174,12 +174,17 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     # Mismatch results calculation
     mismatch_results <- map(loci, function(locus_name) {
 
-      # If either donor or recip lacks DRB3/4/5, return "=NA" for that locus instead of error
+      # Defensive guard: if either donor or recip lacks DRB3/4/5, return "=NA"
+      # for that locus instead of error. Currently unreachable because
+      # process_alleles() inserts a null placeholder for missing DRB3/4/5,
+      # but kept as a safety net in case that logic changes.
+      # nocov start
       if (locus_name == "HLA-DRB3/4/5" &&
           (!(locus_name %in% names(recip_alleles_list_processed)) ||
            !(locus_name %in% names(donor_alleles_list_processed)))) {
         return(paste0(display_name(locus_name), "=NA"))
       }
+      # nocov end
 
       # Pull out the allele list for each locus and split once for reuse.
       recip_alleles_str <- recip_alleles_list_processed[locus_name]
