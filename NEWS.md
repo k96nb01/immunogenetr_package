@@ -18,6 +18,12 @@
 
 * Optimized `HLA_columns_to_GLstring`: replaced 16 case-insensitive regex calls for locus detection with a single `tolower()` plus `startsWith()` lookups (~7.5x faster), replaced the serologic name `case_when` with a named vector lookup (~37x faster), and combined multiple `str_detect()` calls for molecular typing detection into single patterns.
 
+* Optimized `HLA_truncate`: replaced four nearly-identical `if/else` blocks for field selection with a parameterized approach using computed `keep_cols`/`drop_cols` vectors, reducing code duplication and improving maintainability.
+
+* Optimized `ambiguity_table_to_GLstring`: extracted a `collapse_level()` helper function to replace six repetitions of the conditional `distinct()` + `summarise()` pattern, significantly reducing code duplication.
+
+* Optimized `GLstring_genotype_ambiguity`: simplified the gene-separator error detection from a multi-step pipeline to a single vectorized check, and combined two separate `str_replace()` + `na_if()` calls into one operation.
+
 # immunogenetr 1.0.1
 
 * Added a disclaimer to the package for it being for research use only. Added a disclaimer to the help file for `HLA_truncate` to warn users about the ability to make non-WHO-compliant allele names with certain settings. Updated `HLA_mismatch_base` to better handle missing loci at the DRB3/4/5 locus.
