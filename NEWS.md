@@ -26,6 +26,10 @@
 
 * Expanded test coverage for `HLA_column_repair`, `GLstring_genes`, `GLstring_regex`, and `read_HML` with comprehensive tests covering format conversions, parameter combinations, edge cases, input validation, and error handling.
 
+* Fixed `read_HML` to dynamically discover the XML namespace instead of hardcoding the `d1:` prefix. The function now uses `xml_ns()` to detect the namespace from the file, improving compatibility with HML files from different sources.
+
+* Fixed null allele detection regex in `HLA_mismatch_base` to support locus names longer than 4 characters (e.g. `HLA-DRB345`). The lookbehind now allows up to 10 alphanumeric characters after `HLA-`.
+
 # immunogenetr 1.0.1
 
 * Added a disclaimer to the package for it being for research use only. Added a disclaimer to the help file for `HLA_truncate` to warn users about the ability to make non-WHO-compliant allele names with certain settings. Updated `HLA_mismatch_base` to better handle missing loci at the DRB3/4/5 locus.
