@@ -75,37 +75,26 @@ ambiguity_table_to_GLstring <- function(data, remove_duplicates = FALSE) {
   check_data_frame(data, "data")
   check_logical_flag(remove_duplicates, "remove_duplicates")
 
+  # Helper to optionally deduplicate then collapse values at each GL string level.
+  # Each level of the GL string hierarchy (allele, haplotype, genotype, etc.) follows
+  # the same pattern: optionally remove duplicates, then summarise with a separator.
+  collapse_level <- function(data, by_cols, collapse_char) {
+    if (remove_duplicates) {
+      data <- distinct(data, across(all_of(c("value", by_cols))), .keep_all = TRUE)
+    }
+    summarise(data, value = str_flatten(value, collapse = collapse_char), .by = all_of(by_cols))
+  }
+
+  # Collapse each level of the GL string hierarchy from most specific to least.
+  # GL string separators: "/" (allele ambiguity), "~" (haplotype), "+" (gene copies),
+  # "|" (genotype ambiguity), "^" (locus), "?" (possible gene location).
   data %>%
-    # Remove any identical allele values if remove_duplicates is TRUE and then combine allele ambiguities.
-    {
-      if (remove_duplicates) distinct(., value, entry, possible_gene_location, locus, genotype_ambiguity, genotype, haplotype, .keep_all = TRUE) else .
-    } %>%
-    summarise(value = str_flatten(value, collapse = "/"), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype, haplotype)) %>%
-    # Remove any identical haplotype values if remove_duplicates is TRUE and then combine alleles in a haplotype.
-    {
-      if (remove_duplicates) distinct(., value, entry, possible_gene_location, locus, genotype_ambiguity, genotype, .keep_all = TRUE) else .
-    } %>%
-    summarise(value = str_flatten(value, collapse = "~"), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype)) %>%
-    # Remove any identical genotype values if remove_duplicates is TRUE and then combine gene copies to a genotype.
-    {
-      if (remove_duplicates) distinct(., value, entry, possible_gene_location, locus, genotype_ambiguity, .keep_all = TRUE) else .
-    } %>%
-    summarise(value = str_flatten(value, collapse = "+"), .by = c(entry, possible_gene_location, locus, genotype_ambiguity)) %>%
-    # Remove any identical genotype ambiguity values if remove_duplicates is TRUE and then combine genotypes to a genotype list.
-    {
-      if (remove_duplicates) distinct(., value, entry, possible_gene_location, locus, .keep_all = TRUE) else .
-    } %>%
-    summarise(value = str_flatten(value, collapse = "|"), .by = c(entry, possible_gene_location, locus)) %>%
-    # Remove any identical locus values if remove_duplicates is TRUE and then combine loci.
-    {
-      if (remove_duplicates) distinct(., value, entry, possible_gene_location, .keep_all = TRUE) else .
-    } %>%
-    summarise(value = str_flatten(value, collapse = "^"), .by = c(entry, possible_gene_location)) %>%
-    # Remove any identical possible_gene_location values if remove_duplicates is TRUE and then combine possible gene locations to a final GL string.
-    {
-      if (remove_duplicates) distinct(., value, entry, .keep_all = TRUE) else .
-    } %>%
-    summarise(value = str_flatten(value, collapse = "?"), .by = entry) %>%
+    collapse_level(c("entry", "possible_gene_location", "locus", "genotype_ambiguity", "genotype", "haplotype"), "/") %>%
+    collapse_level(c("entry", "possible_gene_location", "locus", "genotype_ambiguity", "genotype"), "~") %>%
+    collapse_level(c("entry", "possible_gene_location", "locus", "genotype_ambiguity"), "+") %>%
+    collapse_level(c("entry", "possible_gene_location", "locus"), "|") %>%
+    collapse_level(c("entry", "possible_gene_location"), "^") %>%
+    collapse_level(c("entry"), "?") %>%
     pull(value)
 }
 
