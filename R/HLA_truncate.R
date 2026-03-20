@@ -80,59 +80,49 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = 
     # Keep only numbers in each field, in case there were non-standard suffixes.
     mutate(across(one:four, ~ str_extract(., "[:digit:]+")))
 
-  # Delete fields for truncating and reunite the alleles
+  # Determine which field columns to keep and which to drop based on requested fields.
+  all_field_cols <- c("one", "two", "three", "four")
+  keep_cols <- all_field_cols[seq_len(fields)]
+  drop_cols <- setdiff(all_field_cols, keep_cols)
+
+  # Drop the unneeded field columns.
+  if (length(drop_cols) > 0) {
+    alleles <- alleles %>% select(-all_of(drop_cols))
+  }
+
+  # Reunite the prefix and gene name (e.g. "HLA" + "A" -> "HLA-A").
+  truncated <- alleles %>%
+    unite(gene, prefix:gene, sep = "-", na.rm = TRUE)
+
+  # Reunite the retained field columns into the allele code.
   if (fields == 1) {
-    truncated <- alleles %>%
-      select(-four, -three, -two) %>%
-      unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>%
+    # Single field: unite directly with the gene using "*" separator.
+    truncated <- truncated %>%
       unite(gene, gene, one, sep = "*", na.rm = TRUE)
-  } else if (fields == 2) {
-    truncated <- alleles %>%
-      select(-four, -three) %>%
-      unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>%
-      unite(code, one:two, sep = ":", na.rm = TRUE) %>%
-      mutate(code = na_if(code, "")) %>%
-      unite(gene, gene, code, sep = "*", na.rm = TRUE)
-  } else if (fields == 3) {
-    truncated <- alleles %>%
-      select(-four) %>%
-      unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>%
-      unite(code, one:three, sep = ":", na.rm = TRUE) %>%
-      mutate(code = na_if(code, "")) %>%
-      unite(gene, gene, code, sep = "*", na.rm = TRUE)
   } else {
-    truncated <- alleles %>%
-      unite(gene, prefix:gene, sep = "-", na.rm = TRUE) %>%
-      unite(code, one:four, sep = ":", na.rm = TRUE) %>%
+    # Multiple fields: join fields with ":", then unite with gene using "*".
+    truncated <- truncated %>%
+      unite(code, all_of(keep_cols), sep = ":", na.rm = TRUE) %>%
       mutate(code = na_if(code, "")) %>%
       unite(gene, gene, code, sep = "*", na.rm = TRUE)
   }
 
-  # Retain suffix if desired
+  # Retain or drop suffix and P/G group designation.
   if (keep_suffix) {
-    with_suffix <- truncated %>% unite(gene, gene, suffix, sep = "", na.rm = TRUE)
+    truncated <- truncated %>% unite(gene, gene, suffix, sep = "", na.rm = TRUE)
   } else {
-    with_suffix <- truncated %>% select(-suffix)
+    truncated <- truncated %>% select(-suffix)
   }
-  # Retain P/G group designation if desired
   if (keep_G_P_group) {
-    with_g_p <- with_suffix %>% unite(gene, gene, GP, sep = "", na.rm = TRUE)
+    truncated <- truncated %>% unite(gene, gene, GP, sep = "", na.rm = TRUE)
   } else {
-    with_g_p <- with_suffix %>% select(-GP)
+    truncated <- truncated %>% select(-GP)
   }
 
   # Combine everything back to a GL string.
-  if (remove_duplicates) {
-    final <- with_g_p %>%
-      rename(value = gene) %>%
-      ambiguity_table_to_GLstring(., remove_duplicates = TRUE)
-    return(final)
-  } else {
-    final <- with_g_p %>%
-      rename(value = gene) %>%
-      ambiguity_table_to_GLstring(., remove_duplicates = FALSE)
-    return(final)
-  }
+  truncated %>%
+    rename(value = gene) %>%
+    ambiguity_table_to_GLstring(., remove_duplicates = remove_duplicates)
 }
 
 
