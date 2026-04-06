@@ -1,0 +1,14 @@
+bibentry(
+  bibtype  = "Article",
+  title    = "Immunogenetr: A comprehensive toolkit for clinical HLA informatics",
+  author   = c(
+    person("Busra", "Coskun"),
+    person("Nicholas K.", "Brown")
+  ),
+  journal  = "Human Immunology",
+  year     = "2026",
+  volume   = "87",
+  number   = "1",
+  pages    = "111619",
+  doi      = "10.1016/j.humimm.2025.111619"
+)

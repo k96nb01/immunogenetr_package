@@ -39,3 +39,45 @@ test_that("HLA_match_summary_HCT correctly calculates match summary for HCT", {
 
   expect_error(HLA_match_summary_HCT(GL_string_recip, GL_string_donor, direction = "invalid"))
 })
+
+
+# --- Input validation tests ---
+
+test_that("HLA_match_summary_HCT rejects NULL inputs", {
+  gl <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01^HLA-C*03:04+HLA-C*07:01^HLA-DRB1*04:01+HLA-DRB1*07:01"
+  expect_error(HLA_match_summary_HCT(NULL, gl, match_grade = "Xof8"), "GL_string_recip")
+  expect_error(HLA_match_summary_HCT(gl, NULL, match_grade = "Xof8"), "GL_string_donor")
+})
+
+test_that("HLA_match_summary_HCT rejects non-character GL strings", {
+  gl <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01^HLA-C*03:04+HLA-C*07:01^HLA-DRB1*04:01+HLA-DRB1*07:01"
+  expect_error(HLA_match_summary_HCT(123, gl, match_grade = "Xof8"), "must be a character")
+})
+
+test_that("HLA_match_summary_HCT rejects invalid match_grade", {
+  gl <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01^HLA-C*03:04+HLA-C*07:01^HLA-DRB1*04:01+HLA-DRB1*07:01"
+  expect_error(HLA_match_summary_HCT(gl, gl, match_grade = "Xof6"))
+})
+
+test_that("HLA_match_summary_HCT returns 8 for perfect Xof8 match", {
+  gl <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01^HLA-C*03:04+HLA-C*07:01^HLA-DRB1*04:01+HLA-DRB1*07:01"
+  result <- HLA_match_summary_HCT(gl, gl, direction = "bidirectional", match_grade = "Xof8")
+  expect_equal(result, 8)
+})
+
+test_that("HLA_match_summary_HCT works with vectorized inputs", {
+  recip <- c(
+    "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01^HLA-C*03:04+HLA-C*07:01^HLA-DRB1*04:01+HLA-DRB1*07:01",
+    "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01^HLA-C*03:04+HLA-C*07:01^HLA-DRB1*04:01+HLA-DRB1*07:01"
+  )
+  donor <- c(
+    "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01^HLA-C*03:04+HLA-C*07:01^HLA-DRB1*04:01+HLA-DRB1*07:01",
+    "HLA-A*03:01+HLA-A*24:02^HLA-B*15:01+HLA-B*40:01^HLA-C*01:02+HLA-C*02:02^HLA-DRB1*11:01+HLA-DRB1*13:01"
+  )
+  result <- HLA_match_summary_HCT(recip, donor, direction = "bidirectional", match_grade = "Xof8")
+  expect_length(result, 2)
+  # First pair is a perfect match
+  expect_equal(result[1], 8)
+  # Second pair is a complete mismatch
+  expect_equal(result[2], 0)
+})

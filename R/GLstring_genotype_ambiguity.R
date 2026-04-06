@@ -39,39 +39,35 @@
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_extract
 #' @importFrom stringr str_replace_all
+#' @importFrom cli cli_abort
 #' @importFrom stringr str_replace
-#' @importFrom rlang abort
 
 
 GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE) {
+  # Validate inputs
+  check_data_frame(data, "data")
+  check_logical_flag(keep_ambiguities, "keep_ambiguities")
+
   # Identify the columns to modify
   cols2mod <- names(select(data, {{ columns }}))
 
-  # Set up error detection of "^", which indicates the genes haven't been separated from the GL string.
-  (genes_not_separated <- data %>% mutate(across(all_of({{ cols2mod }}), ~ str_detect(., "\\^"))) %>%
-    summarize(X = toString(across({{ cols2mod }}))) %>%
-    mutate(X = str_replace_all(X, "c[:punct:]", " ")) %>%
-    mutate(Y = str_detect(X, "TRUE")) %>%
-    select(Y)
-  )
-
-  # Error code
-  if (str_detect(genes_not_separated, "TRUE")) {
-    abort("Genes must be separated before `GLstring_genotype_ambiguity` can be used. Process GL strings with the `GLstring_gene_separate` function first.")
+  # Check for "^" in any of the selected columns, which indicates genes
+  # haven't been separated from the GL string yet.
+  if (any(str_detect(unlist(data[cols2mod]), "\\^"), na.rm = TRUE)) {
+    cli_abort("Genes must be separated before {.fn GLstring_genotype_ambiguity} can be used. Process GL strings with {.fn GLstring_genes} first.")
   }
 
-  # Copy GL string to a new ambiguity column
+  # Copy GL string to a new ambiguity column.
   data %>%
     mutate(across({{ cols2mod }},
       ~ as.character(.),
       .names = "{col}_genotype_ambiguity"
     )) %>%
-    # Keep the first genotype ambiguity in the original columns
+    # Keep the first genotype ambiguity in the original columns.
     mutate(across({{ cols2mod }}, ~ str_extract(., "[^|]+"))) %>%
-    # Keep the remaining genotype ambiguities in the ambiguity columns
-    mutate(across(ends_with("_genotype_ambiguity"), ~ str_replace(., "[^|]+", ""))) %>%
-    mutate(across(ends_with("_genotype_ambiguity"), ~ str_replace(., "[\\|]+", ""))) %>%
-    mutate(across(ends_with("_genotype_ambiguity"), ~ na_if(., ""))) %>%
+    # Remove the first genotype and its trailing pipe from the ambiguity columns,
+    # then convert empty strings to NA.
+    mutate(across(ends_with("_genotype_ambiguity"), ~ na_if(str_replace(., "^[^|]+\\|?", ""), ""))) %>%
     # Drop the ambiguity columns if not wanted
     {
       if (keep_ambiguities) . else select(., -contains("ambiguity"))

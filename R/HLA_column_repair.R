@@ -25,21 +25,25 @@
 #'
 #' @export
 #'
+#' @importFrom cli cli_abort
 #' @importFrom dplyr rename_with
 #' @importFrom dplyr %>%
 #' @importFrom dplyr starts_with
 #' @importFrom stringr str_replace
-#' @importFrom rlang abort
 
 
 HLA_column_repair <- function(data, format = "tidyverse", asterisk = FALSE) {
+  # Validate inputs
+  check_data_frame(data, "data")
+  check_logical_flag(asterisk, "asterisk")
+
   # Step 1: turn "HLA-A" to "HLA_A" or vice versa.
   if (format == "tidyverse") {
     step_1 <- data %>% rename_with(~ str_replace(., "HLA\\-", "HLA_"))
   } else if (format == "WHO") {
     step_1 <- data %>% rename_with(~ str_replace(., "HLA_", "HLA-"))
   } else {
-    abort("'format' argument must be either 'tidyverse' or 'WHO.'")
+    cli_abort("{.arg format} must be {.val tidyverse} or {.val WHO}.")
   }
   # Step 2: remove asterisk from all columns.
   step_2 <- step_1 %>% rename_with(~ str_replace(., "\\*$", ""))

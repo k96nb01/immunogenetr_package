@@ -16,9 +16,11 @@
 #'
 #' @export
 #'
+#' @importFrom cli cli_abort
 #' @importFrom xml2 read_xml
 #' @importFrom dplyr %>%
 #' @importFrom xml2 xml_find_all
+#' @importFrom xml2 xml_ns
 #' @importFrom purrr map
 #' @importFrom xml2 xml_attr
 #' @importFrom xml2 xml_find_all
@@ -33,8 +35,9 @@
 
 read_HML <- function(HML_file) {
   # Validate input
+  check_gl_string(HML_file, "HML_file")
   if (!file.exists(HML_file)) {
-    stop("The file does not exist:", HML_file)
+    cli_abort("The file {.file {HML_file}} does not exist.")
   }
 
   # Load the HML file
@@ -43,20 +46,38 @@ read_HML <- function(HML_file) {
       read_xml(HML_file)
     },
     error = function(e) {
-      stop("Failed to read HML; check that file is in compliant HML format.")
+      cli_abort("Failed to read HML file {.file {HML_file}}. Check that file is in compliant HML format.")
     }
   )
 
-  # Filter for all the children in the HML file that represent a sample
-  samples <- xml_find_all(HML, ".//d1:sample")
+  # Discover the XML namespace dynamically instead of hardcoding "d1:".
+  # xml2 auto-registers default (unprefixed) namespaces as "d1", "d2", etc.,
+  # but this can vary depending on the file structure.
+  ns <- xml_ns(HML)
 
-  # Get sample number and GL strings for each sample
+  # Build XPath queries using the discovered namespace prefix.
+  # If a namespace is present, use its prefix; otherwise use unqualified names.
+  if (length(ns) > 0) {
+    # Use the first registered namespace prefix (typically "d1" for default namespace).
+    ns_prefix <- names(ns)[1]
+    sample_xpath <- paste0(".//", ns_prefix, ":sample")
+    glstring_xpath <- paste0(".//", ns_prefix, ":glstring")
+  } else {
+    # No namespace declared; use unqualified element names.
+    sample_xpath <- ".//sample"
+    glstring_xpath <- ".//glstring"
+  }
+
+  # Filter for all the children in the HML file that represent a sample.
+  samples <- xml_find_all(HML, sample_xpath, ns)
+
+  # Get sample number and GL strings for each sample.
   GL_strings <- map(samples, function(node) {
-    # Get sample ID
+    # Get sample ID.
     sampleID <- xml_attr(node, "id")
-    # Get GL strings
-    glstring <- xml_text(xml_find_all(node, ".//d1:glstring"))
-    # Combine to a tibble
+    # Get GL strings.
+    glstring <- xml_text(xml_find_all(node, glstring_xpath, ns))
+    # Combine to a tibble.
     tibble(sampleID, glstring)
   })
 

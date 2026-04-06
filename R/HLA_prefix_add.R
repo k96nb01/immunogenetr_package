@@ -32,6 +32,9 @@
 #' @importFrom dplyr %>%
 
 HLA_prefix_add <- function(data, prefix = "HLA-") {
+  # Validate input
+  check_gl_string(data, "data")
+
   # Expand the allele of GL string
   data %>%
     GLstring_expand_longer() %>%

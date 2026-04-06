@@ -27,6 +27,7 @@ Specific functionalities of this library include:
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Citation](#citation)
 - [License](#license)
 - [Disclaimer](#disclaimer)
 
@@ -257,6 +258,16 @@ print(HLA_typing_1_GLstring_donors)
 
 We can see that donor 3 is the only donor with an 8/8 match for the
 recipient.
+
+## Citation
+
+If you use immunogenetr in your research, please cite:
+
+Coskun B, Brown NK. Immunogenetr: A comprehensive toolkit for clinical
+HLA informatics. *Human Immunology*. 2026;87(1):111619.
+<doi:%5B10.1016/j.humimm.2025.111619>\](<https://doi.org/10.1016/j.humimm.2025.111619>)
+
+You can also get the citation from R with `citation("immunogenetr")`.
 
 ## License
 

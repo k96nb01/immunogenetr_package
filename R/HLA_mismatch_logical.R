@@ -35,80 +35,83 @@
 #'
 
 HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, direction) {
+  # Validate inputs
+  check_gl_string(GL_string_recip, "GL_string_recip")
+  check_gl_string(GL_string_donor, "GL_string_donor")
+  check_loci(loci)
+
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
+
+  # Determine which direction(s) need to be computed.
+  # HvG and SOT only need the HvG direction; GvH only needs GvH.
+  # Bidirectional needs both to take the logical OR.
+  need_HvG <- (direction == "HvG" | direction == "SOT" | direction == "bidirectional")
+  need_GvH <- (direction == "GvH" | direction == "bidirectional")
+
   # Code to determine mismatch if a single locus was supplied.
   if (length(loci) == 1) {
-    # Determine mismatches for both directions.
-    HvG <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG"))
-    GvH <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH"))
-    # Make a tibble with the results and determine bidirectional mismatch.
-    MM_table <- tibble(HvG, GvH) %>%
-      mutate(bidirectional = HvG | GvH)
-    # Return the result based on the direction argument.
+    # Only compute the direction(s) we actually need.
+    if (need_HvG) {
+      HvG <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG"))
+    }
+    if (need_GvH) {
+      GvH <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH"))
+    }
+    # Return the result for the requested direction.
     if (direction == "HvG" | direction == "SOT") {
-      return(MM_table$HvG)
+      return(HvG)
     } else if (direction == "GvH") {
-      return(MM_table$GvH)
-    } else if (direction == "bidirectional") {
-      return(MM_table$bidirectional)
+      return(GvH)
+    } else {
+      # Bidirectional: TRUE if either direction has a mismatch.
+      return(HvG | GvH)
     }
   } else {
-    # Code to determine mismatch numbers if multiple loci were supplied.
-    # Determine mismatches for both directions.
-    HvG_table <- tibble("HvG" = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG")) %>%
-      # Add a row number to combine data at the end.
-      mutate(case = row_number()) %>%
-      # Separate the loci.
-      separate_longer_delim(HvG, delim = ", ") %>%
-      separate_wider_delim(HvG, delim = "=", names = c("locus", "mismatches")) %>%
-      # Recode NA values to ensure accurate matching.
-      mutate(mismatches = na_if(mismatches, "NA")) %>%
-      # Determine if any mismatches are present.
-      mutate(HvG_MM = !is.na(mismatches)) %>%
-      # Clean up table.
-      select(-mismatches)
-
-    GvH_table <- tibble("GvH" = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH")) %>%
-      # Add a row number to combine data at the end.
-      mutate(case = row_number()) %>%
-      # Separate the loci.
-      separate_longer_delim(GvH, delim = ", ") %>%
-      separate_wider_delim(GvH, delim = "=", names = c("locus", "mismatches")) %>%
-      # Recode NA values to ensure accurate matching.
-      mutate(mismatches = na_if(mismatches, "NA")) %>%
-      # Determine if any mismatches are present.
-      mutate(GvH_MM = !is.na(mismatches)) %>%
-      # Clean up table.
-      select(-mismatches)
-
-    # Join the GvH and HvG tables
-    MM_table <- HvG_table %>% left_join(GvH_table, join_by(locus, case)) %>%
-      # Determine bidirectional mismatch number.
-      mutate(bidirectional = HvG_MM | GvH_MM)
-
-    # Return appropriate direction.
-    # HvG
-    if (direction == "HvG") {
-      MM_table <- MM_table %>%
-        select(locus, case, HvG_MM) %>%
-        unite(locus, HvG_MM, col = "MM", sep = "=") %>%
-        summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
-      # GvH
-    } else if (direction == "GvH") {
-      MM_table <- MM_table %>%
-        select(locus, case, GvH_MM) %>%
-        unite(locus, GvH_MM, col = "MM", sep = "=") %>%
-        summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
-      # Bidirectional
-    } else if (direction == "bidirectional") {
-      MM_table <- MM_table %>%
-        select(locus, case, bidirectional) %>%
-        unite(locus, bidirectional, col = "MM", sep = "=") %>%
-        summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
+    # Code to determine mismatch if multiple loci were supplied.
+    # Helper to build a logical mismatch table from HLA_mismatch_base output.
+    build_mm_table <- function(base_direction, col_name) {
+      tibble(raw = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, base_direction)) %>%
+        # Add a row number to combine data at the end.
+        mutate(case = row_number()) %>%
+        # Separate the loci.
+        separate_longer_delim(raw, delim = ", ") %>%
+        separate_wider_delim(raw, delim = "=", names = c("locus", "mismatches")) %>%
+        # Recode NA values to ensure accurate matching.
+        mutate(mismatches = na_if(mismatches, "NA")) %>%
+        # Determine if any mismatches are present.
+        mutate(!!col_name := !is.na(mismatches)) %>%
+        # Clean up table.
+        select(-mismatches)
     }
+
+    # Only build the table(s) we actually need.
+    if (direction == "bidirectional") {
+      # Bidirectional needs both directions, joined together.
+      HvG_table <- build_mm_table("HvG", "HvG_MM")
+      GvH_table <- build_mm_table("GvH", "GvH_MM")
+      # Join and take the logical OR of both directions.
+      MM_table <- HvG_table %>%
+        left_join(GvH_table, join_by(locus, case)) %>%
+        mutate(bidirectional = HvG_MM | GvH_MM)
+      result_col <- "bidirectional"
+    } else if (direction == "HvG" | direction == "SOT") {
+      # Only need HvG direction.
+      MM_table <- build_mm_table("HvG", "HvG_MM")
+      result_col <- "HvG_MM"
+    } else {
+      # Only need GvH direction.
+      MM_table <- build_mm_table("GvH", "GvH_MM")
+      result_col <- "GvH_MM"
+    }
+
+    # Format the result as "Locus1=TRUE/FALSE, Locus2=TRUE/FALSE, ..." strings.
+    MM_table <- MM_table %>%
+      select(locus, case, all_of(result_col)) %>%
+      unite(locus, all_of(result_col), col = "MM", sep = "=") %>%
+      summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
 
     return(MM_table$MM)
   }
 }
 
-globalVariables(c("left_join", "join_by", "HvG_MM", "GvH_MM"))
+globalVariables(c("HvG_MM", "GvH_MM", ":="))

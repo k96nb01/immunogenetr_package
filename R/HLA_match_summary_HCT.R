@@ -35,95 +35,36 @@
 #'
 
 HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = "bidirectional", match_grade) {
-  if (match_grade == "Xof8") {
-    if (direction == "HvG") {
-      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"), direction = "HvG")) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(matches, delim = ", ") %>%
-        separate_wider_delim(matches, delim = "=", names = c("locus", "matches")) %>%
-        # Recode matches as integers
-        mutate(matches = as.integer(matches)) %>%
-        # Add up matches
-        mutate(match_sum = sum(matches), .by = case) %>%
-        # Summarize and return the vector of match_sum
-        distinct(case, match_sum)
-      return(match_table$match_sum)
-    } else if (direction == "GvH") {
-      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"), direction = "GvH")) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(matches, delim = ", ") %>%
-        separate_wider_delim(matches, delim = "=", names = c("locus", "matches")) %>%
-        # Recode matches as integers
-        mutate(matches = as.integer(matches)) %>%
-        # Add up matches
-        mutate(match_sum = sum(matches), .by = case) %>%
-        # Summarize and return the vector of match_sum
-        distinct(case, match_sum)
-      return(match_table$match_sum)
-    } else if (direction == "bidirectional") {
-      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"), direction = "bidirectional")) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(matches, delim = ", ") %>%
-        separate_wider_delim(matches, delim = "=", names = c("locus", "matches")) %>%
-        # Recode matches as integers
-        mutate(matches = as.integer(matches)) %>%
-        # Add up matches
-        mutate(match_sum = sum(matches), .by = case) %>%
-        # Summarize and return the vector of match_sum
-        distinct(case, match_sum)
-      return(match_table$match_sum)
-    }
-  } else if (match_grade == "Xof10") {
-    if (direction == "HvG") {
-      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1"), direction = "HvG")) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(matches, delim = ", ") %>%
-        separate_wider_delim(matches, delim = "=", names = c("locus", "matches")) %>%
-        # Recode matches as integers
-        mutate(matches = as.integer(matches)) %>%
-        # Add up matches
-        mutate(match_sum = sum(matches), .by = case) %>%
-        # Summarize and return the vector of match_sum
-        distinct(case, match_sum)
-      return(match_table$match_sum)
-    } else if (direction == "GvH") {
-      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1"), direction = "GvH")) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(matches, delim = ", ") %>%
-        separate_wider_delim(matches, delim = "=", names = c("locus", "matches")) %>%
-        # Recode matches as integers
-        mutate(matches = as.integer(matches)) %>%
-        # Add up matches
-        mutate(match_sum = sum(matches), .by = case) %>%
-        # Summarize and return the vector of match_sum
-        distinct(case, match_sum)
-      return(match_table$match_sum)
-    } else if (direction == "bidirectional") {
-      match_table <- tibble(matches = HLA_match_number(GL_string_recip, GL_string_donor, c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1"), direction = "bidirectional")) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(matches, delim = ", ") %>%
-        separate_wider_delim(matches, delim = "=", names = c("locus", "matches")) %>%
-        # Recode matches as integers
-        mutate(matches = as.integer(matches)) %>%
-        # Add up matches
-        mutate(match_sum = sum(matches), .by = case) %>%
-        # Summarize and return the vector of match_sum
-        distinct(case, match_sum)
-      return(match_table$match_sum)
-    }
+  # Validate inputs
+  check_gl_string(GL_string_recip, "GL_string_recip")
+  check_gl_string(GL_string_donor, "GL_string_donor")
+  match_grade <- match.arg(match_grade, c("Xof8", "Xof10"))
+  direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
+
+  # Determine loci based on match grade
+  loci <- if (match_grade == "Xof8") {
+    c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1")
+  } else {
+    c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1")
   }
+
+  # Calculate match numbers across loci and sum them
+  match_table <- tibble(matches = HLA_match_number(
+    GL_string_recip, GL_string_donor, loci, direction = direction
+  )) %>%
+    # Add a row number to combine data at the end.
+    mutate(case = row_number()) %>%
+    # Separate the loci.
+    separate_longer_delim(matches, delim = ", ") %>%
+    separate_wider_delim(matches, delim = "=", names = c("locus", "matches")) %>%
+    # Recode matches as integers
+    mutate(matches = as.integer(matches)) %>%
+    # Add up matches
+    mutate(match_sum = sum(matches), .by = case) %>%
+    # Summarize and return the vector of match_sum
+    distinct(case, match_sum)
+
+  return(match_table$match_sum)
 }
 
 globalVariables(c("matches", "match_sum"))

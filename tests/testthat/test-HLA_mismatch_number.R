@@ -143,3 +143,56 @@ test_that("HLA_mismatch_number correctly calculates mismatch counts", {
 
   expect_equal(mismatch_table_2016_test, TRUE)
 })
+
+
+# --- Input validation tests ---
+
+test_that("HLA_mismatch_number rejects NULL inputs", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatch_number(NULL, gl, "HLA-A", "HvG"), "GL_string_recip")
+  expect_error(HLA_mismatch_number(gl, NULL, "HLA-A", "HvG"), "GL_string_donor")
+  expect_error(HLA_mismatch_number(gl, gl, NULL, "HvG"), "loci")
+})
+
+test_that("HLA_mismatch_number rejects non-character GL strings", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatch_number(123, gl, "HLA-A", "HvG"), "must be a character")
+})
+
+test_that("HLA_mismatch_number rejects invalid direction", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatch_number(gl, gl, "HLA-A", "invalid"))
+})
+
+test_that("HLA_mismatch_number rejects invalid homozygous_count", {
+  gl <- "HLA-A*01:01+HLA-A*02:01"
+  expect_error(HLA_mismatch_number(gl, gl, "HLA-A", "HvG", homozygous_count = 3), "must be.*1.*or.*2")
+})
+
+test_that("HLA_mismatch_number returns 0 for perfect match at single locus", {
+  gl <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
+  result <- HLA_mismatch_number(gl, gl, "HLA-A", "bidirectional")
+  expect_equal(result, 0)
+})
+
+test_that("HLA_mismatch_number works with vectorized inputs", {
+  recip <- c(
+    "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01",
+    "HLA-A*03:01+HLA-A*24:02^HLA-B*15:01+HLA-B*40:01"
+  )
+  donor <- c(
+    "HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*08:01",
+    "HLA-A*03:01+HLA-A*24:02^HLA-B*15:01+HLA-B*40:01"
+  )
+  # Single locus: should return integer vector of length 2
+  result <- HLA_mismatch_number(recip, donor, "HLA-A", "HvG")
+  expect_length(result, 2)
+  expect_equal(result[1], 1)
+  expect_equal(result[2], 0)
+
+  # Multiple loci: should return character vector of length 2
+  result_multi <- HLA_mismatch_number(recip, donor, c("HLA-A", "HLA-B"), "HvG")
+  expect_length(result_multi, 2)
+  expect_match(result_multi[1], "HLA-A=1, HLA-B=0")
+  expect_match(result_multi[2], "HLA-A=0, HLA-B=0")
+})

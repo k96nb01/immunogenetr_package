@@ -122,3 +122,18 @@ test_that("HLA_columns_to_GLstring correctly converts HLA columns into a GL stri
   test_sero_result <- c("HLA-A2^HLA-DR7+HLA-DR6^HLA-DR51", "HLA-A3+HLA-A1^HLA-DR4+HLA-DR4^HLA-DR52", "HLA-A68+HLA-A69^HLA-DR9^HLA-DR52+HLA-DR53")
   expect_equal(test_sero_code, test_sero_result)
 })
+
+test_that("HLA_columns_to_GLstring errors on unparseable column names", {
+  # Column name "XYZ_1" doesn't match any known HLA locus pattern,
+  # so the function should error with a message about unparseable columns.
+  bad_columns <- data.frame(
+    XYZ_1 = c("01:01", "02:01"),
+    XYZ_2 = c("03:01", "04:01"),
+    stringsAsFactors = FALSE
+  )
+
+  expect_error(
+    HLA_columns_to_GLstring(bad_columns, HLA_typing_columns = everything()),
+    "could not be parsed"
+  )
+})

@@ -47,82 +47,41 @@
 #'
 
 HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction = "bidirectional") {
+  # Validate inputs
+  check_gl_string(GL_string_recip, "GL_string_recip")
+  check_gl_string(GL_string_donor, "GL_string_donor")
+  check_loci(loci)
+
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
-  # Code to determine match numbers if a single locus was supplied.
+
+  # Single locus: return integer match count (2 - mismatch count)
   if (length(loci) == 1) {
-    if (direction == "HvG") {
-      # Calculate matches as 2 - HvG mismatch.
-      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "HvG")) %>%
-        mutate(match = 2 - mismatch)
-      return(match_table$match)
-    } else if (direction == "GvH") {
-      # Calculate matches as 2 - GvH mismatch.
-      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "GvH")) %>%
-        mutate(match = 2 - mismatch)
-      return(match_table$match)
-    } else if (direction == "bidirectional") {
-      # Calculate matches as 2 - bidirectional mismatch.
-      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "bidirectional")) %>%
-        mutate(match = 2 - mismatch)
-      return(match_table$match)
-    }
-    # Code to determine match numbers if multiple loci were supplied.
+    # Calculate matches as 2 minus the mismatch count for the given direction.
+    match_table <- tibble(mismatch = HLA_mismatch_number(
+      GL_string_recip, GL_string_donor, loci, direction
+    )) %>%
+      mutate(match = 2 - mismatch)
+    return(match_table$match)
   } else {
-    if (direction == "HvG") {
-      # Determine mismatches for the HvG direction.
-      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "HvG")) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(mismatch, delim = ", ") %>%
-        separate_wider_delim(mismatch, delim = "=", names = c("locus", "mismatches")) %>%
-        # Recode mismatches as integers
-        mutate(mismatches = as.integer(mismatches)) %>%
-        # Calculate matches as 2 - mismatch.
-        mutate(matches = 2 - mismatches) %>%
-        # Clean up table.
-        select(-mismatches) %>%
-        unite(locus, matches, col = "Matches", sep = "=") %>%
-        summarise(Matches = str_flatten(Matches, collapse = ", "), .by = case)
+  # Multiple loci: return "Locus1=Count1, Locus2=Count2, ..." string
+  match_table <- tibble(mismatch = HLA_mismatch_number(
+    GL_string_recip, GL_string_donor, loci, direction
+  )) %>%
+    # Add a row number to combine data at the end.
+    mutate(case = row_number()) %>%
+    # Separate the loci.
+    separate_longer_delim(mismatch, delim = ", ") %>%
+    separate_wider_delim(mismatch, delim = "=", names = c("locus", "mismatches")) %>%
+    # Recode mismatches as integers
+    mutate(mismatches = as.integer(mismatches)) %>%
+    # Calculate matches as 2 - mismatch.
+    mutate(matches = 2 - mismatches) %>%
+    # Clean up table.
+    select(-mismatches) %>%
+    unite(locus, matches, col = "Matches", sep = "=") %>%
+    summarise(Matches = str_flatten(Matches, collapse = ", "), .by = case)
 
-      return(match_table$Matches)
-    } else if (direction == "GvH") {
-      # Determine mismatches for the GvH direction.
-      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "GvH")) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(mismatch, delim = ", ") %>%
-        separate_wider_delim(mismatch, delim = "=", names = c("locus", "mismatches")) %>%
-        # Recode mismatches as integers
-        mutate(mismatches = as.integer(mismatches)) %>%
-        # Calculate matches as 2 - mismatch.
-        mutate(matches = 2 - mismatches) %>%
-        # Clean up table.
-        select(-mismatches) %>%
-        unite(locus, matches, col = "Matches", sep = "=") %>%
-        summarise(Matches = str_flatten(Matches, collapse = ", "), .by = case)
-
-      return(match_table$Matches)
-    } else if (direction == "bidirectional") {
-      # Determine mismatches for both directions.
-      match_table <- tibble(mismatch = HLA_mismatch_number(GL_string_recip, GL_string_donor, loci, "bidirectional")) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(mismatch, delim = ", ") %>%
-        separate_wider_delim(mismatch, delim = "=", names = c("locus", "mismatches")) %>%
-        # Recode mismatches as integers
-        mutate(mismatches = as.integer(mismatches)) %>%
-        # Calculate matches as 2 - mismatch.
-        mutate(matches = 2 - mismatches) %>%
-        # Clean up table.
-        select(-mismatches) %>%
-        unite(locus, matches, col = "Matches", sep = "=") %>%
-        summarise(Matches = str_flatten(Matches, collapse = ", "), .by = case)
-
-      return(match_table$Matches)
-    }
+  return(match_table$Matches)
   }
 }
 

@@ -39,6 +39,7 @@
 #'
 #' @export
 #'
+#' @importFrom cli cli_abort
 #' @importFrom stringr str_split
 #' @importFrom stringr str_flatten
 #' @importFrom stringr str_detect
@@ -53,15 +54,21 @@
 #'
 
 HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
+  # Validate inputs
+  check_gl_string(GL_string_recip, "GL_string_recip")
+  check_gl_string(GL_string_donor, "GL_string_donor")
+  check_loci(loci)
+  check_homozygous_count(homozygous_count)
+
   direction <- match.arg(direction, c("HvG", "GvH"))
   # Ensure input vectors are of the same length - each input should be a single GL string.
   if (length(GL_string_recip) != length(GL_string_donor)) {
-    stop("Recipient and donor GL strings must be of equal length")
+    cli_abort("{.arg GL_string_recip} and {.arg GL_string_donor} must be of equal length.")
   }
 
   # Check for ambiguity
   if (any(str_detect(GL_string_recip, "[|/]") | str_detect(GL_string_donor, "[|/]"))) {
-    stop("The matching/mismatching functions do not support ambiguous GL strings containing | or /. Process your GL strings to result in unambiguous genotypes before using these functions.")
+    cli_abort("The matching/mismatching functions do not support ambiguous GL strings containing {.val |} or {.val /}. Process your GL strings to result in unambiguous genotypes before using these functions.")
   }
 
   # Maps the serologic naming of the DRB locus to molecular so that only one name is used
@@ -80,8 +87,12 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     # Split GL string into alleles
     alleles <- str_split(GL_string, "\\+", simplify = TRUE)
 
-    # Replace any allele that ends with "N" with "NullN".
-    alleles <- str_replace(alleles, "(?<=HLA-[:alnum:]{1,4}\\*).+N$", "XXN")
+    # Replace any null allele (ending with uppercase "N" expression suffix) with a
+    # placeholder "XXN". The WHO nomenclature defines "N" as the null expression suffix,
+    # appearing after the colon-separated allele fields (e.g. "HLA-A*01:01N").
+    # The lookbehind matches the locus prefix up to the asterisk, allowing locus names
+    # of any length (e.g. HLA-A, HLA-DRB1, HLA-DRB345).
+    alleles <- str_replace(alleles, "(?<=HLA-[:alnum:]{1,10}\\*).+N$", "XXN")
 
     # Handle homozygosity
     if (length(alleles) == 1 && homozygous_count == 2) {
@@ -130,29 +141,21 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     recip_alleles_list_processed <- process_alleles(recip_alleles_list, homozygous_count)
     donor_alleles_list_processed <- process_alleles(donor_alleles_list, homozygous_count)
 
-    # Set names for each locus
-    names(recip_alleles_list_processed) <- map_chr(
-      recip_alleles_list_processed,
-      ~ case_when(
+    # Helper to extract the locus name from a GL string allele entry
+    extract_locus_name <- function(allele_str) {
+      case_when(
         # Molecular nomenclature
-        str_detect(.x, "\\*") && str_detect(.x, "HLA-DRB[345]") ~ "HLA-DRB3/4/5",
-        str_detect(.x, "\\*") ~ strsplit(.x, "\\*")[[1]][1],
+        str_detect(allele_str, "\\*") & str_detect(allele_str, "HLA-DRB[345]") ~ "HLA-DRB3/4/5",
+        str_detect(allele_str, "\\*") ~ strsplit(allele_str, "\\*") %>% map_chr(1),
         # Serologic nomenclature
-        !str_detect(.x, "\\*") && str_detect(.x, "HLA-DR5[123]") ~ "HLA-DR51/52/53",
-        !str_detect(.x, "\\*") ~ str_extract(.x, "^HLA-[A-Za-z]+")
+        !str_detect(allele_str, "\\*") & str_detect(allele_str, "HLA-DR5[123]") ~ "HLA-DR51/52/53",
+        !str_detect(allele_str, "\\*") ~ str_extract(allele_str, "^HLA-[A-Za-z]+")
       )
-    )
-    names(donor_alleles_list_processed) <- map_chr(
-      donor_alleles_list_processed,
-      ~ case_when(
-        # Molecular nomenclature
-        str_detect(.x, "\\*") && str_detect(.x, "HLA-DRB[345]") ~ "HLA-DRB3/4/5",
-        str_detect(.x, "\\*") ~ strsplit(.x, "\\*")[[1]][1],
-        # Serologic nomenclature
-        !str_detect(.x, "\\*") && str_detect(.x, "HLA-DR5[123]") ~ "HLA-DR51/52/53",
-        !str_detect(.x, "\\*") ~ str_extract(.x, "^HLA-[A-Za-z]+")
-      )
-    )
+    }
+
+    # Set names for each locus using the shared helper
+    names(recip_alleles_list_processed) <- extract_locus_name(recip_alleles_list_processed)
+    names(donor_alleles_list_processed) <- extract_locus_name(donor_alleles_list_processed)
 
     # Applies unify_locus function to map the serologic naming of the DRB locus to molecular
     names(recip_alleles_list_processed) <- unify_locus(names(recip_alleles_list_processed))
@@ -165,62 +168,55 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     missing_loci <- setdiff(union(missing_loci_from_recipient, missing_loci_from_donor), "HLA-DRB3/4/5")
 
     if (length(missing_loci) > 0) {
-      stop(paste(
-        "Either the recipient and/or donor GL strings are missing these loci:",
-        paste(missing_loci, collapse = ", ")
-      ))
+      cli_abort("The recipient and/or donor GL strings are missing these loci: {.val {missing_loci}}.")
     }
 
     # Mismatch results calculation
     mismatch_results <- map(loci, function(locus_name) {
 
-      # If either donor or recip lacks DRB3/4/5, return "=NA" for that locus instead of error
+      # Defensive guard: if either donor or recip lacks DRB3/4/5, return "=NA"
+      # for that locus instead of error. Currently unreachable because
+      # process_alleles() inserts a null placeholder for missing DRB3/4/5,
+      # but kept as a safety net in case that logic changes.
       if (locus_name == "HLA-DRB3/4/5" &&
           (!(locus_name %in% names(recip_alleles_list_processed)) ||
            !(locus_name %in% names(donor_alleles_list_processed)))) {
         return(paste0(display_name(locus_name), "=NA"))
       }
 
-      # Pull out the allele list for each locus.
+      # Pull out the allele list for each locus and split once for reuse.
       recip_alleles_str <- recip_alleles_list_processed[locus_name]
       donor_alleles_str <- donor_alleles_list_processed[locus_name]
+      recip_alleles <- unlist(strsplit(recip_alleles_str, "\\+"))
+      donor_alleles <- unlist(strsplit(donor_alleles_str, "\\+"))
 
+      # Assign sides based on direction:
+      # - "match_from": the side we index [1],[2] for match checking
+      # - "mismatch_from": the side whose valid alleles we check for mismatches
+      # GvH: matches from donor side, mismatches from recip side
+      # HvG: matches from recip side, mismatches from donor side
       if (direction == "GvH") {
-        # Calculate matches (Including nulls)
-        matched_allele_1 <- intersect(unlist(strsplit(donor_alleles_str, "\\+"))[1], unlist(strsplit(recip_alleles_str, "\\+")))
-        matched_allele_2 <- intersect(unlist(strsplit(donor_alleles_str, "\\+"))[2], unlist(strsplit(recip_alleles_str, "\\+")))
-        matched_alleles <- discard(c(matched_allele_1, matched_allele_2), is.na)
-        # Calculate mismatches (excluding nulls)
-        recip_valid <- unlist(strsplit(recip_alleles_str, "\\+"))
-        recip_valid <- recip_valid[!str_detect(recip_valid, "[Nn]$")]
-        mismatched_allele_1 <- setdiff(recip_valid[1], unlist(strsplit(donor_alleles_str, "\\+")))
-        mismatched_allele_2 <- setdiff(recip_valid[2], unlist(strsplit(donor_alleles_str, "\\+")))
-        mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
-        # Count number of matches and mismatches
-        total_match_mismatch <- length(matched_alleles) + length(mismatched_alleles)
-        # If total matches + mismatches < 2, and homozygous_count == 2, repeat mismatched alleles.
-        if (total_match_mismatch < 2 && homozygous_count == 2) {
-          mismatched_alleles <- rep(mismatched_alleles, times = homozygous_count)
-        }
-      } else if (direction == "HvG") {
-        # Calculate matches (Including nulls)
-        matched_allele_1 <- intersect(unlist(strsplit(recip_alleles_str, "\\+"))[1], unlist(strsplit(donor_alleles_str, "\\+")))
-        matched_allele_2 <- intersect(unlist(strsplit(recip_alleles_str, "\\+"))[2], unlist(strsplit(donor_alleles_str, "\\+")))
-        matched_alleles <- discard(c(matched_allele_1, matched_allele_2), is.na)
-        # Calculate mismatches (excluding nulls)
-        donor_valid <- unlist(strsplit(donor_alleles_str, "\\+"))
-        donor_valid <- donor_valid[!str_detect(donor_valid, "[Nn]$")]
-        mismatched_allele_1 <- setdiff(donor_valid[1], unlist(strsplit(recip_alleles_str, "\\+")))
-        mismatched_allele_2 <- setdiff(donor_valid[2], unlist(strsplit(recip_alleles_str, "\\+")))
-        mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
-        # Count number of matches and mismatches
-        total_match_mismatch <- length(matched_alleles) + length(mismatched_alleles)
-        # If total matches + mismatches < 2, and homozygous_count == 2, repeat mismatched alleles.
-        if (total_match_mismatch < 2 && homozygous_count == 2) {
-          mismatched_alleles <- rep(mismatched_alleles, times = homozygous_count)
-        }
+        match_from <- donor_alleles
+        mismatch_from <- recip_alleles
       } else {
-        stop("Direction must either be 'GvH', or 'HvG'.")
+        match_from <- recip_alleles
+        mismatch_from <- donor_alleles
+      }
+
+      # Calculate matches (including nulls): match_from alleles found in mismatch_from
+      matched_allele_1 <- intersect(match_from[1], mismatch_from)
+      matched_allele_2 <- intersect(match_from[2], mismatch_from)
+      matched_alleles <- discard(c(matched_allele_1, matched_allele_2), is.na)
+      # Calculate mismatches (excluding nulls): mismatch_from alleles NOT in match_from
+      mismatch_valid <- mismatch_from[!str_detect(mismatch_from, "[Nn]$")]
+      mismatched_allele_1 <- setdiff(mismatch_valid[1], match_from)
+      mismatched_allele_2 <- setdiff(mismatch_valid[2], match_from)
+      mismatched_alleles <- discard(c(mismatched_allele_1, mismatched_allele_2), is.na)
+      # Count number of matches and mismatches
+      total_match_mismatch <- length(matched_alleles) + length(mismatched_alleles)
+      # If total matches + mismatches < 2, and homozygous_count == 2, repeat mismatched alleles.
+      if (total_match_mismatch < 2 && homozygous_count == 2) {
+        mismatched_alleles <- rep(mismatched_alleles, times = homozygous_count)
       }
 
       # Create a string of mismatched alleles or 'NA' if no mismatches are found.
