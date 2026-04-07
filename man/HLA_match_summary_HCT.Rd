@@ -8,7 +8,8 @@ HLA_match_summary_HCT(
   GL_string_recip,
   GL_string_donor,
   direction = "bidirectional",
-  match_grade
+  match_grade,
+  scope = "locus"
 )
 }
 \arguments{
@@ -24,6 +25,12 @@ or the HLA-A, B, C, DRB1 and DQB1 loci (for Xof10 matching).}
 
 \item{match_grade}{"Xof8" for HLA-A, B, C and DRB1 matching or "Xof10" for
 HLA-A, B, C, DRB1 and DQB1 matching.}
+
+\item{scope}{"locus" or "genotype". Default is "locus". When "locus" (the default),
+bidirectional matching takes the minimum match count at each locus independently
+before summing. When "genotype", the GvH and HvG match summaries are calculated
+separately across all loci, and the maximum of the two totals is returned.
+Only affects results when direction is "bidirectional"; ignored otherwise.}
 }
 \value{
 An integer value of the match grade summary.
@@ -46,6 +53,11 @@ GL_string_donor <- GL_string[2]
 # Calculate mismatch numbers
 HLA_match_summary_HCT(GL_string_recip, GL_string_donor,
   direction = "bidirectional", match_grade = "Xof8"
+)
+
+# Genotype-level bidirectional matching (max of GvH and HvG totals)
+HLA_match_summary_HCT(GL_string_recip, GL_string_donor,
+  direction = "bidirectional", match_grade = "Xof8", scope = "genotype"
 )
 
 }
