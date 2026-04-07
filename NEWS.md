@@ -1,5 +1,9 @@
 # immunogenetr (development version)
 
+* Added `scope` parameter to `HLA_match_summary_HCT` with options `"locus"` (default) and `"genotype"`. When `scope = "genotype"` and `direction = "bidirectional"`, the function calculates GvH and HvG match summaries separately and returns the maximum of the two totals, rather than taking the minimum match at each locus before summing.
+
+* Simplified `HLA_match_summary_HCT` internals: replaced the tibble parsing pipeline with `str_extract_all()` and `map_int()` for summing per-locus match counts.
+
 # immunogenetr 1.1.0
 
 * Internal code quality improvements: fixed typos in internal variable names, corrected test filenames, and cleaned up `globalVariables()` declarations.
