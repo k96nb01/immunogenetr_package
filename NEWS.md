@@ -1,3 +1,5 @@
+# immunogenetr (development version)
+
 # immunogenetr 1.1.0
 
 * Internal code quality improvements: fixed typos in internal variable names, corrected test filenames, and cleaned up `globalVariables()` declarations.
