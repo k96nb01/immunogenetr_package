@@ -321,7 +321,7 @@ Once CRAN has accepted the package:
 usethis::use_github_release()
 ```
 
-This creates a Git tag and a corresponding GitHub release, using information from `CRAN-SUBMISSION` to populate the release notes. It also cleans up the `CRAN-SUBMISSION` file.
+This creates a Git tag and a corresponding GitHub release, using information from `CRAN-SUBMISSION` to populate the release notes. It also deletes the `CRAN-SUBMISSION` file.
 
 ### 5.2 Prepare for continued development
 
