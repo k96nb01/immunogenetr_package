@@ -37,19 +37,9 @@ git pull origin main
 
 ### 1.3 Create a development branch
 
-Never work directly on `main`. Create a feature branch for each set of related changes:
+Never work directly on `main`. Create a `dev` branch on the GitHub website.
 
-```bash
-# In the terminal:
-git checkout -b feature/my-new-feature
-```
-
-Use a descriptive branch name that reflects the work being done. Some naming conventions:
-
-- `feature/add-new-function` — for new functionality
-- `fix/null-allele-regex` — for bug fixes
-- `docs/update-vignette` — for documentation changes
-- `test/expand-coverage` — for test additions
+Switch to the `dev` branch in RStudio and pull from github to get up to date.
 
 ### 1.4 Load the package for interactive development
 
@@ -58,6 +48,20 @@ devtools::load_all()
 ```
 
 This simulates installing the package so you can test functions interactively without a full install. Run this any time you change code and want to test it.
+
+### 1.5 Prepare for continued development
+
+Bump to a development version so that subsequent work is clearly distinguished from the released version:
+
+```r
+usethis::use_dev_version()
+```
+
+This changes the version in `DESCRIPTION` to something like `1.2.0.9000`, signaling that this is a development version.
+
+### 1.6 Add a new NEWS.md heading
+
+`use_dev_version()` will also add a new heading to `NEWS.md` for the development version. Start logging changes under this heading.
 
 ---
 
@@ -323,19 +327,7 @@ usethis::use_github_release()
 
 This creates a Git tag and a corresponding GitHub release, using information from `CRAN-SUBMISSION` to populate the release notes. It also deletes the `CRAN-SUBMISSION` file.
 
-### 5.2 Prepare for continued development
 
-Bump to a development version so that subsequent work is clearly distinguished from the released version:
-
-```r
-usethis::use_dev_version()
-```
-
-This changes the version in `DESCRIPTION` to something like `1.2.0.9000`, signaling that this is a development version.
-
-### 5.3 Add a new NEWS.md heading
-
-`use_dev_version()` will also add a new heading to `NEWS.md` for the development version. Start logging changes under this heading.
 
 ---
 

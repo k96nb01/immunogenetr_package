@@ -2,4 +2,7 @@
 
 0 errors ✔ | 0 warnings ✔ | 0 notes ✔
 
-* Added a disclaimer to the package for it being for research use only. Added a disclaimer to the help file for `HLA_truncate` to warn users about the ability to make non-WHO-compliant allele names with certain settings. Updated `HLA_mismatch_base` to better handle missing loci at the DRB3/4/5 locus.
+* Added `scope` parameter to `HLA_match_summary_HCT` with options `"locus"` (default) and `"genotype"`. When `scope = "genotype"` and `direction = "bidirectional"`, the function calculates GvH and HvG match summaries separately and returns the maximum of the two totals, rather than taking the minimum match at each locus before summing.
+
+* Simplified `HLA_match_summary_HCT` internals: replaced the tibble parsing pipeline with `str_extract_all()` and `map_int()` for summing per-locus match counts.
+
