@@ -16,6 +16,24 @@ knitr::opts_chunk$set(
   message = FALSE,   # suppress library() startup messages
   warning = FALSE    # suppress dplyr summarise/grouping messages
 )
+
+# kable_hla(): wrap knitr::kable with per-cell escaping of the HLA
+# metacharacters '*' and '^'. GitHub's markdown renderer (GFM) treats
+# '*' pairs inside pipe-table cells as italic markers and '^' pairs as
+# superscript (via pandoc's intermediate step). Escaping them to '\*' and
+# '\^' produces literal output on GitHub without affecting other renderers.
+#
+# Uses an explicit column loop rather than `df[] <- lapply(df, ...)` so the
+# function is robust to tibble-specific [<- methods.
+kable_hla <- function(df) {
+  for (nm in names(df)) {
+    if (is.character(df[[nm]])) {
+      df[[nm]] <- gsub("\\*", "\\\\*", df[[nm]])
+      df[[nm]] <- gsub("\\^", "\\\\^", df[[nm]])
+    }
+  }
+  knitr::kable(df)
+}
 ```
 
 # immunogenetr <img src='man/figures/immunogenetr_sticker.png' align="right" height="139" />
@@ -63,7 +81,7 @@ library(tidyverse)
 # The "HLA_typing_1" dataset is installed with immunogenetr, and contains high resolution typing at all classical
 # HLA loci for ten individuals.
 
-knitr::kable(HLA_typing_1)
+kable_hla(HLA_typing_1)
 ```
 
 
@@ -78,7 +96,7 @@ HLA_typing_1_GLstring <- HLA_typing_1 %>%
   # to tell the function to use the working data frame as the source of the HLA typing columns.
   select(patient, GL_string)
 
-knitr::kable(HLA_typing_1_GLstring)
+kable_hla(HLA_typing_1_GLstring)
 ```
 
 
@@ -102,7 +120,7 @@ HLA_typing_1_recip_donor <- bind_cols(
   HLA_typing_1_GLstring_donor
   )
 
-knitr::kable(HLA_typing_1_recip_donor)
+kable_hla(HLA_typing_1_recip_donor)
 ```
 
 
@@ -124,7 +142,7 @@ HLA_typing_1_recip_donor_mismatches <- HLA_typing_1_recip_donor %>%
                       direction = "HvG"),
                     .after = A_MM_GvH)
 
-knitr::kable(HLA_typing_1_recip_donor_mismatches)
+kable_hla(HLA_typing_1_recip_donor_mismatches)
 ```
 
 The `HLA_mismatch_logical` function determines if there are any mismatches at a particular locus. We've determined that at the HLA-A locus there are not any mismatches in the graft-versus-host direction, but are in the host-versus-graft direction. We can use the `HLA_mismatched_alleles` function to tell us what those mismatches are:
@@ -139,7 +157,7 @@ HLA_typing_1_recip_donor_mismatched_allles <- HLA_typing_1_recip_donor %>%
                         direction = "HvG"),
                       .after = case)
 
-knitr::kable(HLA_typing_1_recip_donor_mismatched_allles)
+kable_hla(HLA_typing_1_recip_donor_mismatched_allles)
 ```
 
 
@@ -156,7 +174,7 @@ HLA_typing_1_recip_donor_MM_number <- HLA_typing_1_recip_donor %>%
                         direction = "bidirectional"),
                       .after = case)
 
-knitr::kable(HLA_typing_1_recip_donor_MM_number)
+kable_hla(HLA_typing_1_recip_donor_MM_number)
 ```
 
 
@@ -173,7 +191,7 @@ HLA_typing_1_recip_donor_8of8_matching <- HLA_typing_1_recip_donor %>%
                               match_grade = "Xof8"),
                             .after = case)
 
-knitr::kable(HLA_typing_1_recip_donor_8of8_matching)
+kable_hla(HLA_typing_1_recip_donor_8of8_matching)
 ```
 
 
@@ -199,7 +217,7 @@ HLA_typing_1_GLstring_donors <- HLA_typing_1_GLstring %>%
                             .after = donor) %>%
   arrange(desc(ABCDRB1_matching))
 
-knitr::kable(HLA_typing_1_GLstring_donors)
+kable_hla(HLA_typing_1_GLstring_donors)
 ```
 
 We can see that donor 3 is the only donor with an 8/8 match for the recipient.
