@@ -162,11 +162,23 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   # --- Per-cell transformations --------------------------------------------
 
   # "molecular" is decided from the RAW (pre-validate, pre-prefix-remove)
-  # cell value, matching v1's str_detect(allele, ":|^0") order of
-  # operations. We add the per-column "always molecular" override on top.
+  # cell value. A cell is molecular if any of these signals are present:
+  #
+  #   1. contains ':'        — multi-field molecular, e.g. A*01:01 or 01:01
+  #   2. starts with '0'     — leading-zero low-res molecular, e.g. 01
+  #   3. contains '*'        — IMGT/WHO gene-allele separator, e.g. A*01.
+  #                            Serologic typings never contain '*'; molecular
+  #                            typings written in "<locus>*<fields>" form
+  #                            always do. This check catches low-resolution
+  #                            molecular alleles like A*01 or B*07 that lack
+  #                            a colon and don't start with 0 — without it
+  #                            they were being misclassified as serologic
+  #                            and emitted as "HLA-A01" / "HLA-B07".
+  #   4. per-column override — DQA1/DPA1/DPB1 columns are always molecular.
   has_colon        <- !is.na(raw) & grepl(":", raw, fixed = TRUE)
   has_leading_zero <- !is.na(raw) & startsWith(raw, "0")
-  molecular_cell   <- has_colon | has_leading_zero | is_mol_col[col_idx]
+  has_asterisk     <- !is.na(raw) & grepl("*", raw, fixed = TRUE)
+  molecular_cell   <- has_colon | has_leading_zero | has_asterisk | is_mol_col[col_idx]
 
   # Clean each cell via HLA_validate (already vectorised).
   validated <- HLA_validate(raw)

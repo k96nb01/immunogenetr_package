@@ -137,3 +137,41 @@ test_that("HLA_columns_to_GLstring errors on unparseable column names", {
     "could not be parsed"
   )
 })
+
+# Regression test for a bug reported by Hilary Mehler (PIRCHE) in 2026-04:
+# low-resolution molecular alleles of the form <Locus>*<2-digit-field> —
+# e.g. "A*01" or "B*07" — were being classified as serologic (because the
+# molecular detector only checked for ':' and '^0', not for '*') and
+# emitted as "HLA-A01" / "HLA-B07". Hilary's workaround was to append
+# ":99" before the call and strip it off afterwards.
+#
+# Keep an explicit test so future refactors of the molecular-vs-serologic
+# classifier don't silently reintroduce the bug.
+test_that("HLA_columns_to_GLstring treats low-resolution molecular input as molecular", {
+  # Mixed low-res (no colon) and high-res molecular in the same row.
+  low_res_mix <- data.frame(
+    patient = "p1",
+    A1 = "A*01",     A2 = "A*24:03",
+    B1 = "B*07",     B2 = "B*08:01",
+    C1 = "C*03:03",  C2 = "C*07",
+    stringsAsFactors = FALSE
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(low_res_mix, HLA_typing_columns = c(A1, A2, B1, B2, C1, C2)),
+    "HLA-A*01+HLA-A*24:03^HLA-B*07+HLA-B*08:01^HLA-C*03:03+HLA-C*07"
+  )
+
+  # All-low-res row (the smallest reproducer from the bug report).
+  all_low_res <- data.frame(A1 = "A*01", A2 = "A*02", stringsAsFactors = FALSE)
+  expect_equal(
+    HLA_columns_to_GLstring(all_low_res, HLA_typing_columns = c(A1, A2)),
+    "HLA-A*01+HLA-A*02"
+  )
+
+  # Serologic input (no '*') must still be classified as serologic.
+  sero <- data.frame(A1 = "1", A2 = "2", stringsAsFactors = FALSE)
+  expect_equal(
+    HLA_columns_to_GLstring(sero, HLA_typing_columns = c(A1, A2)),
+    "HLA-A1+HLA-A2"
+  )
+})
