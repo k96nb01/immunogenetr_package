@@ -5,3 +5,5 @@
 ^README\.Rmd$
 ^CRAN-SUBMISSION$
 ^SOP_package_update\.md$
+^\.positai$
+^\.claude$
