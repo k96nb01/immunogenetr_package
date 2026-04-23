@@ -44,3 +44,33 @@ test_that("ambiguity_table_to_GLstring correctly converts data frame to GL strin
   expect_equal(result_FALSE, "HLA-A*02:01/HLA-A*02:01")
   expect_equal(result_TRUE, "HLA-A*02:01")
 })
+
+# Regression test for the iteration-7 NA-propagation bug. The first draft of
+# the v2 rewrite used paste(..., collapse = sep), which turns NA into the
+# string "NA" and concatenates. v1's str_flatten returned NA if any element
+# in the group was NA. HLA_prefix_add(NA) exercises this path end-to-end.
+test_that("ambiguity_table_to_GLstring preserves NA in value", {
+  # Ambiguity table of a single NA entry — this is the shape
+  # GLstring_expand_longer(NA) produces.
+  na_table <- tibble(
+    value = NA_character_,
+    entry = 1L, possible_gene_location = 1L, locus = 1L,
+    genotype_ambiguity = 1L, genotype = 1L, haplotype = 1L, allele = 1L
+  )
+  expect_true(is.na(ambiguity_table_to_GLstring(na_table)))
+
+  # Mixed group: at least one NA value inside a group should still
+  # propagate NA for that group (str_flatten semantics). Here we build an
+  # allele group with one real allele and one NA sibling.
+  mixed_table <- tibble(
+    value  = c("HLA-A*01:01", NA_character_),
+    entry = c(1L, 1L),
+    possible_gene_location = c(1L, 1L),
+    locus = c(1L, 1L),
+    genotype_ambiguity = c(1L, 1L),
+    genotype = c(1L, 1L),
+    haplotype = c(1L, 1L),
+    allele = c(1L, 2L)
+  )
+  expect_true(is.na(ambiguity_table_to_GLstring(mixed_table)))
+})

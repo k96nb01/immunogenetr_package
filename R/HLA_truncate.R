@@ -12,7 +12,6 @@
 #' to 2 fields would result in "DRB4*01:03N," which does not exist in the IPD-IMGT/HLA database.
 #' Users should take care in setting the parameters for this function.
 #'
-#'
 #' @param data A string containing an HLA allele or a GL string.
 #' @param fields An integer specifying the number of fields to retain in the
 #' truncated values. Default is 2.
@@ -47,84 +46,169 @@
 #'
 #' @export
 #'
-#' @importFrom dplyr mutate
-#' @importFrom dplyr across
-#' @importFrom dplyr select
-#' @importFrom dplyr %>%
-#' @importFrom stringr str_extract
-#' @importFrom tidyr replace_na
-#' @importFrom dplyr na_if
-#' @importFrom tidyr separate_wider_delim
-#' @importFrom tidyr unite
-
+#' @importFrom stringi stri_extract_first_regex stri_split_fixed
 
 HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = FALSE, remove_duplicates = FALSE) {
-  # Validate inputs
+  # Validate inputs — identical error shape to v1.
   check_gl_string(data, "data")
   check_fields(fields)
   check_logical_flag(keep_suffix, "keep_suffix")
   check_logical_flag(keep_G_P_group, "keep_G_P_group")
   check_logical_flag(remove_duplicates, "remove_duplicates")
 
-  # Expand the GL string
-  alleles <- GLstring_expand_longer(data) %>%
-    # Extract any WHO-recognized suffixes
-    mutate(suffix = replace_na(str_extract(value, "(?<=[:digit:])[LSCAQNlscaqn]$"), "")) %>%
-    # Extract any P or G group designation
-    mutate(GP = replace_na(str_extract(value, "(?<=[:digit:])[PGpg]$"), "")) %>%
-    # Separate HLA prefix if available
-    separate_wider_delim(value, delim = "-", names = c("prefix", "rest"), too_few = "align_end") %>%
-    separate_wider_delim(rest, delim = "*", names = c("gene", "molecular_type"), too_few = "align_start") %>%
-    # Separate molecular fields
-    separate_wider_delim(molecular_type, delim = ":", names = c("one", "two", "three", "four"), too_few = "align_start") %>%
-    # Keep only numbers in each field, in case there were non-standard suffixes.
-    mutate(across(one:four, ~ str_extract(., "[:digit:]+")))
+  # Define the per-allele truncator as a local closure so it is always
+  # in lexical scope — regardless of whether the file is source()'d
+  # into a private env or installed as part of the package namespace.
+  # Per-call closure creation is O(1) and negligible.
+  truncate_allele_vec <- function(alleles, fields, keep_suffix, keep_G_P_group) {
+    n <- length(alleles)
+    if (n == 0L) return(character(0))
 
-  # Determine which field columns to keep and which to drop based on requested fields.
-  all_field_cols <- c("one", "two", "three", "four")
-  keep_cols <- all_field_cols[seq_len(fields)]
-  drop_cols <- setdiff(all_field_cols, keep_cols)
+    # NAs pass through untouched — matches v1's behaviour inside the
+    # tidy pipeline (separate_wider_delim leaves NA as NA, unite with
+    # na.rm = TRUE drops it, ambiguity_table_to_GLstring then stays NA).
+    out   <- character(n)
+    is_na <- is.na(alleles)
+    out[is_na] <- NA_character_
 
-  # Drop the unneeded field columns.
-  if (length(drop_cols) > 0) {
-    alleles <- alleles %>% select(-all_of(drop_cols))
+    idx <- which(!is_na)
+    if (length(idx) == 0L) return(out)
+    vals <- alleles[idx]
+
+    # --- Strip "HLA-" prefix if present ----------------------------------
+    has_hla <- startsWith(vals, "HLA-")
+    rest <- vals
+    rest[has_hla] <- substr(vals[has_hla], 5L, nchar(vals[has_hla]))
+
+    # --- Split locus from molecular portion at "*" -----------------------
+    # regexpr with fixed = TRUE is a single C-level scan per cell; no
+    # regex compilation overhead.
+    star_pos <- regexpr("*", rest, fixed = TRUE)
+    has_star <- star_pos != -1L
+    gene <- rest
+    gene[has_star] <- substr(rest[has_star], 1L, star_pos[has_star] - 1L)
+    mol_full <- character(length(rest))
+    mol_full[has_star] <- substr(
+      rest[has_star],
+      star_pos[has_star] + 1L,
+      nchar(rest[has_star])
+    )
+    # Cells without a "*" (e.g. bare serologic "27") have mol_full = "".
+
+    # --- Extract WHO suffix (L/S/C/A/Q/N) if it follows a digit at end ---
+    # v1 used "(?<=[:digit:])[LSCAQNlscaqn]$" with str_extract — a
+    # look-behind regex. We use a plain two-char match and subset out
+    # the letter; same semantics, no look-behind overhead.
+    suffix_m   <- regexpr("[[:digit:]][LSCAQNlscaqn]$", mol_full, perl = TRUE)
+    has_suffix <- suffix_m != -1L
+    suffix <- rep("", length(mol_full))
+    suffix[has_suffix] <- substr(
+      mol_full[has_suffix],
+      suffix_m[has_suffix] + 1L,
+      suffix_m[has_suffix] + 1L
+    )
+    # Remove the matched suffix letter from mol_full. The digit before
+    # the suffix stays put for field splitting below.
+    mol_no_suffix <- mol_full
+    mol_no_suffix[has_suffix] <- substr(
+      mol_full[has_suffix], 1L, suffix_m[has_suffix]
+    )
+
+    # --- Extract G or P group marker if it follows a digit at end -------
+    gp_m   <- regexpr("[[:digit:]][PGpg]$", mol_no_suffix, perl = TRUE)
+    has_gp <- gp_m != -1L
+    gp <- rep("", length(mol_no_suffix))
+    gp[has_gp] <- substr(
+      mol_no_suffix[has_gp],
+      gp_m[has_gp] + 1L,
+      gp_m[has_gp] + 1L
+    )
+    mol_clean <- mol_no_suffix
+    mol_clean[has_gp] <- substr(
+      mol_no_suffix[has_gp], 1L, gp_m[has_gp]
+    )
+
+    # --- Split into fields by ":", keep first `fields`, dig-extract, collapse
+    #
+    # Done as a FLAT pass, not a per-allele vapply — the per-allele vapply
+    # approach called stri_extract_first_regex thousands of times on tiny
+    # inputs, and that C-call overhead dominated. Here every stringi /
+    # regex call operates on one long vector of all fields at once.
+    split_list <- stringi::stri_split_fixed(mol_clean, ":")
+    n_per_all  <- lengths(split_list)                        # fields per allele
+    flat_f     <- unlist(split_list, use.names = FALSE)       # all fields flat
+    allele_id  <- rep.int(seq_along(split_list), n_per_all)   # which allele each field belongs to
+    field_pos  <- sequence(n_per_all)                          # 1..k per allele
+
+    # Extract the leading digit run in ONE C call over the whole flat vector
+    # (instead of N vapply calls on tiny per-allele vectors).
+    flat_dig   <- stringi::stri_extract_first_regex(flat_f, "[[:digit:]]+")
+
+    # Keep only: within each allele, the first `fields` fields that had a
+    # digit match. NAs correspond to fields with no digit run, same as v1
+    # dropping them via na.rm = TRUE in unite().
+    keep_mask  <- field_pos <= fields & !is.na(flat_dig)
+    kept_dig   <- flat_dig[keep_mask]
+    kept_aid   <- allele_id[keep_mask]
+
+    # Collapse kept fields with ":" per allele. factor(..., levels = seq_along)
+    # guarantees a slot for every allele (including ones whose fields were
+    # all dropped — those get "").
+    truncated_codes <- character(length(split_list))
+    if (length(kept_dig) > 0L) {
+      grouped <- split(
+        kept_dig,
+        factor(kept_aid, levels = seq_along(split_list))
+      )
+      truncated_codes <- vapply(grouped, paste, character(1), collapse = ":")
+    }
+    names(truncated_codes) <- NULL
+
+    # --- Reassemble the allele string -----------------------------------
+    # Layout (per row): [HLA-] gene [*code] [suffix] [GP]
+    # Bare serologic inputs and alleles without any code come out with
+    # just [prefix] gene, matching v1.
+    prefix <- ifelse(has_hla, "HLA-", "")
+    star   <- ifelse(nzchar(truncated_codes), "*", "")
+    suffix_part <- if (keep_suffix)     suffix else ""
+    gp_part     <- if (keep_G_P_group)  gp     else ""
+    rebuilt <- paste0(prefix, gene, star, truncated_codes, suffix_part, gp_part)
+
+    out[idx] <- rebuilt
+    out
   }
 
-  # Reunite the prefix and gene name (e.g. "HLA" + "A" -> "HLA-A").
-  truncated <- alleles %>%
-    unite(gene, prefix:gene, sep = "-", na.rm = TRUE)
+  # -------------------------------------------------------------------------
+  # Iteration 7 rewrite: the v1 pipeline used separate_wider_delim + unite
+  # round-trips to slice an allele into (prefix, gene, fields, suffix, GP)
+  # and put it back together. Profiling showed the four unite() calls were
+  # 30% of v1's self time; separate_wider_delim was another ~15%. Both are
+  # generic, tidyr-dispatched column operations on what is really a simple
+  # per-allele string transform.
+  #
+  # v2 calls GLstring_expand_longer once (now fast post-iter-6), applies a
+  # fully-vectorised allele truncator to the `value` column with stringi +
+  # base regex, and calls ambiguity_table_to_GLstring once (now fast
+  # post-iter-7) to reassemble. The intermediate tibble never grows extra
+  # columns.
+  # -------------------------------------------------------------------------
 
-  # Reunite the retained field columns into the allele code.
-  if (fields == 1) {
-    # Single field: unite directly with the gene using "*" separator.
-    truncated <- truncated %>%
-      unite(gene, gene, one, sep = "*", na.rm = TRUE)
-  } else {
-    # Multiple fields: join fields with ":", then unite with gene using "*".
-    truncated <- truncated %>%
-      unite(code, all_of(keep_cols), sep = ":", na.rm = TRUE) %>%
-      mutate(code = na_if(code, "")) %>%
-      unite(gene, gene, code, sep = "*", na.rm = TRUE)
-  }
+  # Expand the GL string into the ambiguity-table layout. This is cheap
+  # after iter-6: a single stri_split cascade, no tidyr unchop.
+  table <- GLstring_expand_longer(data)
 
-  # Retain or drop suffix and P/G group designation.
-  if (keep_suffix) {
-    truncated <- truncated %>% unite(gene, gene, suffix, sep = "", na.rm = TRUE)
-  } else {
-    truncated <- truncated %>% select(-suffix)
-  }
-  if (keep_G_P_group) {
-    truncated <- truncated %>% unite(gene, gene, GP, sep = "", na.rm = TRUE)
-  } else {
-    truncated <- truncated %>% select(-GP)
-  }
+  # Truncate every allele in the value column in one vectorised pass.
+  table$value <- truncate_allele_vec(
+    table$value,
+    fields = fields,
+    keep_suffix = keep_suffix,
+    keep_G_P_group = keep_G_P_group
+  )
 
-  # Combine everything back to a GL string.
-  truncated %>%
-    rename(value = gene) %>%
-    ambiguity_table_to_GLstring(., remove_duplicates = remove_duplicates)
+  # Reassemble the GL string. ambiguity_table_to_GLstring is now the v2
+  # sort-and-paste implementation from earlier in this iteration.
+  ambiguity_table_to_GLstring(table, remove_duplicates = remove_duplicates)
 }
-
 
 globalVariables(c(
   "rest", "molecular_type", "one", "four", "three",

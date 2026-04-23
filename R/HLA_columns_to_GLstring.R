@@ -39,58 +39,92 @@
 #'   ) %>%
 #'   select(patient, GL_string)
 #'
-#' # Using the base pipe:
-#' HLA_typing_LIS |>
-#'   mutate(
-#'     GL_string = HLA_columns_to_GLstring(
-#'       HLA_typing_LIS, # If using the base pipe, the first argument will have to be
-#'       # the working data frame.
-#'       HLA_typing_columns = mA1Cd.recipient:mDPB12cd.recipient,
-#'       prefix_to_remove = "m",
-#'       suffix_to_remove = "Cd.recipient"
-#'     ),
-#'     .after = patient
-#'   ) |>
-#'   select(patient, GL_string)
-#'
 #' @export
 #'
-#' @importFrom dplyr mutate
-#' @importFrom dplyr %>%
 #' @importFrom dplyr select
-#' @importFrom dplyr case_when
-#' @importFrom dplyr if_else
-#' @importFrom dplyr coalesce
-#' @importFrom dplyr filter
-#' @importFrom dplyr distinct
-#' @importFrom dplyr pull
-#' @importFrom dplyr summarise
-#' @importFrom glue glue
-#' @importFrom stringr regex
-#' @importFrom stringr str_c
-#' @importFrom stringr str_escape
-#' @importFrom stringr str_extract
-#' @importFrom stringr str_replace
-#' @importFrom stringr str_detect
-#' @importFrom stringr str_glue
-#' @importFrom stringr str_flatten
-#' @importFrom tidyr pivot_longer
-#' @importFrom tidyselect all_of
 #' @importFrom cli cli_abort
+#' @importFrom stringi stri_startswith_fixed stri_endswith_fixed
 
 HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "") {
-  # Validate inputs
+  # Validate the data frame input up-front.
   check_data_frame(data, "data")
 
-  # Set up prefix and suffix regex to remove unwanted parts
-  prefix_regex <- regex(str_c("^", str_escape(prefix_to_remove)), ignore_case = TRUE)
-  suffix_regex <- regex(str_c(str_escape(suffix_to_remove), "$"), ignore_case = TRUE)
-
-  # Identify the columns to modify
+  # Resolve the tidyselect argument to a character vector of column names.
   col2mod <- names(select(data, {{ HLA_typing_columns }}))
 
-  # Named vector mapping molecular locus names to their serologic equivalents.
-  # Used as a fast lookup instead of a case_when with str_detect calls.
+  n_rows <- nrow(data)
+  n_cols <- length(col2mod)
+  if (n_cols == 0L) {
+    cli_abort("{.arg HLA_typing_columns} did not select any columns.")
+  }
+
+  # -------------------------------------------------------------------------
+  # Iteration 6 rewrite: build the GL strings with a single vectorised pass
+  # over a flattened allele matrix instead of the previous pivot_longer ->
+  # 12-stage mutate pipeline -> two summarise/str_flatten joins. Every
+  # column-level decision (locus name, serologic map, "always molecular"
+  # flag) is computed once per column rather than once per cell.
+  # -------------------------------------------------------------------------
+
+  # --- Per-column setup (O(n_cols)) -----------------------------------------
+
+  # Strip the optional user-supplied prefix and suffix from each column name
+  # case-insensitively using stringi's fixed-string prefix/suffix matchers.
+  # This avoids the regex-escape + stringr round-trip that v1 used.
+  trunc_names <- col2mod
+  if (nzchar(prefix_to_remove)) {
+    starts <- stringi::stri_startswith_fixed(trunc_names, prefix_to_remove, case_insensitive = TRUE)
+    trunc_names[starts] <- substr(
+      trunc_names[starts],
+      nchar(prefix_to_remove) + 1L,
+      nchar(trunc_names[starts])
+    )
+  }
+  if (nzchar(suffix_to_remove)) {
+    ends <- stringi::stri_endswith_fixed(trunc_names, suffix_to_remove, case_insensitive = TRUE)
+    trunc_names[ends] <- substr(
+      trunc_names[ends],
+      1L,
+      nchar(trunc_names[ends]) - nchar(suffix_to_remove)
+    )
+  }
+  # Strip any leading "HLA-" / locus prefix while keeping the locus itself.
+  trunc_names <- HLA_prefix_remove(trunc_names, keep_locus = TRUE)
+  lower_names <- tolower(trunc_names)
+
+  # Per-column locus lookup via prefix-match cascade. Order matters:
+  # more specific prefixes (e.g. "bw" before "b", "drb345" before "drb3",
+  # "dqb1" before "dq") must come first. Done once per column, not once
+  # per cell as v1 did inside its case_when.
+  locus_from_name <- vapply(lower_names, function(nm) {
+    if      (startsWith(nm, "a"))      "HLA-A"
+    else if (startsWith(nm, "bw"))     "HLA-Bw"
+    else if (startsWith(nm, "b"))      "HLA-B"
+    else if (startsWith(nm, "cw"))     "HLA-Cw"
+    else if (startsWith(nm, "c"))      "HLA-C"
+    else if (startsWith(nm, "drb345")) "HLA-DRB345"
+    else if (startsWith(nm, "drb1"))   "HLA-DRB1"
+    else if (startsWith(nm, "drb3"))   "HLA-DRB3"
+    else if (startsWith(nm, "drb4"))   "HLA-DRB4"
+    else if (startsWith(nm, "drb5"))   "HLA-DRB5"
+    else if (startsWith(nm, "dr"))     "HLA-DR"
+    else if (startsWith(nm, "dqb1"))   "HLA-DQB1"
+    else if (startsWith(nm, "dqa1"))   "HLA-DQA1"
+    else if (startsWith(nm, "dq"))     "HLA-DQ"
+    else if (startsWith(nm, "dpa1"))   "HLA-DPA1"
+    else if (startsWith(nm, "dpb1"))   "HLA-DPB1"
+    else                               "unknown"
+  }, character(1), USE.NAMES = FALSE)
+
+  # Early error — same message shape the v1 function produced.
+  bad_idx <- which(locus_from_name == "unknown")
+  if (length(bad_idx) > 0L) {
+    cli_abort(
+      "The column(s) {.val {col2mod[bad_idx]}} could not be parsed to determine HLA loci."
+    )
+  }
+
+  # Serologic-name lookup map, keyed by the molecular locus names above.
   serologic_map <- c(
     "HLA-A" = "HLA-A",
     "HLA-B" = "HLA-B",
@@ -107,101 +141,132 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     "HLA-DQA1" = "HLA-DQA",
     "HLA-DQ" = "HLA-DQ",
     "HLA-DPA1" = "HLA-DPA",
-    "HLA-DPB1" = "HLA-DP",
-    "unknown" = "unknown"
+    "HLA-DPB1" = "HLA-DP"
+  )
+  serologic_name_col <- serologic_map[locus_from_name]
+
+  # Columns whose alleles are always molecular regardless of format
+  # (DQA1 / DPB1 / DPA1) — matches the original str_detect on column names.
+  is_mol_col <- grepl("DQA1|DPB1|DPA1", col2mod)
+
+  # --- Flatten the allele matrix to long per-cell vectors -------------------
+
+  allele_mat <- as.matrix(data[, col2mod, drop = FALSE])
+  # Column-major unrolling: cell k has row = ((k - 1) %% n_rows) + 1
+  # and col = ((k - 1) %/% n_rows) + 1. We derive the explicit index vectors
+  # now so every downstream step stays vectorised.
+  raw     <- as.vector(allele_mat)
+  row_idx <- rep.int(seq_len(n_rows), n_cols)
+  col_idx <- rep(seq_len(n_cols), each = n_rows)
+
+  # --- Per-cell transformations --------------------------------------------
+
+  # "molecular" is decided from the RAW (pre-validate, pre-prefix-remove)
+  # cell value, matching v1's str_detect(allele, ":|^0") order of
+  # operations. We add the per-column "always molecular" override on top.
+  has_colon        <- !is.na(raw) & grepl(":", raw, fixed = TRUE)
+  has_leading_zero <- !is.na(raw) & startsWith(raw, "0")
+  molecular_cell   <- has_colon | has_leading_zero | is_mol_col[col_idx]
+
+  # Clean each cell via HLA_validate (already vectorised).
+  validated <- HLA_validate(raw)
+
+  # DRB_locus_raw: detect DRB3/4/5 hints from the allele text itself. The
+  # v1 case_when had two alternatives:
+  #   (1) alleles containing "DRB[345]*" (e.g. "HLA-DRB3*01:01") -> take
+  #       the digit after "DRB" as the target locus.
+  #   (2) alleles starting with "[345]*" -> take that leading digit.
+  # We replicate the preference order: (1) wins over (2).
+  drb_num_A <- rep("", length(validated))
+  mA <- regexpr("DRB[345]", validated, perl = TRUE, ignore.case = TRUE)
+  hasA <- mA != -1L & !is.na(mA)
+  # The [345] digit sits at column offset 3 from the match start.
+  drb_num_A[hasA] <- substr(
+    validated[hasA],
+    mA[hasA] + 3L,
+    mA[hasA] + 3L
+  )
+  drb_num_B <- rep("", length(validated))
+  hasB <- !is.na(validated) & grepl("^[345]\\*", validated)
+  drb_num_B[hasB] <- substr(validated[hasB], 1L, 1L)
+  drb_num <- drb_num_A
+  use_B <- drb_num == "" & drb_num_B != ""
+  drb_num[use_B] <- drb_num_B[use_B]
+  drb_locus_raw <- rep(NA_character_, length(validated))
+  drb_locus_raw[drb_num != ""] <- paste0("HLA-DRB", drb_num[drb_num != ""])
+
+  # Strip "HLA-" / locus prefix from the cleaned allele text so the
+  # assembled output re-applies them consistently. HLA_prefix_remove is
+  # already vectorised and (post-iter-6) very cheap.
+  allele_clean <- HLA_prefix_remove(validated)
+
+  # DR51/52/53 detection (DRB345 flag): allele starts with "5" AND the
+  # column's locus_from_name is "HLA-DR". This preserves the grouping v1
+  # used to keep serologic DR5x alleles separate from the non-5x ones.
+  DRB345 <- !is.na(allele_clean) &
+            startsWith(allele_clean, "5") &
+            locus_from_name[col_idx] == "HLA-DR"
+
+  # Final per-cell locus: coalesce the allele-derived DRB3/4/5 hint with
+  # the column-name-derived locus.
+  molecular_locus <- ifelse(
+    is.na(drb_locus_raw),
+    locus_from_name[col_idx],
+    drb_locus_raw
   )
 
-  # Processing Step 1
-  step1 <- data %>%
-    mutate(row_for_function = row_number()) %>%
-    # Pivoting longer to get each allele on a separate row.
-    pivot_longer(cols = all_of(col2mod), names_to = "names", values_to = "allele") %>%
-    # Determine if typing is molecular by presence of ":" or leading zero in allele,
-    # or the loci DQA1, DPB1, and DPA1, which are always in molecular format.
-    mutate(molecular = str_detect(allele, ":|^0") | str_detect(names, "DQA1|DPB1|DPA1")) %>%
-    # Remove prefixes and suffixes from column names.
-    mutate(
-      truncated_names = str_replace(names, prefix_regex, ""),
-      truncated_names = str_replace(truncated_names, suffix_regex, ""),
-      truncated_names = HLA_prefix_remove(truncated_names, keep_locus = TRUE)
-    ) %>%
-    # Use the HLA_validate function to clean up the typing.
-    mutate(allele = HLA_validate(allele)) %>%
-    # Determine if allele itself specifies a DRB3/4/5 locus (for generic DRB345 columns).
-    mutate(
-      DRB_locus_raw = case_when(
-        # When the allele starts with "DRB3*", "DRB4*" or "DRB5*"
-        str_detect(allele, regex("DRB[345]\\*", ignore_case = TRUE)) ~ str_c("HLA-DRB", str_extract(allele, "(?<=DRB)[345]")),
-        # When the allele does not have a "DRB" prefix, instead only has a number prefix
-        str_detect(allele, regex("^[345]\\*", ignore_case = TRUE)) ~ str_c("HLA-DRB", str_extract(allele, "^[345]")),
-        TRUE ~ NA_character_
-      )
-    ) %>%
-    # Remove any prefixes in alleles.
-    mutate(allele = HLA_prefix_remove(allele)) %>%
-    # Lowercase column names once for case-insensitive prefix matching.
-    mutate(lower_names = tolower(truncated_names)) %>%
-    # Determine locus name from column name using prefix matching.
-    # Order matters: more specific prefixes must come before less specific ones
-    # (e.g. "bw" before "b", "drb345" before "drb3", "dqb1" before "dq").
-    mutate(locus_from_name = case_when(
-      startsWith(lower_names, "a") ~ "HLA-A",
-      startsWith(lower_names, "bw") ~ "HLA-Bw",
-      startsWith(lower_names, "b") ~ "HLA-B",
-      startsWith(lower_names, "cw") ~ "HLA-Cw",
-      startsWith(lower_names, "c") ~ "HLA-C",
-      startsWith(lower_names, "drb345") ~ "HLA-DRB345",
-      startsWith(lower_names, "drb1") ~ "HLA-DRB1",
-      startsWith(lower_names, "drb3") ~ "HLA-DRB3",
-      startsWith(lower_names, "drb4") ~ "HLA-DRB4",
-      startsWith(lower_names, "drb5") ~ "HLA-DRB5",
-      startsWith(lower_names, "dr") ~ "HLA-DR",
-      startsWith(lower_names, "dqb1") ~ "HLA-DQB1",
-      startsWith(lower_names, "dqa1") ~ "HLA-DQA1",
-      startsWith(lower_names, "dq") ~ "HLA-DQ",
-      startsWith(lower_names, "dpa1") ~ "HLA-DPA1",
-      startsWith(lower_names, "dpb1") ~ "HLA-DPB1",
-      TRUE ~ "unknown"
-    )) %>%
-    # Look up the serologic name from the molecular locus name.
-    mutate(serologic_name = serologic_map[locus_from_name]) %>%
-    # Determine if the DR typing is one of the DR51/52/53 loci.
-    mutate(DRB345 = if_else(str_detect(allele, "^5") & locus_from_name == "HLA-DR", TRUE, FALSE)) %>%
-    # Handle the final locus name for high-resolution DRB alleles.
-    mutate(molecular_locus = coalesce(DRB_locus_raw, locus_from_name)) %>%
-    # Record "XX" if there is no typing at any of the selected loci.
-    mutate(allele = if (all(is.na(allele))) "XX" else allele, .by = c(row_for_function, molecular_locus)) %>%
-    # Remove any blank values
-    filter(!is.na(allele)) %>%
-    # Remove any "XX" values from the DRB3/4/5 loci
-    filter(!(allele == "XX" & str_detect(molecular_locus, "DRB[345]")))
+  # --- XX logic (group by row x molecular_locus) ---------------------------
+  # If every allele in a (row, locus) group is NA, emit one "XX" placeholder
+  # so the locus survives the NA filter. Then drop NAs and drop "XX" rows
+  # for any DRB[345] locus (which is always optional).
+  grp_key       <- paste(row_idx, molecular_locus, sep = "\x01")
+  grp_ix        <- match(grp_key, unique(grp_key))
+  n_per_grp     <- tabulate(grp_ix)
+  n_na_per_grp  <- tabulate(grp_ix[is.na(allele_clean)], nbins = length(n_per_grp))
+  all_na_grp    <- n_per_grp == n_na_per_grp
+  all_na_mask   <- is.na(allele_clean) & all_na_grp[grp_ix]
+  allele_clean[all_na_mask] <- "XX"
 
-  # Set up error detection for any loci that could not be determined
-  error_table <- step1 %>% filter(locus_from_name == "unknown")
-  error_column_names <- error_table %>%
-    select(names) %>%
-    distinct() %>%
-    dplyr::pull(names)
+  is_drb345_locus <- grepl("DRB[345]", molecular_locus)
+  keep <- !is.na(allele_clean) & !(allele_clean == "XX" & is_drb345_locus)
 
-  if (nrow(error_table) != 0) {
-    # Print the columns that caused the error to assist in debugging
-    cli_abort("The column(s) {.val {error_column_names}} could not be parsed to determine HLA loci.")
-  }
+  row_idx          <- row_idx[keep]
+  molecular_locus  <- molecular_locus[keep]
+  molecular_cell   <- molecular_cell[keep]
+  serologic_name_c <- serologic_name_col[col_idx[keep]]
+  allele_clean     <- allele_clean[keep]
+  DRB345           <- DRB345[keep]
 
-  # Assemble the final type
-  step2 <- step1 %>%
-    mutate(final_type = if_else(
-      molecular,
-      str_glue("{molecular_locus}*{allele}"),
-      str_glue("{serologic_name}{allele}")
-    )) %>%
-    # Group alleles within the same locus
-    summarise(final_type_2 = str_flatten(final_type, collapse = "+"), .by = c(row_for_function, molecular_locus, DRB345)) %>%
-    # Assemble GL string with each locus separated by "^"
-    summarise(GL_string = str_flatten(final_type_2, collapse = "^"), .by = row_for_function)
+  # --- Build the per-cell final_type string --------------------------------
+  # Molecular: "<locus>*<allele>"; Serologic: "<serologic_name><allele>".
+  final_type <- ifelse(
+    molecular_cell,
+    paste0(molecular_locus, "*", allele_clean),
+    paste0(serologic_name_c, allele_clean)
+  )
 
-  # Return GL Strings
-  return(step2 %>% dplyr::pull(GL_string))
+  # --- Two-level collapse: (row, locus, DRB345) with "+", then row with "^".
+  # First-appearance order within each row is preserved by grouping on
+  # match() against unique(), mirroring dplyr's .by behaviour.
+  key1         <- paste(row_idx, molecular_locus, as.integer(DRB345), sep = "\x01")
+  unique_keys  <- unique(key1)
+  grp1         <- match(key1, unique_keys)
+  # split() groups in ascending grp1 order, which by construction is the
+  # first-appearance order of each (row, locus, DRB345) combination.
+  final_type_2 <- vapply(
+    split(final_type, grp1),
+    paste, character(1), collapse = "+"
+  )
+  row_per_group <- row_idx[match(unique_keys, key1)]
+
+  # Level 2: collapse per row with "^". split() on a numeric vector orders
+  # groups by ascending row number, which matches how v1's summarise(.by =
+  # row_for_function) produced its output.
+  row_groups <- split(final_type_2, row_per_group)
+  out <- vapply(row_groups, paste, character(1), collapse = "^")
+  # Drop names so the result is a plain character vector, matching v1's
+  # pull() output.
+  unname(out)
 }
 
 globalVariables(c(

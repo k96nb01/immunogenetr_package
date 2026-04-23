@@ -41,8 +41,6 @@
 #'   direction = "bidirectional", match_grade = "Xof8", scope = "genotype"
 #' )
 #'
-#' @importFrom purrr map_int
-#' @importFrom stringr str_extract_all
 #' @export
 #'
 
@@ -61,29 +59,40 @@ HLA_match_summary_HCT <- function(GL_string_recip, GL_string_donor, direction = 
     c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1", "HLA-DQB1")
   }
 
-  # When scope is "genotype" and direction is "bidirectional",
-  # calculate GvH and HvG match summaries separately, then take the maximum.
-  # Each recursive call is already vectorized via map_int() below.
-  if (scope == "genotype" && direction == "bidirectional") {
-    # Calculate GvH match summary across all loci
-    gvh_result <- HLA_match_summary_HCT(
-      GL_string_recip, GL_string_donor,
-      direction = "GvH", match_grade = match_grade, scope = "locus"
-    )
-    # Calculate HvG match summary across all loci
-    hvg_result <- HLA_match_summary_HCT(
-      GL_string_recip, GL_string_donor,
-      direction = "HvG", match_grade = match_grade, scope = "locus"
-    )
-    # Return the maximum of the two directional totals (vectorized via pmax)
-    return(pmax(gvh_result, hvg_result))
+  # Helper: turn a (n_loci, n_pairs) mismatch-count matrix into a length-N
+  # integer vector of per-pair total matches. `2L - mm` gives the match
+  # matrix; colSums gives the per-pair total. If any locus is NA for a pair,
+  # colSums returns NA for that pair, which we then coerce to NA_integer_ so
+  # the return type is always integer (preserving the baseline's
+  # `map_int(...)` contract — tests use `expect_type(result, "integer")`).
+  totals_from_mm <- function(mm) {
+    match_mat <- 2L - mm
+    totals <- colSums(match_mat)
+    # colSums returns double; cast to integer. NA_real_ -> NA_integer_ cleanly.
+    as.integer(totals)
   }
 
-  # Calculate match numbers across loci (returns "HLA-A=2, HLA-B=1, ..." per pair)
-  match_strings <- HLA_match_number(
-    GL_string_recip, GL_string_donor, loci, direction = direction
-  )
+  # Genotype-scope bidirectional: compute GvH and HvG totals separately at
+  # the genotype level, return the per-pair max. This replaces the previous
+  # two recursive calls back through HLA_match_summary_HCT -> HLA_match_number
+  # -> HLA_mismatch_number, each of which went through the tidyverse parse
+  # pipeline. One matrix call per direction is enough.
+  if (scope == "genotype" && direction == "bidirectional") {
+    mm_HvG <- hla_mismatch_count_matrix(
+      GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count = 2
+    )
+    mm_GvH <- hla_mismatch_count_matrix(
+      GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count = 2
+    )
+    return(pmax(totals_from_mm(mm_HvG), totals_from_mm(mm_GvH)))
+  }
 
-  # Extract the numeric match counts from each string and sum them
-  map_int(str_extract_all(match_strings, "(?<=\\=)\\d+"), ~ sum(as.integer(.x)))
+  # Locus-scope, or non-bidirectional direction: a single matrix-helper call
+  # handles everything. For direction == "bidirectional" the helper already
+  # takes pmax(HvG, GvH) per cell; summing (2 - that) across loci is the
+  # "minimum at each locus before summing" semantic the docstring promises.
+  mm <- hla_mismatch_count_matrix(
+    GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2
+  )
+  totals_from_mm(mm)
 }
