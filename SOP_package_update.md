@@ -27,19 +27,37 @@ Open `immunogenetr.Rproj` in RStudio. This ensures your working directory and bu
 
 ### 1.2 Pull the latest changes
 
-Make sure you're working from the current state of the repository:
+Make sure you're working from the current state of the repository. The default branch is `master`:
 
 ```bash
 # In the terminal:
-git checkout main
-git pull origin main
+git checkout master
+git pull origin master
 ```
 
-### 1.3 Create a development branch
+### 1.3 Create or refresh the development branch
 
-Never work directly on `main`. Create a `dev` branch on the GitHub website.
+Never work directly on `master`. Use a `dev` branch.
 
-Switch to the `dev` branch in RStudio and pull from github to get up to date.
+The `dev` branch typically persists across release cycles: after each release is merged to `master` via pull request, the same `dev` branch is reused for the next round of work. So when you start a new cycle, the branch probably already exists but is behind `master`. You have two cases:
+
+- **`dev` already exists (typical case).** Fast-forward it to `master` so you start from the latest state:
+  ```bash
+  git checkout dev
+  git pull origin dev           # sync local dev with remote dev
+  git merge master --ff-only    # advance dev to master's tip
+  ```
+- **`dev` does not exist yet (first cycle).** Create it from `master`:
+  ```bash
+  git checkout -b dev
+  git push -u origin dev
+  ```
+
+Either way, confirm you're on `dev` before you start making changes:
+
+```bash
+git branch --show-current       # should print: dev
+```
 
 ### 1.4 Load the package for interactive development
 
@@ -142,6 +160,12 @@ If your changes affect the user-facing workflow, update `vignettes/immunogenetr.
 devtools::build_vignettes()
 ```
 
+**Note on `devtools::check()` and vignettes.** Building the vignette requires `pandoc`. RStudio bundles it, so running `devtools::check()` from the RStudio Console or Terminal works out of the box. If you run `devtools::check()` from a plain R session outside RStudio (e.g. `Rscript -e "devtools::check()"` from cmd), the vignette build may fail with `Pandoc is required to build R Markdown vignettes`. Workarounds:
+
+- Run the check from RStudio (simplest).
+- Or install `pandoc` separately and make sure it's on `PATH`.
+- Or skip the vignette during an interim check: `devtools::check(vignettes = FALSE)`. This is fine for iterating; you still want a full check (vignettes included) before pushing.
+
 ### 2.8 Update the README (if applicable)
 
 The README is generated from `README.Rmd`. If you change it, re-knit:
@@ -171,47 +195,66 @@ Avoid committing files that contain secrets (e.g., `.Renviron`, API keys). Stage
 ### 3.2 Push the branch to GitHub
 
 ```bash
-# First push (sets up remote tracking):
-git push -u origin feature/my-new-feature
+# First push of a brand-new branch (sets up remote tracking):
+git push -u origin dev
 
 # Subsequent pushes:
 git push
 ```
 
-After pushing, the GitHub Actions workflows will run automatically on your branch:
-
-- **R-CMD-check.yaml** runs `R CMD check` on macOS, Windows, and Ubuntu (with multiple R versions).
-- **test-coverage.yaml** runs `covr` and uploads results to Codecov, updating the badge on your README.
+**Pushing to `dev` does NOT trigger CI by itself.** The GitHub Actions workflows in `.github/workflows/` are configured to run on pushes to `master` and on pull requests — not on pushes to `dev`. If you want CI results for your branch, open the pull request (next step). Once you do, the workflows run against the PR head.
 
 ### 3.3 Create a pull request
 
-Once your changes are complete and passing CI, create a pull request on GitHub to merge your branch into `main`. You can do this from the GitHub website or from the command line:
+With your changes pushed and local checks passing, open a pull request from `dev` to `master`. Opening the PR is what actually triggers CI on your work.
+
+The fastest path is the GitHub CLI:
 
 ```bash
-# Using the GitHub CLI:
-gh pr create --title "Brief description" --body "Details about the changes"
+gh pr create --base master --head dev \
+  --title "1.x.y: brief summary" \
+  --body "$(cat <<'EOF'
+## Summary
+
+- Bullet points of what changed.
+
+## Test plan
+
+- [x] devtools::test()
+- [x] devtools::check() from RStudio (0/0/0 including vignettes)
+- [ ] R-CMD-check on Windows / macOS / Ubuntu (GitHub Actions)
+- [ ] test-coverage run (GitHub Actions) + codecov update
+EOF
+)"
 ```
 
-Or navigate to https://github.com/k96nb01/immunogenetr_package and click "Compare & pull request" when prompted.
+Alternatively, navigate to https://github.com/k96nb01/immunogenetr_package and click "Compare & pull request" when prompted.
 
-A pull request gives you a chance to review the full diff of your changes before merging. If you're working with collaborators, they can review and comment on the PR before it's merged.
+Once the PR is open, two workflows run automatically against the PR head:
+
+- **R-CMD-check.yaml** — `R CMD check` on macOS, Windows, and Ubuntu (with multiple R versions).
+- **test-coverage.yaml** — `covr` run, results uploaded to Codecov, README badge updated.
+
+Wait for both to go green before merging. The R-hub workflow (`rhub.yaml`) only runs on manual trigger (workflow_dispatch) — you can invoke it from the Actions tab if you want multi-platform checks beyond what R-CMD-check covers, but it is not required for every PR.
+
+A pull request also gives you a chance to review the full diff of your changes before merging. If you're working with collaborators, they can review and comment on the PR before it's merged.
 
 ### 3.4 Merge the pull request
 
 After confirming that CI checks pass on the pull request:
 
 1. Go to the pull request on GitHub.
-2. Click **"Merge pull request"** (use "Squash and merge" if you want to condense multiple commits into one clean commit on `main`).
+2. Click **"Merge pull request"** (use "Squash and merge" if you want to condense multiple commits into one clean commit on `master`).
 3. Click **"Confirm merge"**.
-4. Optionally click **"Delete branch"** to clean up the remote branch.
+4. Do NOT delete the remote `dev` branch — it is reused for the next release cycle (see §1.3). Leave it in place; you will fast-forward it to the new `master` tip at the start of the next cycle.
 
 Then update your local repository:
 
 ```bash
 # In the terminal:
-git checkout main
-git pull origin main
-git branch -d feature/my-new-feature   # delete the local branch
+git checkout master
+git pull origin master
+# (do NOT delete local 'dev' — same reason as above)
 ```
 
 ### 3.5 Working without a pull request (solo development)
@@ -219,16 +262,16 @@ git branch -d feature/my-new-feature   # delete the local branch
 If you prefer a simpler workflow without pull requests, you can merge locally:
 
 ```bash
-# Switch back to main and merge your branch:
-git checkout main
-git pull origin main
-git merge feature/my-new-feature
-git push origin main
+# Switch back to master and merge your dev branch:
+git checkout master
+git pull origin master
+git merge dev
+git push origin master
 
-# Clean up the branch:
-git branch -d feature/my-new-feature
-git push origin --delete feature/my-new-feature
+# Leave the 'dev' branch in place for the next cycle.
 ```
+
+Note: skipping the pull request also skips the CI gate. `R-CMD-check.yaml` and `test-coverage.yaml` still run on the push to `master`, but by then it is too late to catch problems before they are on the default branch. Prefer the PR path when you can.
 
 This is faster for solo work but skips the review step that pull requests provide.
 
