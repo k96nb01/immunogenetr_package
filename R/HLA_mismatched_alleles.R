@@ -41,15 +41,6 @@
 #' print(mismatches)
 #'
 #' @export
-#'
-#' @importFrom stringr str_c
-#' @importFrom tibble tibble
-#' @importFrom magrittr  %>%
-#' @importFrom dplyr mutate
-#' @importFrom dplyr across
-#' @importFrom tidyr replace_na
-#' @importFrom stringr str_c
-#' @importFrom tidyr unite
 
 HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
   # Validate inputs
@@ -59,24 +50,22 @@ HLA_mismatched_alleles <- function(GL_string_recip, GL_string_donor, loci, direc
   check_homozygous_count(homozygous_count)
 
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
+
   # "HvG" or "GvH" can use the output of `HLA_mismatch_base` directly.
-  if (direction == "HvG" | direction == "GvH") {
-    HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction, homozygous_count)
-    # "SOT" defaults to "HvG".
-  } else if (direction == "SOT") {
-    HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
-    # "Bidirectional" will paste together the output of each direction.
-  } else if (direction == "bidirectional") {
-    HvG <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
-    GvH <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)
-    # Combine the results from each direction
-    bidirectional <- tibble("HvG" = HvG, "GvH" = GvH) %>%
-      mutate(across(HvG:GvH, ~ replace_na(., "NA"))) %>%
-      mutate(HvG = str_c("HvG;", HvG), GvH = str_c("GvH;", GvH)) %>%
-      unite(HvG, GvH, col = "bidirectional", sep = "<>")
-
-    return(bidirectional$bidirectional)
+  if (direction == "HvG" || direction == "GvH") {
+    return(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, direction, homozygous_count))
   }
+  # "SOT" defaults to "HvG".
+  if (direction == "SOT") {
+    return(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count))
+  }
+  # "bidirectional" pastes the two direction outputs into
+  # "HvG;<HvG_result><>GvH;<GvH_result>" strings, with NAs from base converted
+  # to the literal string "NA" inside each half (matching the original tidyverse
+  # pipeline's replace_na(., "NA") behavior).
+  HvG <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
+  GvH <- HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)
+  HvG[is.na(HvG)] <- "NA"
+  GvH[is.na(GvH)] <- "NA"
+  paste0("HvG;", HvG, "<>GvH;", GvH)
 }
-
-globalVariables(c("HvG", "GvH"))
