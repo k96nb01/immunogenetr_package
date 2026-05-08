@@ -6,3 +6,6 @@ immunogenetr.Rproj
 .DS_Store
 CRAN-SUBMISSION
 .positai
+docs
+/doc/
+/Meta/

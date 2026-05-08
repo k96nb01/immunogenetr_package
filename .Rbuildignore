@@ -7,3 +7,8 @@
 ^SOP_package_update\.md$
 ^\.positai$
 ^\.claude$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^doc$
+^Meta$
