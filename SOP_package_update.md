@@ -136,11 +136,13 @@ Use the report to identify uncovered lines and decide whether to add tests or ma
 
 ### 2.7 Update the vignette (if applicable)
 
-If your changes affect the user-facing workflow, update `vignettes/immunogenetr.Rmd`. Build and preview it with:
+If your changes affect the user-facing workflow, update `vignettes/immunogenetr.Rmd`. Preview it with:
 
 ```r
-devtools::build_vignettes()
+pkgdown::build_article("immunogenetr")
 ```
+
+(`devtools::build_vignettes()` is deprecated as of devtools 2.5.0 — it left build artifacts in the development directory. `pkgdown::build_article()` renders a single article into the pkgdown site for local preview.)
 
 ### 2.8 Update the README (if applicable)
 
@@ -341,7 +343,7 @@ This creates a Git tag and a corresponding GitHub release, using information fro
 | Run R CMD check | `devtools::check()` |
 | Check code coverage | `covr::package_coverage()` |
 | Interactive coverage report | `covr::report()` |
-| Build vignettes | `devtools::build_vignettes()` |
+| Preview a vignette | `pkgdown::build_article("immunogenetr")` |
 | Knit README | `devtools::build_readme()` |
 | Create release checklist | `usethis::use_release_issue()` |
 | Bump version | `usethis::use_version("patch")` |
