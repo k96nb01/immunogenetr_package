@@ -11,8 +11,10 @@ A comprehensive toolkit for clinical Human Leukocyte Antigen (HLA) informatics, 
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://immunogenetr.org}
   \item \url{https://github.com/k96nb01/immunogenetr_package}
   \item \doi{10.1016/j.humimm.2025.111619}
+  \item \url{https://k96nb01.github.io/immunogenetr_package/}
   \item Report bugs at \url{https://github.com/k96nb01/immunogenetr_package/issues}
 }
 
@@ -22,6 +24,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Nicholas Brown \email{nicholas.brown@pennmedicine.upenn.edu} (\href{https://orcid.org/0000-0002-0046-2315}{ORCID})
   \item Busra Coskun \email{bcoskun@sas.upenn.edu} (\href{https://orcid.org/0009-0008-6828-3453}{ORCID})
 }
 
