@@ -1,0 +1,74 @@
+# HLA_mismatch_alleles
+
+A function to return a string of mismatches between recipient and donor
+HLA genotypes represented as GL strings. The function finds mismatches
+based on the direction of comparison specified in the inputs and also
+handles homozygosity.
+
+\`HLA_mismatch_alleles\` and \`HLA_mismatched_alleles\` are synonyms.
+
+## Usage
+
+``` r
+HLA_mismatch_alleles(
+  GL_string_recip,
+  GL_string_donor,
+  loci,
+  direction,
+  homozygous_count = 2
+)
+```
+
+## Arguments
+
+- GL_string_recip:
+
+  A GL strings representing the recipient's HLA genotypes.
+
+- GL_string_donor:
+
+  A GL strings representing the donor's HLA genotypes.
+
+- loci:
+
+  A character vector specifying the loci to be considered for mismatch
+  calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)
+  are considered once locus for this function, and should be called in
+  this argument as "HLA-DRB3/4/5" or "HLA-DR51/52/53", respectively.
+
+- direction:
+
+  A character string indicating the direction of mismatch. Options are
+  "HvG" (host vs. graft), "GvH" (graft vs. host), "bidirectional" (the
+  max value of "HvG" and "GvH"), or "SOT" (host vs. graft, as is used
+  for mismatching in solid organ transplantation).
+
+- homozygous_count:
+
+  An integer specifying how to handle homozygosity. Defaults to 2, where
+  homozygous alleles are treated as duplicated for mismatch
+  calculations. Can be specified as 1, in which case homozygous alleles
+  are treated as single occurrences without duplication (in other words,
+  homozygous mismatches are only "counted" once).
+
+## Value
+
+A character vector, where each element is a string summarizing the
+mismatches for the specified loci. The strings are formatted as
+comma-separated locus mismatch entries if multiple loci were supplied,
+or as simple GL strings if a single locus was supplied.
+
+## Examples
+
+``` r
+file <- HLA_typing_1[, -1]
+GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
+
+GL_string_recip <- GL_string[1]
+GL_string_donor <- GL_string[2]
+
+loci <- c("HLA-A", "HLA-DRB3/4/5", "HLA-DPB1")
+mismatches <- HLA_mismatch_alleles(GL_string_recip, GL_string_donor, loci, direction = "HvG")
+print(mismatches)
+#> [1] "HLA-A=HLA-A*02:01+HLA-A*11:05, HLA-DRB3/4/5=HLA-DRB3*01:01+HLA-DRB4*01:03, HLA-DPB1=NA"
+```

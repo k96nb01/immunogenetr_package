@@ -1,0 +1,404 @@
+# Getting Started with immunogenetr
+
+## Overview
+
+immunogenetr is a comprehensive toolkit for clinical HLA informatics,
+built on tidyverse principles. It uses the genotype list string (GL
+string, <https://glstring.org/>) as its core data structure for storing
+and computing HLA genotype data.
+
+This vignette walks through the main workflows:
+
+1.  Converting tabular HLA data to GL strings
+2.  Splitting GL strings back into individual loci
+3.  Calculating mismatches between recipient and donor
+4.  Summarizing HLA matching for transplantation
+5.  Working with HLA allele names (truncation, prefixes, regex)
+6.  Reading HML files
+
+## Setup
+
+``` r
+
+library(immunogenetr)
+library(dplyr)
+```
+
+## Converting tabular HLA data to GL strings
+
+Clinical HLA data is typically stored in a tabular format, with each
+allele in its own column. immunogenetr includes the `HLA_typing_1`
+dataset as an example:
+
+``` r
+
+# HLA_typing_1 contains typing for 10 individuals across all classical HLA loci.
+head(HLA_typing_1, 3)
+```
+
+| patient | A1 | A2 | C1 | C2 | B1 | B2 | DRB345_1 | DRB345_2 | DRB1_1 | DRB1_2 | DQA1_1 | DQA1_2 | DQB1_1 | DQB1_2 | DPA1_1 | DPA1_2 | DPB1_1 | DPB1_2 |
+|---:|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| 1 | A\*24:02 | A\*29:02 | C\*07:04 | C\*16:01 | B\*44:02 | B\*44:03 | DRB5\*01:01 | DRB5\*01:01 | DRB1\*15:01 | DRB1\*15:01 | DQA1\*01:02 | DQA1\*01:02 | DQB1\*06:02 | DQB1\*06:02 | DPA1\*01:03 | DPA1\*01:03 | DPB1\*03:01 | DPB1\*04:01 |
+| 2 | A\*02:01 | A\*11:05 | C\*07:01 | C\*07:02 | B\*07:02 | B\*08:01 | DRB3\*01:01 | DRB4\*01:03 | DRB1\*03:01 | DRB1\*04:01 | DQA1\*03:03 | DQA1\*05:01 | DQB1\*02:01 | DQB1\*03:01 | DPA1\*01:03 | DPA1\*01:03 | DPB1\*04:01 | DPB1\*04:01 |
+| 3 | A\*02:01 | A\*26:18 | C\*02:02 | C\*03:04 | B\*27:05 | B\*54:01 | DRB3\*02:02 | DRB4\*01:03 | DRB1\*04:04 | DRB1\*14:54 | DQA1\*01:04 | DQA1\*03:01 | DQB1\*03:02 | DQB1\*05:02 | DPA1\*01:03 | DPA1\*02:02 | DPB1\*02:01 | DPB1\*05:01 |
+
+The
+[`HLA_columns_to_GLstring()`](https://immunogenetr.org/reference/HLA_columns_to_GLstring.md)
+function converts these columns into a single GL string per individual.
+When used inside
+[`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html), pass
+`.` as the first argument to reference the working data frame:
+
+``` r
+
+HLA_typing_GL <- HLA_typing_1 %>%
+  # Convert all typing columns (A1 through DPB1_2) into a GL string.
+  mutate(
+    GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = A1:DPB1_2),
+    .after = patient
+  ) %>%
+  # Keep only patient ID and the new GL string column.
+  select(patient, GL_string)
+
+# View the GL strings.
+(HLA_typing_GL)
+```
+
+| patient | GL_string |
+|---:|:---|
+| 1 | HLA-A\*24:02+HLA-A\*29:02^HLA-C\*07:04+HLA-C\*16:01^HLA-B\*44:02+HLA-B\*44:03^HLA-DRB5\*01:01+HLA-DRB5\*01:01^HLA-DRB1\*15:01+HLA-DRB1\*15:01^HLA-DQA1\*01:02+HLA-DQA1\*01:02^HLA-DQB1\*06:02+HLA-DQB1\*06:02^HLA-DPA1\*01:03+HLA-DPA1\*01:03^HLA-DPB1\*03:01+HLA-DPB1\*04:01 |
+| 2 | HLA-A\*02:01+HLA-A\*11:05^HLA-C\*07:01+HLA-C\*07:02^HLA-B\*07:02+HLA-B\*08:01^HLA-DRB3\*01:01^HLA-DRB4\*01:03^HLA-DRB1\*03:01+HLA-DRB1\*04:01^HLA-DQA1\*03:03+HLA-DQA1\*05:01^HLA-DQB1\*02:01+HLA-DQB1\*03:01^HLA-DPA1\*01:03+HLA-DPA1\*01:03^HLA-DPB1\*04:01+HLA-DPB1\*04:01 |
+| 3 | HLA-A\*02:01+HLA-A\*26:18^HLA-C\*02:02+HLA-C\*03:04^HLA-B\*27:05+HLA-B\*54:01^HLA-DRB3\*02:02^HLA-DRB4\*01:03^HLA-DRB1\*04:04+HLA-DRB1\*14:54^HLA-DQA1\*01:04+HLA-DQA1\*03:01^HLA-DQB1\*03:02+HLA-DQB1\*05:02^HLA-DPA1\*01:03+HLA-DPA1\*02:02^HLA-DPB1\*02:01+HLA-DPB1\*05:01 |
+| 4 | HLA-A\*29:02+HLA-A\*30:02^HLA-C\*06:02+HLA-C\*07:01^HLA-B\*08:01+HLA-B\*13:02^HLA-DRB4\*01:03+HLA-DRB4\*01:03^HLA-DRB1\*04:01+HLA-DRB1\*07:01^HLA-DQA1\*02:01+HLA-DQA1\*03:01^HLA-DQB1\*02:02+HLA-DQB1\*03:02^HLA-DPA1\*01:03+HLA-DPA1\*02:01^HLA-DPB1\*01:01+HLA-DPB1\*16:01 |
+| 5 | HLA-A\*02:05+HLA-A\*24:02^HLA-C\*07:18+HLA-C\*12:03^HLA-B\*35:03+HLA-B\*58:01^HLA-DRB3\*02:02+HLA-DRB3\*02:02^HLA-DRB1\*03:01+HLA-DRB1\*14:54^HLA-DQA1\*01:04+HLA-DQA1\*05:01^HLA-DQB1\*02:01+HLA-DQB1\*05:03^HLA-DPA1\*01:03+HLA-DPA1\*02:01^HLA-DPB1\*10:01+HLA-DPB1\*124:01 |
+| 6 | HLA-A\*01:01+HLA-A\*24:02^HLA-C\*07:01+HLA-C\*14:02^HLA-B\*49:01+HLA-B\*51:01^HLA-DRB3\*03:01^HLA-DRB1\*08:01+HLA-DRB1\*13:02^HLA-DQA1\*01:02+HLA-DQA1\*04:01^HLA-DQB1\*04:02+HLA-DQB1\*06:04^HLA-DPA1\*01:03+HLA-DPA1\*01:04^HLA-DPB1\*04:01+HLA-DPB1\*15:01 |
+| 7 | HLA-A\*03:01+HLA-A\*03:01^HLA-C\*03:03+HLA-C\*16:01^HLA-B\*15:01+HLA-B\*51:01^HLA-DRB4\*01:01^HLA-DRB1\*01:01+HLA-DRB1\*07:01^HLA-DQA1\*01:01+HLA-DQA1\*02:01^HLA-DQB1\*02:02+HLA-DQB1\*05:01^HLA-DPA1\*01:03+HLA-DPA1\*01:03^HLA-DPB1\*04:01+HLA-DPB1\*04:01 |
+| 8 | HLA-A\*01:01+HLA-A\*32:01^HLA-C\*06:02+HLA-C\*07:02^HLA-B\*08:01+HLA-B\*37:01^HLA-DRB3\*02:02^HLA-DRB5\*01:01^HLA-DRB1\*03:01+HLA-DRB1\*15:01^HLA-DQA1\*01:02+HLA-DQA1\*05:01^HLA-DQB1\*02:01+HLA-DQB1\*06:02^HLA-DPA1\*01:03+HLA-DPA1\*02:01^HLA-DPB1\*04:01+HLA-DPB1\*14:01 |
+| 9 | HLA-A\*03:01+HLA-A\*30:01^HLA-C\*07:02+HLA-C\*12:03^HLA-B\*07:02+HLA-B\*38:01^HLA-DRB3\*01:01^HLA-DRB5\*01:01^HLA-DRB1\*03:01+HLA-DRB1\*15:01^HLA-DQA1\*01:02+HLA-DQA1\*05:01^HLA-DQB1\*02:01+HLA-DQB1\*06:02^HLA-DPA1\*01:03+HLA-DPA1\*01:03^HLA-DPB1\*04:01+HLA-DPB1\*04:01 |
+| 10 | HLA-A\*02:05+HLA-A\*11:01^HLA-C\*07:18+HLA-C\*16:02^HLA-B\*51:01+HLA-B\*58:01^HLA-DRB3\*03:01^HLA-DRB5\*01:01^HLA-DRB1\*13:02+HLA-DRB1\*15:01^HLA-DQA1\*01:02+HLA-DQA1\*01:03^HLA-DQB1\*06:01+HLA-DQB1\*06:09^HLA-DPA1\*01:03+HLA-DPA1\*01:03^HLA-DPB1\*02:01+HLA-DPB1\*104:01 |
+
+Each GL string encodes the full genotype: alleles within a gene copy are
+separated by `/` (ambiguity), gene copies by `+`, and loci by `^`.
+
+## Splitting GL strings into loci
+
+To go the other direction,
+[`GLstring_genes()`](https://immunogenetr.org/reference/GLstring_genes.md)
+splits a GL string back into separate columns by locus:
+
+``` r
+
+# Take the first patient's GL string and split it into locus columns.
+# Note: GLstring_genes and GLstring_genes_expanded use pivot_longer on all
+# columns, so only pass the GL string column (no other data types).
+single_patient <- HLA_typing_GL[1, "GL_string", drop = FALSE]
+GLstring_genes(single_patient, "GL_string")
+```
+
+| HLA_A | HLA_C | HLA_B | HLA_DRB5 | HLA_DRB1 | HLA_DQA1 | HLA_DQB1 | HLA_DPA1 | HLA_DPB1 |
+|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| HLA-A\*24:02+HLA-A\*29:02 | HLA-C\*07:04+HLA-C\*16:01 | HLA-B\*44:02+HLA-B\*44:03 | HLA-DRB5\*01:01+HLA-DRB5\*01:01 | HLA-DRB1\*15:01+HLA-DRB1\*15:01 | HLA-DQA1\*01:02+HLA-DQA1\*01:02 | HLA-DQB1\*06:02+HLA-DQB1\*06:02 | HLA-DPA1\*01:03+HLA-DPA1\*01:03 | HLA-DPB1\*03:01+HLA-DPB1\*04:01 |
+
+For a fully expanded view with one allele per row, use
+[`GLstring_genes_expanded()`](https://immunogenetr.org/reference/GLstring_genes_expanded.md):
+
+``` r
+
+GLstring_genes_expanded(single_patient, "GL_string")
+```
+
+| A | C | B | DRB5 | DRB1 | DQA1 | DQB1 | DPA1 | DPB1 |
+|:---|:---|:---|:---|:---|:---|:---|:---|:---|
+| HLA-A\*24:02 | HLA-C\*07:04 | HLA-B\*44:02 | HLA-DRB5\*01:01 | HLA-DRB1\*15:01 | HLA-DQA1\*01:02 | HLA-DQB1\*06:02 | HLA-DPA1\*01:03 | HLA-DPB1\*03:01 |
+| HLA-A\*29:02 | HLA-C\*16:01 | HLA-B\*44:03 | HLA-DRB5\*01:01 | HLA-DRB1\*15:01 | HLA-DQA1\*01:02 | HLA-DQB1\*06:02 | HLA-DPA1\*01:03 | HLA-DPB1\*04:01 |
+
+## Calculating HLA mismatches
+
+The mismatch functions are the core of immunogenetr. They all take a
+recipient GL string, a donor GL string, one or more loci, and a
+direction.
+
+Let’s set up a recipient/donor pair:
+
+``` r
+
+# Patient 7 is the recipient, patient 9 is the donor.
+recip_gl <- HLA_typing_GL %>% filter(patient == 7) %>% pull(GL_string)
+donor_gl <- HLA_typing_GL %>% filter(patient == 9) %>% pull(GL_string)
+```
+
+### Is there a mismatch? (`HLA_mismatch_logical`)
+
+``` r
+
+# Check if there is an HLA-A mismatch in the graft-vs-host direction.
+HLA_mismatch_logical(recip_gl, donor_gl, "HLA-A", direction = "GvH")
+```
+
+    #> [1] FALSE
+
+``` r
+
+# Check host-vs-graft direction.
+HLA_mismatch_logical(recip_gl, donor_gl, "HLA-A", direction = "HvG")
+```
+
+    #> [1] TRUE
+
+### How many mismatches? (`HLA_mismatch_number`)
+
+``` r
+
+# Count bidirectional mismatches across several loci at once.
+HLA_mismatch_number(
+  recip_gl, donor_gl,
+  c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"),
+  direction = "bidirectional"
+)
+```
+
+    #> [1] "HLA-A=1, HLA-B=2, HLA-C=2, HLA-DRB1=2"
+
+### Which alleles are mismatched? (`HLA_mismatched_alleles`)
+
+``` r
+
+# Identify the specific mismatched alleles in the HvG direction.
+HLA_mismatched_alleles(recip_gl, donor_gl, "HLA-A", direction = "HvG")
+```
+
+    #> [1] "HLA-A*30:01"
+
+### Match count (`HLA_match_number`)
+
+``` r
+
+# Count the number of matches (complement of mismatches).
+HLA_match_number(
+  recip_gl, donor_gl,
+  c("HLA-A", "HLA-B", "HLA-C", "HLA-DRB1"),
+  direction = "bidirectional"
+)
+```
+
+    #> [1] "HLA-A=1, HLA-B=0, HLA-C=0, HLA-DRB1=0"
+
+## HLA match summaries for transplantation
+
+The
+[`HLA_match_summary_HCT()`](https://immunogenetr.org/reference/HLA_match_summary_HCT.md)
+function provides standard match grades used in hematopoietic cell
+transplantation:
+
+``` r
+
+# X-of-8 matching (A, B, C, DRB1 bidirectional).
+HLA_match_summary_HCT(recip_gl, donor_gl,
+  direction = "bidirectional",
+  match_grade = "Xof8"
+)
+```
+
+    #> [1] 1
+
+``` r
+
+# X-of-10 matching (adds DQB1).
+HLA_match_summary_HCT(recip_gl, donor_gl,
+  direction = "bidirectional",
+  match_grade = "Xof10"
+)
+```
+
+    #> [1] 1
+
+### Finding the best donor
+
+A common workflow is comparing one recipient against multiple potential
+donors:
+
+``` r
+
+# Patient 3 is the recipient; compare against all 10 donors.
+recipient <- HLA_typing_GL %>%
+  filter(patient == 3) %>%
+  select(GL_string) %>%
+  rename(GL_string_recip = GL_string)
+
+donors <- HLA_typing_GL %>%
+  rename(GL_string_donor = GL_string, donor = patient) %>%
+  # Cross-join to pair recipient with each donor.
+  cross_join(recipient) %>%
+  # Calculate 8/8 match grade for each pair.
+  mutate(
+    match_8of8 = HLA_match_summary_HCT(
+      GL_string_recip, GL_string_donor,
+      direction = "bidirectional",
+      match_grade = "Xof8"
+    ),
+    .after = donor
+  ) %>%
+  # Sort best matches first.
+  arrange(desc(match_8of8))
+
+donors %>% select(donor, match_8of8)
+```
+
+| donor | match_8of8 |
+|------:|-----------:|
+|     3 |          8 |
+|     2 |          1 |
+|     5 |          1 |
+|     1 |          0 |
+|     4 |          0 |
+|     6 |          0 |
+|     7 |          0 |
+|     8 |          0 |
+|     9 |          0 |
+|    10 |          0 |
+
+## Working with HLA allele names
+
+### Truncation
+
+[`HLA_truncate()`](https://immunogenetr.org/reference/HLA_truncate.md)
+reduces allele resolution to a specified number of fields:
+
+``` r
+
+# Truncate a four-field allele to two fields.
+HLA_truncate("HLA-A*02:01:01:01", fields = 2)
+```
+
+    #> [1] "HLA-A*02:01"
+
+``` r
+
+# Works on full GL strings too.
+HLA_truncate("HLA-A*02:01:01:01+HLA-A*03:01:01:02^HLA-B*07:02:01:01+HLA-B*44:02:01:01",
+  fields = 2
+)
+```
+
+    #> [1] "HLA-A*02:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
+
+### Prefix management
+
+[`HLA_prefix_remove()`](https://immunogenetr.org/reference/HLA_prefix_remove.md)
+and
+[`HLA_prefix_add()`](https://immunogenetr.org/reference/HLA_prefix_add.md)
+manage the `HLA-` and locus prefixes:
+
+``` r
+
+# Remove all prefixes to get just the allele fields.
+HLA_prefix_remove("HLA-A*02:01")
+```
+
+    #> [1] "02:01"
+
+``` r
+
+# Keep the locus designation but remove "HLA-".
+HLA_prefix_remove("HLA-A*02:01", keep_locus = TRUE)
+```
+
+    #> [1] "A*02:01"
+
+``` r
+
+# Add the full prefix back.
+HLA_prefix_add("02:01", "HLA-A*")
+```
+
+    #> [1] "HLA-A*02:01"
+
+``` r
+
+# "HLA-" is added by default.
+HLA_prefix_add("A*02:01")
+```
+
+    #> [1] "HLA-A*02:01"
+
+### Regex for GL string searching
+
+[`GLstring_regex()`](https://immunogenetr.org/reference/GLstring_regex.md)
+creates regex patterns that accurately search within GL strings,
+preventing partial matches across field boundaries:
+
+``` r
+
+gl <- "HLA-A*02:01:01+HLA-A*68:01^HLA-B*07:01+HLA-B*15:01"
+
+# A two-field search correctly matches the three-field allele.
+pattern <- GLstring_regex("HLA-A*02:01")
+stringr::str_detect(gl, pattern)
+```
+
+    #> [1] TRUE
+
+``` r
+
+# But won't falsely match a longer allele number.
+stringr::str_detect("HLA-A*02:149:01", GLstring_regex("HLA-A*02:14"))
+```
+
+    #> [1] FALSE
+
+## Column name repair
+
+When working in the tidyverse, column names with dashes and asterisks
+are inconvenient.
+[`HLA_column_repair()`](https://immunogenetr.org/reference/HLA_column_repair.md)
+converts between WHO-standard (`HLA-A*`) and tidyverse-friendly
+(`HLA_A`) formats:
+
+``` r
+
+# GLstring_genes returns tidyverse-friendly names by default.
+repaired <- GLstring_genes(single_patient, "GL_string")
+names(repaired)
+```
+
+    #> [1] "HLA_A"    "HLA_C"    "HLA_B"    "HLA_DRB5" "HLA_DRB1" "HLA_DQA1" "HLA_DQB1"
+    #> [8] "HLA_DPA1" "HLA_DPB1"
+
+``` r
+
+# Convert back to WHO format with asterisks.
+who_names <- HLA_column_repair(repaired, format = "WHO", asterisk = TRUE)
+names(who_names)
+```
+
+    #> [1] "HLA-A*"    "HLA-C*"    "HLA-B*"    "HLA-DRB5*" "HLA-DRB1*" "HLA-DQA1*"
+    #> [7] "HLA-DQB1*" "HLA-DPA1*" "HLA-DPB1*"
+
+## Reading HML files
+
+The [`read_HML()`](https://immunogenetr.org/reference/read_HML.md)
+function extracts GL strings from HML (HLA Markup Language) files, which
+are a standard format for reporting HLA typing results from
+next-generation sequencing:
+
+``` r
+
+# immunogenetr ships with two example HML files.
+hml_path <- system.file("extdata", "HML_1.hml", package = "immunogenetr")
+hml_result <- read_HML(hml_path)
+hml_result
+```
+
+| sampleID | GL_string |
+|:---|:---|
+| 22-03848-HLA-031722-AB-AlloSeq-EP | HLA-A\*33:03:01:01+HLA-A\*34:02:01:01^HLA-B\*14:01:01:01+HLA-B\*44:03:02:04^HLA-C\*07:06:01:01/HLA-C\*07:06:01:02/HLA-C\*07:06:01:03/HLA-C\*07:06:01:04/HLA-C\*07:06:01:07/HLA-C\*07:06:01:08/HLA-C\*07:06:01:09/HLA-C\*07:06:01:10/HLA-C\*07:06:01:11/HLA-C\*07:06:01:12/HLA-C\*07:06:01:06+HLA-C\*08:02:01:02^HLA-G\*01:01:09+HLA-G\*01:04:01:01^HLA-E\*01:01:01:01+HLA-E\*01:03:01:11^HLA-F\*01:01:02:10+HLA-F\*01:02:01:02^HLA-DRB1\*08:04:01:01/HLA-DRB1\*08:04:01:02/HLA-DRB1\*08:04:01:03/HLA-DRB1\*08:04:01:04/HLA-DRB1\*08:04:01:05+HLA-DRB1\*13:02:01:01/HLA-DRB1\*13:02:01:03/HLA-DRB1\*13:02:01:04/HLA-DRB1\*13:02:01:06/HLA-DRB1\*13:02:01:10/HLA-DRB1\*13:02:01:14^HLA-DRB3\*03:01:01:01/HLA-DRB3\*03:01:01:02/HLA-DRB3\*03:01:01:03/HLA-DRB3\*03:01:07/HLA-DRB3\*03:37/HLA-DRB3\*03:44/HLA-DRB3\*03:49+HLA-DRB3\*03:01:01:01/HLA-DRB3\*03:01:01:02/HLA-DRB3\*03:01:01:03/HLA-DRB3\*03:01:07/HLA-DRB3\*03:37/HLA-DRB3\*03:44/HLA-DRB3\*03:49^HLA-DQB1\*03:19:01:01+HLA-DQB1\*06:09:01:01^HLA-DQA1\*01:02:01:04+HLA-DQA1\*04:01:02:01/HLA-DQA1\*04:01:02:02^HLA-DPB1\*104:01:01:01/HLA-DPB1\*104:01:01:02/HLA-DPB1\*104:01:01:03/HLA-DPB1\*104:01:01:04/HLA-DPB1\*104:01:01:05/HLA-DPB1\*104:01:01:06/HLA-DPB1\*104:01:01:07/HLA-DPB1\*104:01:01:08/HLA-DPB1\*104:01:01:09/HLA-DPB1\*104:01:01:10/HLA-DPB1\*104:01:01:11/HLA-DPB1\*104:01:01:12/HLA-DPB1\*104:01:01:14+HLA-DPB1\*584:01:02:01/HLA-DPB1\*584:01:02:02^HLA-DPA1\*01:03:01:02/HLA-DPA1\*01:03:01:30/HLA-DPA1\*01:03:01:34/HLA-DPA1\*01:03:01:76/HLA-DPA1\*01:03:01:78+HLA-DPA1\*03:05:01:01Q/HLA-DPA1\*03:05:01:02Q^HLA-H\*02:08:01:01+HLA-H\*02:11:01:01^MICA\*004:01:01/MICA\*004:01:09/MICA\*004:01:10/MICA\*004:01:11/MICA\*004:01:02/MICA\*004:01:04/MICA\*004:01:05/MICA\*004:01:03/MICA\*004:01:06/MICA\*004:01:07/MICA\*004:01:08/MICA\*004:01:12/MICA\*004:01:13+MICA\*008:04:01/MICA\*008:04:04/MICA\*008:04:06^MICB\*002:01:18/MICB\*002:01:19/MICB\*002:01:20/MICB\*002:01:23/MICB\*002:01:26/MICB\*002:01:27+MICB\*005:02:05/MICB\*005:02:19/MICB\*005:02:27 |
+| 22-03849-HLA-031722-AB-AlloSeq-EP | HLA-A\*23:01:01:01+HLA-A\*30:01:01:01^HLA-B\*53:01:01:01+HLA-B\*81:01:01:01^HLA-C\*06:02:01:01/HLA-C\*06:02:01:72/HLA-C\*06:02:01:03/HLA-C\*06:02:01:05/HLA-C\*06:02:01:06/HLA-C\*06:02:01:08/HLA-C\*06:02:01:10/HLA-C\*06:02:01:11/HLA-C\*06:02:01:12/HLA-C\*06:02:01:13/HLA-C\*06:02:01:18/HLA-C\*06:02:01:21/HLA-C\*06:02:01:24/HLA-C\*06:02:01:25/HLA-C\*06:02:01:26/HLA-C\*06:02:01:27/HLA-C\*06:02:01:28/HLA-C\*06:02:01:29/HLA-C\*06:02:01:30/HLA-C\*06:02:01:31/HLA-C\*06:02:01:32/HLA-C\*06:02:01:34/HLA-C\*06:02:01:35/HLA-C\*06:02:01:36/HLA-C\*06:02:01:37/HLA-C\*06:02:01:38/HLA-C\*06:02:01:39/HLA-C\*06:02:01:44/HLA-C\*06:02:01:45/HLA-C\*06:02:01:48/HLA-C\*06:02:01:49/HLA-C\*06:02:01:51/HLA-C\*06:02:01:52/HLA-C\*06:02:01:54/HLA-C\*06:02:01:55/HLA-C\*06:02:01:56/HLA-C\*06:02:01:57/HLA-C\*06:02:01:58/HLA-C\*06:02:01:61/HLA-C\*06:02:01:62/HLA-C\*06:02:01:63/HLA-C\*06:02:01:65/HLA-C\*06:02:01:67/HLA-C\*06:02:01:68/HLA-C\*06:02:01:69/HLA-C\*06:02:01:73/HLA-C\*06:02:01:76/HLA-C\*06:02:01:77/HLA-C\*06:02:01:78/HLA-C\*06:02:01:81/HLA-C\*06:02:01:82/HLA-C\*06:02:01:83/HLA-C\*06:02:01:84/HLA-C\*06:02:01:85/HLA-C\*06:02:01:86/HLA-C\*06:02:01:88/HLA-C\*06:02:01:89/HLA-C\*06:02:01:90/HLA-C\*06:02:01:91/HLA-C\*06:02:01:92/HLA-C\*06:02:01:93/HLA-C\*06:02:01:94/HLA-C\*06:02:01:95/HLA-C\*06:02:01:96/HLA-C\*06:02:01:02/HLA-C\*06:02:01:04/HLA-C\*06:02:01:07/HLA-C\*06:02:01:09/HLA-C\*06:02:01:14/HLA-C\*06:02:01:16/HLA-C\*06:02:01:17/HLA-C\*06:02:01:19/HLA-C\*06:02:01:20/HLA-C\*06:02:01:22/HLA-C\*06:02:01:41/HLA-C\*06:02:01:42/HLA-C\*06:02:01:46/HLA-C\*06:02:01:47/HLA-C\*06:02:01:50/HLA-C\*06:02:01:53/HLA-C\*06:02:01:64/HLA-C\*06:02:01:66/HLA-C\*06:02:01:70/HLA-C\*06:02:01:71/HLA-C\*06:02:01:74/HLA-C\*06:02:01:75/HLA-C\*06:02:01:79/HLA-C\*06:02:01:80/HLA-C\*06:02:01:87/HLA-C\*06:02:01:97/HLA-C\*06:02:01:23/HLA-C\*06:02:01:59/HLA-C\*06:02:01:40/HLA-C\*06:02:01:60/HLA-C\*06:02:01:33/HLA-C\*06:02:01:15/HLA-C\*06:02:01:43+HLA-C\*08:04:01:01/HLA-C\*08:04:01:02/HLA-C\*08:04:01:03^HLA-G\*01:04:04:01+HLA-G\*01:05:01N^HLA-E\*01:01:01:01+HLA-E\*01:01:01:01^HLA-F\*01:01:01:09/HLA-F\*01:01:01:10/HLA-F\*01:01:01:11/HLA-F\*01:01:01:12/HLA-F\*01:01:01:27/HLA-F\*01:01:01:29/HLA-F\*01:01:01:42/HLA-F\*01:01:01:43/HLA-F\*01:01:01:07/HLA-F\*01:01:01:28/HLA-F\*01:01:01:36/HLA-F\*01:01:01:05/HLA-F\*01:01:01:03/HLA-F\*01:01:01:04/HLA-F\*01:01:01:16/HLA-F\*01:01:01:14/HLA-F\*01:01:01:18/HLA-F\*01:01:01:06/HLA-F\*01:01:01:17/HLA-F\*01:01:01:23/HLA-F\*01:01:01:24/HLA-F\*01:01:01:13/HLA-F\*01:01:01:22/HLA-F\*01:01:01:39/HLA-F\*01:01:01:01/HLA-F\*01:01:01:08/HLA-F\*01:01:01:02/HLA-F\*01:01:01:15/HLA-F\*01:01:01:19/HLA-F\*01:01:01:20/HLA-F\*01:01:01:21/HLA-F\*01:01:01:25/HLA-F\*01:01:01:26/HLA-F\*01:01:01:30/HLA-F\*01:01:01:31/HLA-F\*01:01:01:32/HLA-F\*01:01:01:33/HLA-F\*01:01:01:34/HLA-F\*01:01:01:35/HLA-F\*01:01:01:37/HLA-F\*01:01:01:38/HLA-F\*01:01:01:40/HLA-F\*01:01:01:41+HLA-F\*01:03:01:03^HLA-DRB1\*12:01:01:01/HLA-DRB1\*12:01:01:02/HLA-DRB1\*12:01:01:03/HLA-DRB1\*12:01:01:04/HLA-DRB1\*12:01:01:05/HLA-DRB1\*12:01:01:06/HLA-DRB1\*12:01:01:07/HLA-DRB1\*12:01:01:08/HLA-DRB1\*12:01:01:09/HLA-DRB1\*12:01:01:10/HLA-DRB1\*12:01:01:11/HLA-DRB1\*12:01:01:12/HLA-DRB1\*12:01:01:13/HLA-DRB1\*12:01:01:14+HLA-DRB1\*13:04^HLA-DRB3\*01:01:02:04/HLA-DRB3\*01:01:02:01/HLA-DRB3\*01:01:02:02/HLA-DRB3\*01:01:02:03/HLA-DRB3\*01:01:02:05/HLA-DRB3\*01:01:02:06/HLA-DRB3\*01:86/HLA-DRB3\*01:114/HLA-DRB3\*01:119+HLA-DRB3\*02:02:01:01/HLA-DRB3\*02:02:01:12/HLA-DRB3\*02:02:23/HLA-DRB3\*02:02:26/HLA-DRB3\*02:02:30/HLA-DRB3\*02:02:31/HLA-DRB3\*02:96/HLA-DRB3\*02:144/HLA-DRB3\*02:151/HLA-DRB3\*02:161/HLA-DRB3\*02:167/HLA-DRB3\*02:168/HLA-DRB3\*02:176/HLA-DRB3\*02:178/HLA-DRB3\*02:183/HLA-DRB3\*02:185/HLA-DRB3\*02:186/HLA-DRB3\*02:191^HLA-DQB1\*03:19:01:01+HLA-DQB1\*05:01:01:02/HLA-DQB1\*05:01:01:19^HLA-DQA1\*01:05:01:01+HLA-DQA1\*05:05:01:13/HLA-DQA1\*05:05:01:16/HLA-DQA1\*05:05:01:17/HLA-DQA1\*05:05:01:19/HLA-DQA1\*05:05:01:24/HLA-DQA1\*05:05:01:27/HLA-DQA1\*05:05:01:29/HLA-DQA1\*05:05:01:30/HLA-DQA1\*05:05:01:35/HLA-DQA1\*05:05:01:36/HLA-DQA1\*05:05:01:01/HLA-DQA1\*05:05:01:02/HLA-DQA1\*05:05:01:04/HLA-DQA1\*05:05:01:07/HLA-DQA1\*05:05:01:08/HLA-DQA1\*05:05:01:09/HLA-DQA1\*05:05:01:11/HLA-DQA1\*05:05:01:21/HLA-DQA1\*05:05:01:26/HLA-DQA1\*05:05:01:28/HLA-DQA1\*05:05:01:32/HLA-DQA1\*05:05:01:39/HLA-DQA1\*05:05:01:03/HLA-DQA1\*05:05:01:05/HLA-DQA1\*05:05:01:06/HLA-DQA1\*05:05:01:10/HLA-DQA1\*05:05:01:12/HLA-DQA1\*05:05:01:14/HLA-DQA1\*05:05:01:15/HLA-DQA1\*05:05:01:18/HLA-DQA1\*05:05:01:20/HLA-DQA1\*05:05:01:22/HLA-DQA1\*05:05:01:23/HLA-DQA1\*05:05:01:25/HLA-DQA1\*05:05:01:31/HLA-DQA1\*05:05:01:33/HLA-DQA1\*05:05:01:34/HLA-DQA1\*05:05:01:37/HLA-DQA1\*05:05:01:40/HLA-DQA1\*05:05:01:38^HLA-DPB1\*02:01:02:02/HLA-DPB1\*02:01:02:08/HLA-DPB1\*02:01:02:09/HLA-DPB1\*02:01:02:16/HLA-DPB1\*02:01:02:18/HLA-DPB1\*02:01:02:19/HLA-DPB1\*02:01:02:56/HLA-DPB1\*02:01:02:84+HLA-DPB1\*105:01:01:01/HLA-DPB1\*105:01:01:02/HLA-DPB1\*105:01:01:03/HLA-DPB1\*105:01:01:04/HLA-DPB1\*105:01:01:06/HLA-DPB1\*105:01:01:09/HLA-DPB1\*105:01:01:11/HLA-DPB1\*105:01:01:12/HLA-DPB1\*105:01:01:13/HLA-DPB1\*105:01:01:15/HLA-DPB1\*105:01:01:16/HLA-DPB1\*105:01:01:18^HLA-DPA1\*01:03:01:31+HLA-DPA1\*03:01:01:09^HLA-H\*02:05:01:03+HLA-H\*02:05:01:03^MICA\*008:04:03+MICA\*018:01:01/MICA\*018:01:03/MICA\*018:01:08/MICA\*018:01:12^MICB\*002:01:01/MICB\*002:01:02/MICB\*002:01:03/MICB\*002:01:04/MICB\*002:01:05/MICB\*002:01:06/MICB\*002:01:07/MICB\*002:01:09/MICB\*002:01:10/MICB\*002:01:15/MICB\*002:01:16/MICB\*002:01:21/MICB\*002:01:22/MICB\*002:01:11/MICB\*002:01:12/MICB\*002:01:13/MICB\*002:01:14/MICB\*002:01:28/MICB\*002:01:18/MICB\*002:01:19/MICB\*002:01:20/MICB\*002:01:23/MICB\*002:01:26/MICB\*002:01:27/MICB\*002:01:08/MICB\*002:01:17/MICB\*002:01:24/MICB\*002:01:25+MICB\*005:02:05/MICB\*005:02:19/MICB\*005:02:27 |
+| 22-03850-HLA-031722-AB-AlloSeq-EP | HLA-A\*02:01:01:01+HLA-A\*02:01:01:01^HLA-B\*35:01:01:06+HLA-B\*39:10:01^HLA-C\*04:01:01:14+HLA-C\*12:03:01:01^HLA-G\*01:01:01:01+HLA-G\*01:01:01:01^HLA-E\*01:01:01:01+HLA-E\*01:01:01:01^HLA-F\*01:01:01:01+HLA-F\*01:01:01:17^HLA-DRB1\*07:01:01:01/HLA-DRB1\*07:01:01:02/HLA-DRB1\*07:01:01:04/HLA-DRB1\*07:01:01:05/HLA-DRB1\*07:01:01:06/HLA-DRB1\*07:01:01:07/HLA-DRB1\*07:01:01:08/HLA-DRB1\*07:01:01:09/HLA-DRB1\*07:01:01:10/HLA-DRB1\*07:01:01:11/HLA-DRB1\*07:01:01:12/HLA-DRB1\*07:01:01:13/HLA-DRB1\*07:01:01:14/HLA-DRB1\*07:01:01:15/HLA-DRB1\*07:01:01:16/HLA-DRB1\*07:01:01:17/HLA-DRB1\*07:01:01:18/HLA-DRB1\*07:01:01:19/HLA-DRB1\*07:01:01:20/HLA-DRB1\*07:01:01:22/HLA-DRB1\*07:01:01:23/HLA-DRB1\*07:01:01:24/HLA-DRB1\*07:01:01:25/HLA-DRB1\*07:01:01:26/HLA-DRB1\*07:01:01:27/HLA-DRB1\*07:01:01:28/HLA-DRB1\*07:01:01:29+HLA-DRB1\*15:03:01:01/HLA-DRB1\*15:03:01:02/HLA-DRB1\*15:03:01:03/HLA-DRB1\*15:03:01:04^HLA-DRB4\*01:03:01:01/HLA-DRB4\*01:03:01:03/HLA-DRB4\*01:03:01:04/HLA-DRB4\*01:03:01:10/HLA-DRB4\*01:03:01:11/HLA-DRB4\*01:03:01:14/HLA-DRB4\*01:03:01:15/HLA-DRB4\*01:03:01:16/HLA-DRB4\*01:03:01:17/HLA-DRB4\*01:03:01:18/HLA-DRB4\*01:03:01:09/HLA-DRB4\*01:03:01:05/HLA-DRB4\*01:03:01:06/HLA-DRB4\*01:03:01:07/HLA-DRB4\*01:03:01:08/HLA-DRB4\*01:03:01:12+HLA-DRB4\*01:03:01:01/HLA-DRB4\*01:03:01:03/HLA-DRB4\*01:03:01:04/HLA-DRB4\*01:03:01:10/HLA-DRB4\*01:03:01:11/HLA-DRB4\*01:03:01:14/HLA-DRB4\*01:03:01:15/HLA-DRB4\*01:03:01:16/HLA-DRB4\*01:03:01:17/HLA-DRB4\*01:03:01:18/HLA-DRB4\*01:03:01:09/HLA-DRB4\*01:03:01:05/HLA-DRB4\*01:03:01:06/HLA-DRB4\*01:03:01:07/HLA-DRB4\*01:03:01:08/HLA-DRB4\*01:03:01:12^HLA-DRB5\*01:01:01:02/HLA-DRB5\*01:01:01:04/HLA-DRB5\*01:01:01:05/HLA-DRB5\*01:01:01:06+HLA-DRB5\*01:01:01:02/HLA-DRB5\*01:01:01:04/HLA-DRB5\*01:01:01:05/HLA-DRB5\*01:01:01:06/HLA-DRB5\*01:01:01:01/HLA-DRB5\*01:01:01:03^HLA-DQB1\*02:02:01:01/HLA-DQB1\*02:02:01:05/HLA-DQB1\*02:02:01:08/HLA-DQB1\*02:02:01:16/HLA-DQB1\*02:02:01:18+HLA-DQB1\*06:02:01:01/HLA-DQB1\*06:02:01:14/HLA-DQB1\*06:02:01:15/HLA-DQB1\*06:02:01:23/HLA-DQB1\*06:02:01:25/HLA-DQB1\*06:02:01:26/HLA-DQB1\*06:02:01:02/HLA-DQB1\*06:02:01:03/HLA-DQB1\*06:02:01:05/HLA-DQB1\*06:02:01:07/HLA-DQB1\*06:02:01:08/HLA-DQB1\*06:02:01:09/HLA-DQB1\*06:02:01:10/HLA-DQB1\*06:02:01:11/HLA-DQB1\*06:02:01:12/HLA-DQB1\*06:02:01:13/HLA-DQB1\*06:02:01:16/HLA-DQB1\*06:02:01:17/HLA-DQB1\*06:02:01:21/HLA-DQB1\*06:02:01:22/HLA-DQB1\*06:02:01:28/HLA-DQB1\*06:02:01:29/HLA-DQB1\*06:02:01:30/HLA-DQB1\*06:02:01:31/HLA-DQB1\*06:02:01:34/HLA-DQB1\*06:02:01:35/HLA-DQB1\*06:02:01:36/HLA-DQB1\*06:02:01:37/HLA-DQB1\*06:02:01:04/HLA-DQB1\*06:02:01:19/HLA-DQB1\*06:02:01:20/HLA-DQB1\*06:02:01:27/HLA-DQB1\*06:02:01:33/HLA-DQB1\*06:02:01:06/HLA-DQB1\*06:02:01:24^HLA-DQA1\*01:02:01:01/HLA-DQA1\*01:02:01:02/HLA-DQA1\*01:02:01:03/HLA-DQA1\*01:02:01:05/HLA-DQA1\*01:02:01:10/HLA-DQA1\*01:02:01:11/HLA-DQA1\*01:02:01:27/HLA-DQA1\*01:02:01:30+HLA-DQA1\*02:01:01:01/HLA-DQA1\*02:01:01:02/HLA-DQA1\*02:01:01:05^HLA-DPB1\*01:01:01:01/HLA-DPB1\*01:01:01:02/HLA-DPB1\*01:01:01:03/HLA-DPB1\*01:01:01:04/HLA-DPB1\*01:01:01:09/HLA-DPB1\*01:01:01:10/HLA-DPB1\*01:01:01:12/HLA-DPB1\*01:01:01:14/HLA-DPB1\*01:01:01:15/HLA-DPB1\*01:01:01:16/HLA-DPB1\*01:01:01:17/HLA-DPB1\*01:01:01:19/HLA-DPB1\*01:01:01:20/HLA-DPB1\*01:01:01:22/HLA-DPB1\*01:01:01:24/HLA-DPB1\*01:01:01:25+HLA-DPB1\*11:01:01:01/HLA-DPB1\*11:01:01:02/HLA-DPB1\*11:01:01:03\|HLA-DPB1\*417:01:01+HLA-DPB1\*654:01^HLA-DPA1\*02:01:01:01/HLA-DPA1\*02:01:01:06/HLA-DPA1\*02:01:01:16+HLA-DPA1\*02:02:02:09/HLA-DPA1\*02:02:02:12^HLA-H\*01:01:01:01+HLA-H\*01:01:01:01^MICA\*002:01:01/MICA\*002:01:11/MICA\*002:01:03/MICA\*002:01:05/MICA\*002:01:07/MICA\*002:01:08/MICA\*002:01:14/MICA\*002:01:15/MICA\*002:01:02/MICA\*002:01:04/MICA\*002:01:06/MICA\*002:01:09/MICA\*002:01:10/MICA\*002:01:12/MICA\*002:01:16/MICA\*002:01:13Q+MICA\*002:01:06^MICB\*005:02:01/MICB\*005:02:09/MICB\*005:02:15/MICB\*005:02:16/MICB\*005:02:24/MICB\*005:02:25/MICB\*005:02:30/MICB\*005:02:35/MICB\*005:02:03/MICB\*005:02:21/MICB\*005:02:05/MICB\*005:02:19/MICB\*005:02:27/MICB\*005:02:04/MICB\*005:02:17/MICB\*005:02:29/MICB\*005:02:07/MICB\*005:02:11/MICB\*005:02:18/MICB\*005:02:06/MICB\*005:02:08/MICB\*005:02:12/MICB\*005:02:22/MICB\*005:02:23/MICB\*005:02:02/MICB\*005:02:10/MICB\*005:02:13/MICB\*005:02:14/MICB\*005:02:20/MICB\*005:02:26/MICB\*005:02:31/MICB\*005:02:33/MICB\*005:02:34/MICB\*005:02:28/MICB\*005:02:32+MICB\*005:02:21/MICB\*005:02:01/MICB\*005:02:09/MICB\*005:02:15/MICB\*005:02:16/MICB\*005:02:24/MICB\*005:02:25/MICB\*005:02:30/MICB\*005:02:35/MICB\*005:02:03/MICB\*005:02:05/MICB\*005:02:19/MICB\*005:02:27/MICB\*005:02:04/MICB\*005:02:29/MICB\*005:02:17/MICB\*005:02:07/MICB\*005:02:11/MICB\*005:02:18/MICB\*005:02:06/MICB\*005:02:08/MICB\*005:02:12/MICB\*005:02:22/MICB\*005:02:23/MICB\*005:02:02/MICB\*005:02:10/MICB\*005:02:13/MICB\*005:02:14/MICB\*005:02:20/MICB\*005:02:26/MICB\*005:02:31/MICB\*005:02:33/MICB\*005:02:34/MICB\*005:02:28/MICB\*005:02:32 |
+| 22-03851-HLA-031722-AB-AlloSeq-EP | HLA-A\*02:01:01:01+HLA-A\*23:01:01:01^HLA-B\*45:01:01:03/HLA-B\*45:01:01:14/HLA-B\*45:01:01:01/HLA-B\*45:01:01:04/HLA-B\*45:01:01:05/HLA-B\*45:01:01:06/HLA-B\*45:01:01:07/HLA-B\*45:01:01:08/HLA-B\*45:01:01:10/HLA-B\*45:01:01:11/HLA-B\*45:01:01:12/HLA-B\*45:01:01:13/HLA-B\*45:01:01:09+HLA-B\*58:113^HLA-C\*07:18:01:01/HLA-C\*07:18:01:02/HLA-C\*07:18:01:03/HLA-C\*07:18:01:04/HLA-C\*07:18:01:05/HLA-C\*07:18:01:06/HLA-C\*07:18:01:07/HLA-C\*07:18:01:08/HLA-C\*07:18:01:09/HLA-C\*07:18:01:10/HLA-C\*07:18:01:11/HLA-C\*07:18:01:12+HLA-C\*16:01:01:01^HLA-G\*01:01:01:01+HLA-G\*01:04:04:01^HLA-E\*01:01:01:01+HLA-E\*01:03:02:01^HLA-F\*01:01:01:01+HLA-F\*01:03:01:03^HLA-DRB1\*03:01:01:01/HLA-DRB1\*03:01:01:02/HLA-DRB1\*03:01:01:03/HLA-DRB1\*03:01:01:04/HLA-DRB1\*03:01:01:05/HLA-DRB1\*03:01:01:06/HLA-DRB1\*03:01:01:07/HLA-DRB1\*03:01:01:08/HLA-DRB1\*03:01:01:09/HLA-DRB1\*03:01:01:10/HLA-DRB1\*03:01:01:11/HLA-DRB1\*03:01:01:12/HLA-DRB1\*03:01:01:13/HLA-DRB1\*03:01:01:14/HLA-DRB1\*03:01:01:15/HLA-DRB1\*03:01:01:16/HLA-DRB1\*03:01:01:17/HLA-DRB1\*03:01:01:18/HLA-DRB1\*03:01:01:19/HLA-DRB1\*03:01:01:20/HLA-DRB1\*03:01:01:21/HLA-DRB1\*03:01:01:22/HLA-DRB1\*03:01:01:23/HLA-DRB1\*03:01:01:24/HLA-DRB1\*03:01:01:26/HLA-DRB1\*03:01:01:27/HLA-DRB1\*03:01:31/HLA-DRB1\*03:147+HLA-DRB1\*11:02:01:01/HLA-DRB1\*11:02:01:02/HLA-DRB1\*11:02:01:03/HLA-DRB1\*11:02:01:04/HLA-DRB1\*11:02:01:05^HLA-DRB3\*02:02:01:01/HLA-DRB3\*02:02:01:12/HLA-DRB3\*02:02:23/HLA-DRB3\*02:02:26/HLA-DRB3\*02:02:30/HLA-DRB3\*02:02:31/HLA-DRB3\*02:96/HLA-DRB3\*02:144/HLA-DRB3\*02:151/HLA-DRB3\*02:161/HLA-DRB3\*02:167/HLA-DRB3\*02:168/HLA-DRB3\*02:176/HLA-DRB3\*02:178/HLA-DRB3\*02:183/HLA-DRB3\*02:185/HLA-DRB3\*02:186/HLA-DRB3\*02:191/HLA-DRB3\*02:02:01:15/HLA-DRB3\*02:02:01:03/HLA-DRB3\*02:02:01:10/HLA-DRB3\*02:02:01:11/HLA-DRB3\*02:02:01:13/HLA-DRB3\*02:02:01:14/HLA-DRB3\*02:02:01:02/HLA-DRB3\*02:02:01:04/HLA-DRB3\*02:02:01:05/HLA-DRB3\*02:02:01:06/HLA-DRB3\*02:02:01:07/HLA-DRB3\*02:02:01:08/HLA-DRB3\*02:02:01:09/HLA-DRB3\*02:02:01:16/HLA-DRB3\*02:02:01:17+HLA-DRB3\*02:02:01:15^HLA-DQB1\*02:01:01:01/HLA-DQB1\*02:01:01:11/HLA-DQB1\*02:01:01:12+HLA-DQB1\*03:19:01:01^HLA-DQA1\*05:01:01:01/HLA-DQA1\*05:01:01:03+HLA-DQA1\*05:05:01:13/HLA-DQA1\*05:05:01:16/HLA-DQA1\*05:05:01:17/HLA-DQA1\*05:05:01:19/HLA-DQA1\*05:05:01:24/HLA-DQA1\*05:05:01:27/HLA-DQA1\*05:05:01:29/HLA-DQA1\*05:05:01:30/HLA-DQA1\*05:05:01:35/HLA-DQA1\*05:05:01:36^HLA-DPB1\*01:01:01:01/HLA-DPB1\*01:01:01:02/HLA-DPB1\*01:01:01:03/HLA-DPB1\*01:01:01:04/HLA-DPB1\*01:01:01:09/HLA-DPB1\*01:01:01:10/HLA-DPB1\*01:01:01:12/HLA-DPB1\*01:01:01:14/HLA-DPB1\*01:01:01:15/HLA-DPB1\*01:01:01:16/HLA-DPB1\*01:01:01:17/HLA-DPB1\*01:01:01:19/HLA-DPB1\*01:01:01:20/HLA-DPB1\*01:01:01:22/HLA-DPB1\*01:01:01:24/HLA-DPB1\*01:01:01:25+HLA-DPB1\*02:01:02:03/HLA-DPB1\*02:01:02:26/HLA-DPB1\*02:01:02:28/HLA-DPB1\*02:01:02:47/HLA-DPB1\*02:01:02:50/HLA-DPB1\*02:01:02:86^HLA-DPA1\*01:03:01:01/HLA-DPA1\*01:03:01:11/HLA-DPA1\*01:03:01:19/HLA-DPA1\*01:03:01:33/HLA-DPA1\*01:03:01:35/HLA-DPA1\*01:03:01:36/HLA-DPA1\*01:03:01:45/HLA-DPA1\*01:03:01:72/HLA-DPA1\*01:03:01:77/HLA-DPA1\*01:03:01:79/HLA-DPA1\*01:03:01:81+HLA-DPA1\*02:01:08:01/HLA-DPA1\*02:01:08:03^HLA-H\*01:01:01:05+HLA-H\*01:01:01:05^MICA\*002:01:03/MICA\*002:01:07/MICA\*002:01:08/MICA\*002:01:14/MICA\*002:01:15+MICA\*015:01^MICB\*002:01:28+MICB\*008:01:01/MICB\*008:01:02/MICB\*008:01:03/MICB\*008:01:04/MICB\*008:01:05/MICB\*008:01:06/MICB\*008:01:07/MICB\*008:01:08/MICB\*008:01:09/MICB\*008:01:10/MICB\*008:01:11 |
+| 22-03852-HLA-031722-AB-AlloSeq-EP | HLA-A\*33:01:01:01+HLA-A\*33:03:01:01/HLA-A\*33:03:01:02/HLA-A\*33:03:01:03/HLA-A\*33:03:01:06/HLA-A\*33:03:01:07/HLA-A\*33:03:01:08/HLA-A\*33:03:01:09/HLA-A\*33:03:01:10/HLA-A\*33:03:01:11/HLA-A\*33:03:01:12/HLA-A\*33:03:01:13/HLA-A\*33:03:01:14/HLA-A\*33:03:01:16/HLA-A\*33:03:01:17/HLA-A\*33:03:01:18/HLA-A\*33:03:01:19/HLA-A\*33:03:01:20/HLA-A\*33:03:01:23/HLA-A\*33:03:01:25/HLA-A\*33:03:01:26/HLA-A\*33:03:01:22/HLA-A\*33:03:01:04/HLA-A\*33:03:01:15^HLA-B\*14:02:01:01+HLA-B\*35:01:01:05^HLA-C\*04:01:01:14+HLA-C\*08:02:01:01^HLA-G\*01:03:01:02+HLA-G\*01:04:01:01^HLA-E\*01:01:01:01+HLA-E\*01:01:01:01^HLA-F\*01:01:02:03/HLA-F\*01:01:02:02/HLA-F\*01:01:02:07/HLA-F\*01:01:02:01/HLA-F\*01:01:02:08/HLA-F\*01:01:02:11/HLA-F\*01:01:02:13/HLA-F\*01:01:02:12/HLA-F\*01:01:02:09/HLA-F\*01:01:02:05/HLA-F\*01:01:02:06/HLA-F\*01:01:02:10/HLA-F\*01:01:02:04/HLA-F\*01:01:02:14+HLA-F\*01:01:02:10\|HLA-F\*01:01:02:05/HLA-F\*01:01:02:06/HLA-F\*01:01:02:10/HLA-F\*01:01:02:04/HLA-F\*01:01:02:14/HLA-F\*01:01:02:01/HLA-F\*01:01:02:03/HLA-F\*01:01:02:08/HLA-F\*01:01:02:02/HLA-F\*01:01:02:07/HLA-F\*01:01:02:13/HLA-F\*01:01:02:11/HLA-F\*01:01:02:12/HLA-F\*01:01:02:09+HLA-F\*01:01:02:07^HLA-DRB1\*03:02:01:01/HLA-DRB1\*03:02:01:02+HLA-DRB1\*11:02:01:01/HLA-DRB1\*11:02:01:02/HLA-DRB1\*11:02:01:03/HLA-DRB1\*11:02:01:04/HLA-DRB1\*11:02:01:05^HLA-DRB3\*01:62:01:01/HLA-DRB3\*01:62:01:02+HLA-DRB3\*02:02:01:01/HLA-DRB3\*02:02:01:12/HLA-DRB3\*02:02:23/HLA-DRB3\*02:02:26/HLA-DRB3\*02:02:30/HLA-DRB3\*02:02:31/HLA-DRB3\*02:96/HLA-DRB3\*02:144/HLA-DRB3\*02:151/HLA-DRB3\*02:161/HLA-DRB3\*02:167/HLA-DRB3\*02:168/HLA-DRB3\*02:176/HLA-DRB3\*02:178/HLA-DRB3\*02:183/HLA-DRB3\*02:185/HLA-DRB3\*02:186/HLA-DRB3\*02:191^HLA-DQB1\*03:19:01:01+HLA-DQB1\*04:02:01:08^HLA-DQA1\*04:01:01:04/HLA-DQA1\*04:01:01:05/HLA-DQA1\*04:01:01:11+HLA-DQA1\*05:05:01:13/HLA-DQA1\*05:05:01:16/HLA-DQA1\*05:05:01:17/HLA-DQA1\*05:05:01:19/HLA-DQA1\*05:05:01:24/HLA-DQA1\*05:05:01:27/HLA-DQA1\*05:05:01:29/HLA-DQA1\*05:05:01:30/HLA-DQA1\*05:05:01:35/HLA-DQA1\*05:05:01:36^HLA-DPB1\*01:01:01:01/HLA-DPB1\*01:01:01:02/HLA-DPB1\*01:01:01:03/HLA-DPB1\*01:01:01:04/HLA-DPB1\*01:01:01:09/HLA-DPB1\*01:01:01:10/HLA-DPB1\*01:01:01:12/HLA-DPB1\*01:01:01:14/HLA-DPB1\*01:01:01:15/HLA-DPB1\*01:01:01:16/HLA-DPB1\*01:01:01:17/HLA-DPB1\*01:01:01:19/HLA-DPB1\*01:01:01:20/HLA-DPB1\*01:01:01:22/HLA-DPB1\*01:01:01:24/HLA-DPB1\*01:01:01:25+HLA-DPB1\*01:01:02:01/HLA-DPB1\*01:01:02:02/HLA-DPB1\*01:01:02:03^HLA-DPA1\*02:01:01:02+HLA-DPA1\*02:02:02:12^HLA-H\*02:08:01:01+HLA-H\*02:12^MICA\*011:01:01/MICA\*011:01:06/MICA\*011:01:08+MICA\*110^MICB\*005:02:05/MICB\*005:02:19/MICB\*005:02:27+MICB\*008:01:01/MICB\*008:01:02/MICB\*008:01:03/MICB\*008:01:04/MICB\*008:01:05/MICB\*008:01:06/MICB\*008:01:07/MICB\*008:01:08/MICB\*008:01:09/MICB\*008:01:10/MICB\*008:01:11 |
+
+## Disclaimer
+
+This library is intended for research use. Any application making use of
+this package in a clinical setting will need to be independently
+validated according to local regulations.
