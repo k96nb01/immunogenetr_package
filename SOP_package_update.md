@@ -154,11 +154,13 @@ Use the report to identify uncovered lines and decide whether to add tests or ma
 
 ### 2.7 Update the vignette (if applicable)
 
-If your changes affect the user-facing workflow, update `vignettes/immunogenetr.Rmd`. Build and preview it with:
+If your changes affect the user-facing workflow, update `vignettes/immunogenetr.Rmd`. Preview it with:
 
 ```r
-devtools::build_vignettes()
+pkgdown::build_article("immunogenetr")
 ```
+
+(`devtools::build_vignettes()` is deprecated as of devtools 2.5.0 — it left build artifacts in the development directory. `pkgdown::build_article()` renders a single article into the pkgdown site for local preview.)
 
 **Note on `devtools::check()` and vignettes.** Building the vignette requires `pandoc`. RStudio bundles it, so running `devtools::check()` from the RStudio Console or Terminal works out of the box. If you run `devtools::check()` from a plain R session outside RStudio (e.g. `Rscript -e "devtools::check()"` from cmd), the vignette build may fail with `Pandoc is required to build R Markdown vignettes`. Workarounds:
 
@@ -515,7 +517,7 @@ The `docs/` directory is gitignored — only the `gh-pages` branch (built by CI 
 | Run R CMD check | `devtools::check()` |
 | Check code coverage | `covr::package_coverage()` |
 | Interactive coverage report | `covr::report()` |
-| Build vignettes | `devtools::build_vignettes()` |
+| Preview a vignette | `pkgdown::build_article("immunogenetr")` |
 | Knit README | `devtools::build_readme()` |
 | Create release checklist | `usethis::use_release_issue()` |
 | Bump version | `usethis::use_version("patch")` |

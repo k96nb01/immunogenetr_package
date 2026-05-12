@@ -1,6 +1,8 @@
 ---
 title: "Getting Started with immunogenetr"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    df_print: kable
 vignette: >
   %\VignetteIndexEntry{Getting Started with immunogenetr}
   %\VignetteEngine{knitr::rmarkdown}
@@ -9,9 +11,23 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
+  collapse = FALSE,
   comment = "#>"
 )
+
+# Render data frames and tibbles as HTML tables in chunk output, instead of
+# the default monospace console-style print. The kable HTML is wrapped in a
+# pandoc raw-HTML block (```{=html} ... ```) so pandoc passes the content
+# through verbatim. Without this, pandoc's markdown_in_html_blocks extension
+# re-parses the cell contents as markdown, turning "^...^" in GL strings
+# into <sup>...</sup>.
+knit_print.data.frame <- function(x, ...) {
+  html <- as.character(knitr::kable(x, format = "html"))
+  knitr::asis_output(paste0("\n```{=html}\n", html, "\n```\n"))
+}
+registerS3method("knit_print", "data.frame", knit_print.data.frame, envir = asNamespace("knitr"))
+registerS3method("knit_print", "tbl_df",     knit_print.data.frame, envir = asNamespace("knitr"))
+registerS3method("knit_print", "tbl",        knit_print.data.frame, envir = asNamespace("knitr"))
 ```
 
 ## Overview
