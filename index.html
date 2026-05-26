@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>A Comprehensive Toolkit for Clinical HLA Informatics • immunogenetr</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="A Comprehensive Toolkit for Clinical HLA Informatics">
 <meta name="description" content="A comprehensive toolkit for clinical Human Leukocyte Antigen (HLA) informatics, built on tidyverse &lt;https://tidyverse.tidyverse.org/&gt; principles and making use of genotype list string (GL string, Mack et al. (2023) &lt;doi:10.1111/tan.15126&gt;) for storing and computing HLA genotype data. Specific functionalities include: coercion of HLA data in tabular format to and from GL string; calculation of matching and mismatching in all directions, with multiple output formats; automatic formatting of HLA data for searching within a GL string; truncation of molecular HLA data to a specific number of fields; and reading HLA genotypes in HML files and extracting the GL string. This library is intended for research use. Any application making use of this package in a clinical setting will need to be independently validated according to local regulations.">
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">immunogenetr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,7 +48,7 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="immunogenetr-">immunogenetr <img src="reference/figures/immunogenetr_sticker.png" align="right" width="120" height="139" style="height:139px; width:auto; max-width:120px;" alt="immunogenetr hex sticker"><a class="anchor" aria-label="anchor" href="#immunogenetr-"></a>
+<div class="page-header"><h1 id="immunogenetr-">immunogenetr <img src="reference/figures/immunogenetr_sticker.png" align="right" height="139"><a class="anchor" aria-label="anchor" href="#immunogenetr-"></a>
 </h1></div>
 <!-- badges: start -->
 
@@ -92,10 +92,10 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://immunogenetr.org">immunogenetr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># The "HLA_typing_1" dataset is installed with immunogenetr, and contains high resolution typing at all classical </span></span>
+<span><span class="co"># The "HLA_typing_1" dataset is installed with immunogenetr, and contains high resolution typing at all classical</span></span>
 <span><span class="co"># HLA loci for ten individuals.</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">HLA_typing_1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">kable_hla</span><span class="op">(</span><span class="va">HLA_typing_1</span><span class="op">)</span></span></code></pre></div>
 <table style="width:100%;" class="table">
 <colgroup>
 <col width="5%">
@@ -354,14 +354,14 @@
 </table>
 <p>immunogenetr uses genotype list strings (GL strings) for most functions, including the matching and mismatching functions. To easily convert the genotypes found in “HLA_typing_1” to GL strings we can use the <code>HLA_columns_to_GLstring</code> function:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">HLA_typing_1_GLstring</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>GL_string <span class="op">=</span> <span class="fu"><a href="reference/HLA_columns_to_GLstring.html">HLA_columns_to_GLstring</a></span><span class="op">(</span><span class="va">.</span>, HLA_typing_columns <span class="op">=</span> <span class="va">A1</span><span class="op">:</span><span class="va">DPB1_2</span><span class="op">)</span>, .after <span class="op">=</span> <span class="va">patient</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="co"># Note the syntax for the `HLA_columns_to_GLstring` arguments - when this function is used inside </span></span>
-<span>  <span class="co"># of a `mutate` function to make a new column in a data frame, "." is used in the first argument </span></span>
+<code class="sourceCode R"><span><span class="va">HLA_typing_1_GLstring</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">mutate</span><span class="op">(</span>GL_string <span class="op">=</span> <span class="fu"><a href="reference/HLA_columns_to_GLstring.html">HLA_columns_to_GLstring</a></span><span class="op">(</span><span class="va">.</span>, HLA_typing_columns <span class="op">=</span> <span class="va">A1</span><span class="op">:</span><span class="va">DPB1_2</span><span class="op">)</span>, .after <span class="op">=</span> <span class="va">patient</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="co"># Note the syntax for the `HLA_columns_to_GLstring` arguments - when this function is used inside</span></span>
+<span>  <span class="co"># of a `mutate` function to make a new column in a data frame, "." is used in the first argument</span></span>
 <span>  <span class="co"># to tell the function to use the working data frame as the source of the HLA typing columns.</span></span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="va">patient</span>, <span class="va">GL_string</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">HLA_typing_1_GLstring</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">kable_hla</span><span class="op">(</span><span class="va">HLA_typing_1_GLstring</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="50%">
@@ -374,65 +374,65 @@
 <tbody>
 <tr>
 <td align="right">1</td>
-<td align="left"><code>HLA-A*24:02+HLA-A*29:02^HLA-C*07:04+HLA-C*16:01^HLA-B*44:02+HLA-B*44:03^HLA-DRB3*01:01+HLA-DRB3*01:01^HLA-DRB1*15:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*01:02^HLA-DQB1*06:02+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*03:01+HLA-DPB1*04:01</code></td>
+<td align="left">HLA-A*24:02+HLA-A*29:02<sup>HLA-C<em>07:04+HLA-C</em>16:01</sup>HLA-B*44:02+HLA-B*44:03<sup>HLA-DRB5<em>01:01+HLA-DRB5</em>01:01</sup>HLA-DRB1*15:01+HLA-DRB1*15:01<sup>HLA-DQA1<em>01:02+HLA-DQA1</em>01:02</sup>HLA-DQB1*06:02+HLA-DQB1*06:02<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:03</sup>HLA-DPB1*03:01+HLA-DPB1*04:01</td>
 </tr>
 <tr>
 <td align="right">2</td>
-<td align="left"><code>HLA-A*02:01+HLA-A*11:05^HLA-C*07:01+HLA-C*07:02^HLA-B*07:02+HLA-B*08:01^HLA-DRB3*01:01+HLA-DRB3*01:03^HLA-DRB1*03:01+HLA-DRB1*04:01^HLA-DQA1*03:03+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*03:01^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
+<td align="left">HLA-A*02:01+HLA-A*11:05<sup>HLA-C<em>07:01+HLA-C</em>07:02</sup>HLA-B*07:02+HLA-B*08:01<sup>HLA-DRB3*01:01</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>04:01</sup>HLA-DQA1*03:03+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>03:01</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</td>
 </tr>
 <tr>
 <td align="right">3</td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">4</td>
-<td align="left"><code>HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB3*01:03+HLA-DRB3*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01</code></td>
+<td align="left">HLA-A*29:02+HLA-A*30:02<sup>HLA-C<em>06:02+HLA-C</em>07:01</sup>HLA-B*08:01+HLA-B*13:02<sup>HLA-DRB4<em>01:03+HLA-DRB4</em>01:03</sup>HLA-DRB1*04:01+HLA-DRB1*07:01<sup>HLA-DQA1<em>02:01+HLA-DQA1</em>03:01</sup>HLA-DQB1*02:02+HLA-DQB1*03:02<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>02:01</sup>HLA-DPB1*01:01+HLA-DPB1*16:01</td>
 </tr>
 <tr>
 <td align="right">5</td>
-<td align="left"><code>HLA-A*02:05+HLA-A*24:02^HLA-C*07:18+HLA-C*12:03^HLA-B*35:03+HLA-B*58:01^HLA-DRB3*02:02+HLA-DRB3*02:02^HLA-DRB1*03:01+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*05:03^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*10:01+HLA-DPB1*124:01</code></td>
+<td align="left">HLA-A*02:05+HLA-A*24:02<sup>HLA-C<em>07:18+HLA-C</em>12:03</sup>HLA-B*35:03+HLA-B*58:01<sup>HLA-DRB3<em>02:02+HLA-DRB3</em>02:02</sup>HLA-DRB1*03:01+HLA-DRB1*14:54<sup>HLA-DQA1<em>01:04+HLA-DQA1</em>05:01</sup>HLA-DQB1*02:01+HLA-DQB1*05:03<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>02:01</sup>HLA-DPB1*10:01+HLA-DPB1*124:01</td>
 </tr>
 <tr>
 <td align="right">6</td>
-<td align="left"><code>HLA-A*01:01+HLA-A*24:02^HLA-C*07:01+HLA-C*14:02^HLA-B*49:01+HLA-B*51:01^HLA-DRB3*03:01^HLA-DRB1*08:01+HLA-DRB1*13:02^HLA-DQA1*01:02+HLA-DQA1*04:01^HLA-DQB1*04:02+HLA-DQB1*06:04^HLA-DPA1*01:03+HLA-DPA1*01:04^HLA-DPB1*04:01+HLA-DPB1*15:01</code></td>
+<td align="left">HLA-A*01:01+HLA-A*24:02<sup>HLA-C<em>07:01+HLA-C</em>14:02</sup>HLA-B*49:01+HLA-B*51:01<sup>HLA-DRB3*03:01</sup>HLA-DRB1*08:01+HLA-DRB1*13:02<sup>HLA-DQA1<em>01:02+HLA-DQA1</em>04:01</sup>HLA-DQB1*04:02+HLA-DQB1*06:04<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:04</sup>HLA-DPB1*04:01+HLA-DPB1*15:01</td>
 </tr>
 <tr>
 <td align="right">7</td>
-<td align="left"><code>HLA-A*03:01+HLA-A*03:01^HLA-C*03:03+HLA-C*16:01^HLA-B*15:01+HLA-B*51:01^HLA-DRB3*01:01^HLA-DRB1*01:01+HLA-DRB1*07:01^HLA-DQA1*01:01+HLA-DQA1*02:01^HLA-DQB1*02:02+HLA-DQB1*05:01^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
+<td align="left">HLA-A*03:01+HLA-A*03:01<sup>HLA-C<em>03:03+HLA-C</em>16:01</sup>HLA-B*15:01+HLA-B*51:01<sup>HLA-DRB4*01:01</sup>HLA-DRB1*01:01+HLA-DRB1*07:01<sup>HLA-DQA1<em>01:01+HLA-DQA1</em>02:01</sup>HLA-DQB1*02:02+HLA-DQB1*05:01<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:03</sup>HLA-DPB1*04:01+HLA-DPB1*04:01</td>
 </tr>
 <tr>
 <td align="right">8</td>
-<td align="left"><code>HLA-A*01:01+HLA-A*32:01^HLA-C*06:02+HLA-C*07:02^HLA-B*08:01+HLA-B*37:01^HLA-DRB3*02:02+HLA-DRB3*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*04:01+HLA-DPB1*14:01</code></td>
+<td align="left">HLA-A*01:01+HLA-A*32:01<sup>HLA-C<em>06:02+HLA-C</em>07:02</sup>HLA-B*08:01+HLA-B*37:01<sup>HLA-DRB3*02:02</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>06:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*04:01+HLA-DPB1*14:01</td>
 </tr>
 <tr>
 <td align="right">9</td>
-<td align="left"><code>HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01+HLA-DRB3*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
+<td align="left">HLA-A*03:01+HLA-A*30:01<sup>HLA-C<em>07:02+HLA-C</em>12:03</sup>HLA-B*07:02+HLA-B*38:01<sup>HLA-DRB3*01:01</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>06:02</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</td>
 </tr>
 <tr>
 <td align="right">10</td>
-<td align="left"><code>HLA-A*02:05+HLA-A*11:01^HLA-C*07:18+HLA-C*16:02^HLA-B*51:01+HLA-B*58:01^HLA-DRB3*03:01+HLA-DRB3*01:01^HLA-DRB1*13:02+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*01:03^HLA-DQB1*06:01+HLA-DQB1*06:09^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*02:01+HLA-DPB1*104:01</code></td>
+<td align="left">HLA-A*02:05+HLA-A*11:01<sup>HLA-C<em>07:18+HLA-C</em>16:02</sup>HLA-B*51:01+HLA-B*58:01<sup>HLA-DRB3*03:01</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>13:02+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*01:03<sup>HLA-DQB1<em>06:01+HLA-DQB1</em>06:09</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*02:01+HLA-DPB1*104:01</td>
 </tr>
 </tbody>
 </table>
 <p>The “HLA_typing_1_GLstring” data frame now contains a row with a GL string for each individual, containing their full HLA genotype in a single string. Let’s select one individual to act as a recipient, and one to act as a donor.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Select one case each for recipient and donor.</span></span>
-<span><span class="va">HLA_typing_1_GLstring_recipient</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_GLstring</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient</span> <span class="op">==</span> <span class="fl">7</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span><span class="va">HLA_typing_1_GLstring_recipient</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_GLstring</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient</span> <span class="op">==</span> <span class="fl">7</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">rename</span><span class="op">(</span>GL_string_recipient <span class="op">=</span> <span class="va">GL_string</span>, case <span class="op">=</span> <span class="va">patient</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">HLA_typing_1_GLstring_donor</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_GLstring</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient</span> <span class="op">==</span> <span class="fl">9</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">rename</span><span class="op">(</span>GL_string_donor <span class="op">=</span> <span class="va">GL_string</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span><span class="va">HLA_typing_1_GLstring_donor</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_GLstring</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient</span> <span class="op">==</span> <span class="fl">9</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">rename</span><span class="op">(</span>GL_string_donor <span class="op">=</span> <span class="va">GL_string</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">select</span><span class="op">(</span><span class="op">-</span><span class="va">patient</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Combine the tables so recipient and donor are on the same row.</span></span>
 <span><span class="va">HLA_typing_1_recip_donor</span> <span class="op">&lt;-</span> <span class="fu">bind_cols</span><span class="op">(</span></span>
-<span>  <span class="va">HLA_typing_1_GLstring_recipient</span>, </span>
+<span>  <span class="va">HLA_typing_1_GLstring_recipient</span>,</span>
 <span>  <span class="va">HLA_typing_1_GLstring_donor</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">kable_hla</span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="33%">
@@ -446,27 +446,27 @@
 </tr></thead>
 <tbody><tr>
 <td align="right">7</td>
-<td align="left"><code>HLA-A*03:01+HLA-A*03:01^HLA-C*03:03+HLA-C*16:01^HLA-B*15:01+HLA-B*51:01^HLA-DRB3*01:01^HLA-DRB1*01:01+HLA-DRB1*07:01^HLA-DQA1*01:01+HLA-DQA1*02:01^HLA-DQB1*02:02+HLA-DQB1*05:01^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
-<td align="left"><code>HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01+HLA-DRB3*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
+<td align="left">HLA-A*03:01+HLA-A*03:01<sup>HLA-C<em>03:03+HLA-C</em>16:01</sup>HLA-B*15:01+HLA-B*51:01<sup>HLA-DRB4*01:01</sup>HLA-DRB1*01:01+HLA-DRB1*07:01<sup>HLA-DQA1<em>01:01+HLA-DQA1</em>02:01</sup>HLA-DQB1*02:02+HLA-DQB1*05:01<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:03</sup>HLA-DPB1*04:01+HLA-DPB1*04:01</td>
+<td align="left">HLA-A*03:01+HLA-A*30:01<sup>HLA-C<em>07:02+HLA-C</em>12:03</sup>HLA-B*07:02+HLA-B*38:01<sup>HLA-DRB3*01:01</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>06:02</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</td>
 </tr></tbody>
 </table>
 <p>We now have a data frame with a recipient and donor HLA genotype on one row. Let’s try out some of the mismatching functions on this data.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">HLA_typing_1_recip_donor_mismatches</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_recip_donor</span> <span class="op">%&gt;%</span> </span>
+<code class="sourceCode R"><span><span class="va">HLA_typing_1_recip_donor_mismatches</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_recip_donor</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>A_MM_GvH <span class="op">=</span> <span class="fu"><a href="reference/HLA_mismatch_logical.html">HLA_mismatch_logical</a></span><span class="op">(</span></span>
-<span>                      <span class="va">GL_string_recipient</span>, </span>
-<span>                      <span class="va">GL_string_donor</span>, </span>
-<span>                      <span class="st">"HLA-A"</span>, </span>
-<span>                      direction <span class="op">=</span> <span class="st">"GvH"</span><span class="op">)</span>, </span>
-<span>                    .after <span class="op">=</span> <span class="va">case</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span>                      <span class="va">GL_string_recipient</span>,</span>
+<span>                      <span class="va">GL_string_donor</span>,</span>
+<span>                      <span class="st">"HLA-A"</span>,</span>
+<span>                      direction <span class="op">=</span> <span class="st">"GvH"</span><span class="op">)</span>,</span>
+<span>                    .after <span class="op">=</span> <span class="va">case</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>A_MM_HvG <span class="op">=</span> <span class="fu"><a href="reference/HLA_mismatch_logical.html">HLA_mismatch_logical</a></span><span class="op">(</span></span>
-<span>                      <span class="va">GL_string_recipient</span>, </span>
-<span>                      <span class="va">GL_string_donor</span>, </span>
-<span>                      <span class="st">"HLA-A"</span>, </span>
-<span>                      direction <span class="op">=</span> <span class="st">"HvG"</span><span class="op">)</span>, </span>
+<span>                      <span class="va">GL_string_recipient</span>,</span>
+<span>                      <span class="va">GL_string_donor</span>,</span>
+<span>                      <span class="st">"HLA-A"</span>,</span>
+<span>                      direction <span class="op">=</span> <span class="st">"HvG"</span><span class="op">)</span>,</span>
 <span>                    .after <span class="op">=</span> <span class="va">A_MM_GvH</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor_mismatches</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">kable_hla</span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor_mismatches</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="20%">
@@ -484,23 +484,23 @@
 </tr></thead>
 <tbody><tr>
 <td align="right">7</td>
+<td align="left">FALSE</td>
 <td align="left">TRUE</td>
-<td align="left">TRUE</td>
-<td align="left"><code>HLA-A*03:01+HLA-A*03:01^HLA-C*03:03+HLA-C*16:01^HLA-B*15:01+HLA-B*51:01^HLA-DRB3*01:01^HLA-DRB1*01:01+HLA-DRB1*07:01^HLA-DQA1*01:01+HLA-DQA1*02:01^HLA-DQB1*02:02+HLA-DQB1*05:01^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
-<td align="left"><code>HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01+HLA-DRB3*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
+<td align="left">HLA-A*03:01+HLA-A*03:01<sup>HLA-C<em>03:03+HLA-C</em>16:01</sup>HLA-B*15:01+HLA-B*51:01<sup>HLA-DRB4*01:01</sup>HLA-DRB1*01:01+HLA-DRB1*07:01<sup>HLA-DQA1<em>01:01+HLA-DQA1</em>02:01</sup>HLA-DQB1*02:02+HLA-DQB1*05:01<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:03</sup>HLA-DPB1*04:01+HLA-DPB1*04:01</td>
+<td align="left">HLA-A*03:01+HLA-A*30:01<sup>HLA-C<em>07:02+HLA-C</em>12:03</sup>HLA-B*07:02+HLA-B*38:01<sup>HLA-DRB3*01:01</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>06:02</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</td>
 </tr></tbody>
 </table>
 <p>The <code>HLA_mismatch_logical</code> function determines if there are any mismatches at a particular locus. We’ve determined that at the HLA-A locus there are not any mismatches in the graft-versus-host direction, but are in the host-versus-graft direction. We can use the <code>HLA_mismatched_alleles</code> function to tell us what those mismatches are:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">HLA_typing_1_recip_donor_mismatched_allles</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_recip_donor</span> <span class="op">%&gt;%</span> </span>
+<code class="sourceCode R"><span><span class="va">HLA_typing_1_recip_donor_mismatched_allles</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_recip_donor</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>A_HvG_MMs <span class="op">=</span> <span class="fu"><a href="reference/HLA_mismatched_alleles.html">HLA_mismatched_alleles</a></span><span class="op">(</span></span>
-<span>                        <span class="va">GL_string_recipient</span>, </span>
-<span>                        <span class="va">GL_string_donor</span>, </span>
-<span>                        <span class="st">"HLA-A"</span>, </span>
-<span>                        direction <span class="op">=</span> <span class="st">"HvG"</span><span class="op">)</span>, </span>
+<span>                        <span class="va">GL_string_recipient</span>,</span>
+<span>                        <span class="va">GL_string_donor</span>,</span>
+<span>                        <span class="st">"HLA-A"</span>,</span>
+<span>                        direction <span class="op">=</span> <span class="st">"HvG"</span><span class="op">)</span>,</span>
 <span>                      .after <span class="op">=</span> <span class="va">case</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor_mismatched_allles</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">kable_hla</span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor_mismatched_allles</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -517,22 +517,22 @@
 <tbody><tr>
 <td align="right">7</td>
 <td align="left">HLA-A*30:01</td>
-<td align="left"><code>HLA-A*03:01+HLA-A*03:01^HLA-C*03:03+HLA-C*16:01^HLA-B*15:01+HLA-B*51:01^HLA-DRB3*01:01^HLA-DRB1*01:01+HLA-DRB1*07:01^HLA-DQA1*01:01+HLA-DQA1*02:01^HLA-DQB1*02:02+HLA-DQB1*05:01^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
-<td align="left"><code>HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01+HLA-DRB3*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
+<td align="left">HLA-A*03:01+HLA-A*03:01<sup>HLA-C<em>03:03+HLA-C</em>16:01</sup>HLA-B*15:01+HLA-B*51:01<sup>HLA-DRB4*01:01</sup>HLA-DRB1*01:01+HLA-DRB1*07:01<sup>HLA-DQA1<em>01:01+HLA-DQA1</em>02:01</sup>HLA-DQB1*02:02+HLA-DQB1*05:01<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:03</sup>HLA-DPB1*04:01+HLA-DPB1*04:01</td>
+<td align="left">HLA-A*03:01+HLA-A*30:01<sup>HLA-C<em>07:02+HLA-C</em>12:03</sup>HLA-B*07:02+HLA-B*38:01<sup>HLA-DRB3*01:01</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>06:02</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</td>
 </tr></tbody>
 </table>
 <p>The <code>HLA_mismatched_alleles</code> function reported that the “HLA-A*30:01” allele was mismatched in the HvG direction. Sometimes, however, we simply want to know how many mismatches are at a particular locus. We can do that with the <code>HLA_mismatch_number</code> function:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Determine the number of bidirectional mismatches at several loci.</span></span>
-<span><span class="va">HLA_typing_1_recip_donor_MM_number</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_recip_donor</span> <span class="op">%&gt;%</span> </span>
+<span><span class="va">HLA_typing_1_recip_donor_MM_number</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_recip_donor</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>ABCDRB1_MM <span class="op">=</span> <span class="fu"><a href="reference/HLA_mismatch_number.html">HLA_mismatch_number</a></span><span class="op">(</span></span>
-<span>                        <span class="va">GL_string_recipient</span>, </span>
-<span>                        <span class="va">GL_string_donor</span>, </span>
-<span>                        <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HLA-A"</span>, <span class="st">"HLA-B"</span>, <span class="st">"HLA-C"</span>, <span class="st">"HLA-DRB1"</span><span class="op">)</span>, </span>
-<span>                        direction <span class="op">=</span> <span class="st">"bidirectional"</span><span class="op">)</span>, </span>
+<span>                        <span class="va">GL_string_recipient</span>,</span>
+<span>                        <span class="va">GL_string_donor</span>,</span>
+<span>                        <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"HLA-A"</span>, <span class="st">"HLA-B"</span>, <span class="st">"HLA-C"</span>, <span class="st">"HLA-DRB1"</span><span class="op">)</span>,</span>
+<span>                        direction <span class="op">=</span> <span class="st">"bidirectional"</span><span class="op">)</span>,</span>
 <span>                      .after <span class="op">=</span> <span class="va">case</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor_MM_number</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">kable_hla</span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor_MM_number</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -548,23 +548,23 @@
 </tr></thead>
 <tbody><tr>
 <td align="right">7</td>
-<td align="left">HLA-A=1</td>
-<td align="left"><code>HLA-A*03:01+HLA-A*03:01^HLA-C*03:03+HLA-C*16:01^HLA-B*15:01+HLA-B*51:01^HLA-DRB3*01:01^HLA-DRB1*01:01+HLA-DRB1*07:01^HLA-DQA1*01:01+HLA-DQA1*02:01^HLA-DQB1*02:02+HLA-DQB1*05:01^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
-<td align="left"><code>HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01+HLA-DRB3*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
+<td align="left">HLA-A=1, HLA-B=2, HLA-C=2, HLA-DRB1=2</td>
+<td align="left">HLA-A*03:01+HLA-A*03:01<sup>HLA-C<em>03:03+HLA-C</em>16:01</sup>HLA-B*15:01+HLA-B*51:01<sup>HLA-DRB4*01:01</sup>HLA-DRB1*01:01+HLA-DRB1*07:01<sup>HLA-DQA1<em>01:01+HLA-DQA1</em>02:01</sup>HLA-DQB1*02:02+HLA-DQB1*05:01<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:03</sup>HLA-DPB1*04:01+HLA-DPB1*04:01</td>
+<td align="left">HLA-A*03:01+HLA-A*30:01<sup>HLA-C<em>07:02+HLA-C</em>12:03</sup>HLA-B*07:02+HLA-B*38:01<sup>HLA-DRB3*01:01</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>06:02</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</td>
 </tr></tbody>
 </table>
 <p>We might want to calculate an HLA match summary for stem cell transplantation. We can use the <code>HLA_match_summarry_HCT</code> function for this:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># The match_grade argument of "Xof8" will return the number of matches at the HLA-A, B, C, and DRB1 loci.</span></span>
-<span><span class="va">HLA_typing_1_recip_donor_8of8_matching</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_recip_donor</span> <span class="op">%&gt;%</span> </span>
+<span><span class="va">HLA_typing_1_recip_donor_8of8_matching</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_recip_donor</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>ABCDRB1_matching <span class="op">=</span> <span class="fu"><a href="reference/HLA_match_summary_HCT.html">HLA_match_summary_HCT</a></span><span class="op">(</span></span>
-<span>                              <span class="va">GL_string_recipient</span>, </span>
-<span>                              <span class="va">GL_string_donor</span>, </span>
-<span>                              direction <span class="op">=</span> <span class="st">"bidirectional"</span>, </span>
-<span>                              match_grade <span class="op">=</span> <span class="st">"Xof8"</span><span class="op">)</span>, </span>
+<span>                              <span class="va">GL_string_recipient</span>,</span>
+<span>                              <span class="va">GL_string_donor</span>,</span>
+<span>                              direction <span class="op">=</span> <span class="st">"bidirectional"</span>,</span>
+<span>                              match_grade <span class="op">=</span> <span class="st">"Xof8"</span><span class="op">)</span>,</span>
 <span>                            .after <span class="op">=</span> <span class="va">case</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor_8of8_matching</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">kable_hla</span><span class="op">(</span><span class="va">HLA_typing_1_recip_donor_8of8_matching</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -581,31 +581,31 @@
 <tbody><tr>
 <td align="right">7</td>
 <td align="right">1</td>
-<td align="left"><code>HLA-A*03:01+HLA-A*03:01^HLA-C*03:03+HLA-C*16:01^HLA-B*15:01+HLA-B*51:01^HLA-DRB3*01:01^HLA-DRB1*01:01+HLA-DRB1*07:01^HLA-DQA1*01:01+HLA-DQA1*02:01^HLA-DQB1*02:02+HLA-DQB1*05:01^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
-<td align="left"><code>HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01+HLA-DRB3*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
+<td align="left">HLA-A*03:01+HLA-A*03:01<sup>HLA-C<em>03:03+HLA-C</em>16:01</sup>HLA-B*15:01+HLA-B*51:01<sup>HLA-DRB4*01:01</sup>HLA-DRB1*01:01+HLA-DRB1*07:01<sup>HLA-DQA1<em>01:01+HLA-DQA1</em>02:01</sup>HLA-DQB1*02:02+HLA-DQB1*05:01<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:03</sup>HLA-DPB1*04:01+HLA-DPB1*04:01</td>
+<td align="left">HLA-A*03:01+HLA-A*30:01<sup>HLA-C<em>07:02+HLA-C</em>12:03</sup>HLA-B*07:02+HLA-B*38:01<sup>HLA-DRB3*01:01</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>06:02</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</td>
 </tr></tbody>
 </table>
 <p>Clearly, this recipient and donor are not a great match. Let’s see how we could use this workflow to find the best-matched donor from several options. To do this, we’ll choose a case from “HLA_typing_1” and compare it to all the cases in that data set:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Select one case to be the recipient.</span></span>
-<span><span class="va">HLA_typing_1_GLstring_candidate</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_GLstring</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient</span> <span class="op">==</span> <span class="fl">3</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">select</span><span class="op">(</span><span class="va">GL_string</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span><span class="va">HLA_typing_1_GLstring_candidate</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_GLstring</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">patient</span> <span class="op">==</span> <span class="fl">3</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="va">GL_string</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">rename</span><span class="op">(</span>GL_string_recip <span class="op">=</span> <span class="va">GL_string</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Join the recipient to the 10-donor list and perform matching</span></span>
-<span><span class="va">HLA_typing_1_GLstring_donors</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_GLstring</span> <span class="op">%&gt;%</span> </span>
-<span>  <span class="fu">rename</span><span class="op">(</span>GL_string_donor <span class="op">=</span> <span class="va">GL_string</span>, donor <span class="op">=</span> <span class="va">patient</span><span class="op">)</span> <span class="op">%&gt;%</span> </span>
+<span><span class="va">HLA_typing_1_GLstring_donors</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1_GLstring</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">rename</span><span class="op">(</span>GL_string_donor <span class="op">=</span> <span class="va">GL_string</span>, donor <span class="op">=</span> <span class="va">patient</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">cross_join</span><span class="op">(</span><span class="va">HLA_typing_1_GLstring_candidate</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">mutate</span><span class="op">(</span>ABCDRB1_matching <span class="op">=</span> <span class="fu"><a href="reference/HLA_match_summary_HCT.html">HLA_match_summary_HCT</a></span><span class="op">(</span></span>
-<span>                              <span class="va">GL_string_recip</span>, </span>
-<span>                              <span class="va">GL_string_donor</span>, </span>
-<span>                              direction <span class="op">=</span> <span class="st">"bidirectional"</span>, </span>
-<span>                              match_grade <span class="op">=</span> <span class="st">"Xof8"</span><span class="op">)</span>, </span>
+<span>                              <span class="va">GL_string_recip</span>,</span>
+<span>                              <span class="va">GL_string_donor</span>,</span>
+<span>                              direction <span class="op">=</span> <span class="st">"bidirectional"</span>,</span>
+<span>                              match_grade <span class="op">=</span> <span class="st">"Xof8"</span><span class="op">)</span>,</span>
 <span>                            .after <span class="op">=</span> <span class="va">donor</span><span class="op">)</span> <span class="op">%&gt;%</span></span>
 <span>  <span class="fu">arrange</span><span class="op">(</span><span class="fu">desc</span><span class="op">(</span><span class="va">ABCDRB1_matching</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">HLA_typing_1_GLstring_donors</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">kable_hla</span><span class="op">(</span><span class="va">HLA_typing_1_GLstring_donors</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -623,62 +623,62 @@
 <tr>
 <td align="right">3</td>
 <td align="right">8</td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">2</td>
 <td align="right">1</td>
-<td align="left"><code>HLA-A*02:01+HLA-A*11:05^HLA-C*07:01+HLA-C*07:02^HLA-B*07:02+HLA-B*08:01^HLA-DRB3*01:01+HLA-DRB3*01:03^HLA-DRB1*03:01+HLA-DRB1*04:01^HLA-DQA1*03:03+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*03:01^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*02:01+HLA-A*11:05<sup>HLA-C<em>07:01+HLA-C</em>07:02</sup>HLA-B*07:02+HLA-B*08:01<sup>HLA-DRB3*01:01</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>04:01</sup>HLA-DQA1*03:03+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>03:01</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">5</td>
 <td align="right">1</td>
-<td align="left"><code>HLA-A*02:05+HLA-A*24:02^HLA-C*07:18+HLA-C*12:03^HLA-B*35:03+HLA-B*58:01^HLA-DRB3*02:02+HLA-DRB3*02:02^HLA-DRB1*03:01+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*05:03^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*10:01+HLA-DPB1*124:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*02:05+HLA-A*24:02<sup>HLA-C<em>07:18+HLA-C</em>12:03</sup>HLA-B*35:03+HLA-B*58:01<sup>HLA-DRB3<em>02:02+HLA-DRB3</em>02:02</sup>HLA-DRB1*03:01+HLA-DRB1*14:54<sup>HLA-DQA1<em>01:04+HLA-DQA1</em>05:01</sup>HLA-DQB1*02:01+HLA-DQB1*05:03<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>02:01</sup>HLA-DPB1*10:01+HLA-DPB1*124:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">1</td>
 <td align="right">0</td>
-<td align="left"><code>HLA-A*24:02+HLA-A*29:02^HLA-C*07:04+HLA-C*16:01^HLA-B*44:02+HLA-B*44:03^HLA-DRB3*01:01+HLA-DRB3*01:01^HLA-DRB1*15:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*01:02^HLA-DQB1*06:02+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*03:01+HLA-DPB1*04:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*24:02+HLA-A*29:02<sup>HLA-C<em>07:04+HLA-C</em>16:01</sup>HLA-B*44:02+HLA-B*44:03<sup>HLA-DRB5<em>01:01+HLA-DRB5</em>01:01</sup>HLA-DRB1*15:01+HLA-DRB1*15:01<sup>HLA-DQA1<em>01:02+HLA-DQA1</em>01:02</sup>HLA-DQB1*06:02+HLA-DQB1*06:02<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:03</sup>HLA-DPB1*03:01+HLA-DPB1*04:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">4</td>
 <td align="right">0</td>
-<td align="left"><code>HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB3*01:03+HLA-DRB3*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01^HLA-DQA1*02:01+HLA-DQA1*03:01^HLA-DQB1*02:02+HLA-DQB1*03:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*01:01+HLA-DPB1*16:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*29:02+HLA-A*30:02<sup>HLA-C<em>06:02+HLA-C</em>07:01</sup>HLA-B*08:01+HLA-B*13:02<sup>HLA-DRB4<em>01:03+HLA-DRB4</em>01:03</sup>HLA-DRB1*04:01+HLA-DRB1*07:01<sup>HLA-DQA1<em>02:01+HLA-DQA1</em>03:01</sup>HLA-DQB1*02:02+HLA-DQB1*03:02<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>02:01</sup>HLA-DPB1*01:01+HLA-DPB1*16:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">6</td>
 <td align="right">0</td>
-<td align="left"><code>HLA-A*01:01+HLA-A*24:02^HLA-C*07:01+HLA-C*14:02^HLA-B*49:01+HLA-B*51:01^HLA-DRB3*03:01^HLA-DRB1*08:01+HLA-DRB1*13:02^HLA-DQA1*01:02+HLA-DQA1*04:01^HLA-DQB1*04:02+HLA-DQB1*06:04^HLA-DPA1*01:03+HLA-DPA1*01:04^HLA-DPB1*04:01+HLA-DPB1*15:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*01:01+HLA-A*24:02<sup>HLA-C<em>07:01+HLA-C</em>14:02</sup>HLA-B*49:01+HLA-B*51:01<sup>HLA-DRB3*03:01</sup>HLA-DRB1*08:01+HLA-DRB1*13:02<sup>HLA-DQA1<em>01:02+HLA-DQA1</em>04:01</sup>HLA-DQB1*04:02+HLA-DQB1*06:04<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:04</sup>HLA-DPB1*04:01+HLA-DPB1*15:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">7</td>
 <td align="right">0</td>
-<td align="left"><code>HLA-A*03:01+HLA-A*03:01^HLA-C*03:03+HLA-C*16:01^HLA-B*15:01+HLA-B*51:01^HLA-DRB3*01:01^HLA-DRB1*01:01+HLA-DRB1*07:01^HLA-DQA1*01:01+HLA-DQA1*02:01^HLA-DQB1*02:02+HLA-DQB1*05:01^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*03:01+HLA-A*03:01<sup>HLA-C<em>03:03+HLA-C</em>16:01</sup>HLA-B*15:01+HLA-B*51:01<sup>HLA-DRB4*01:01</sup>HLA-DRB1*01:01+HLA-DRB1*07:01<sup>HLA-DQA1<em>01:01+HLA-DQA1</em>02:01</sup>HLA-DQB1*02:02+HLA-DQB1*05:01<sup>HLA-DPA1<em>01:03+HLA-DPA1</em>01:03</sup>HLA-DPB1*04:01+HLA-DPB1*04:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">8</td>
 <td align="right">0</td>
-<td align="left"><code>HLA-A*01:01+HLA-A*32:01^HLA-C*06:02+HLA-C*07:02^HLA-B*08:01+HLA-B*37:01^HLA-DRB3*02:02+HLA-DRB3*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*04:01+HLA-DPB1*14:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*01:01+HLA-A*32:01<sup>HLA-C<em>06:02+HLA-C</em>07:02</sup>HLA-B*08:01+HLA-B*37:01<sup>HLA-DRB3*02:02</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>06:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*04:01+HLA-DPB1*14:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">9</td>
 <td align="right">0</td>
-<td align="left"><code>HLA-A*03:01+HLA-A*30:01^HLA-C*07:02+HLA-C*12:03^HLA-B*07:02+HLA-B*38:01^HLA-DRB3*01:01+HLA-DRB3*01:01^HLA-DRB1*03:01+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*05:01^HLA-DQB1*02:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*03:01+HLA-A*30:01<sup>HLA-C<em>07:02+HLA-C</em>12:03</sup>HLA-B*07:02+HLA-B*38:01<sup>HLA-DRB3*01:01</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>03:01+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*05:01<sup>HLA-DQB1<em>02:01+HLA-DQB1</em>06:02</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*04:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 <tr>
 <td align="right">10</td>
 <td align="right">0</td>
-<td align="left"><code>HLA-A*02:05+HLA-A*11:01^HLA-C*07:18+HLA-C*16:02^HLA-B*51:01+HLA-B*58:01^HLA-DRB3*03:01+HLA-DRB3*01:01^HLA-DRB1*13:02+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*01:03^HLA-DQB1*06:01+HLA-DQB1*06:09^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*02:01+HLA-DPB1*104:01</code></td>
-<td align="left"><code>HLA-A*02:01+HLA-A*26:18^HLA-C*02:02+HLA-C*03:04^HLA-B*27:05+HLA-B*54:01^HLA-DRB3*02:02+HLA-DRB3*01:03^HLA-DRB1*04:04+HLA-DRB1*14:54^HLA-DQA1*01:04+HLA-DQA1*03:01^HLA-DQB1*03:02+HLA-DQB1*05:02^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</code></td>
+<td align="left">HLA-A*02:05+HLA-A*11:01<sup>HLA-C<em>07:18+HLA-C</em>16:02</sup>HLA-B*51:01+HLA-B*58:01<sup>HLA-DRB3*03:01</sup>HLA-DRB5*01:01<sup>HLA-DRB1<em>13:02+HLA-DRB1</em>15:01</sup>HLA-DQA1*01:02+HLA-DQA1*01:03<sup>HLA-DQB1<em>06:01+HLA-DQB1</em>06:09</sup>HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*02:01+HLA-DPB1*104:01</td>
+<td align="left">HLA-A*02:01+HLA-A*26:18<sup>HLA-C<em>02:02+HLA-C</em>03:04</sup>HLA-B*27:05+HLA-B*54:01<sup>HLA-DRB3*02:02</sup>HLA-DRB4*01:03<sup>HLA-DRB1<em>04:04+HLA-DRB1</em>14:54</sup>HLA-DQA1*01:04+HLA-DQA1*03:01<sup>HLA-DQB1<em>03:02+HLA-DQB1</em>05:02</sup>HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*02:01+HLA-DPB1*05:01</td>
 </tr>
 </tbody>
 </table>

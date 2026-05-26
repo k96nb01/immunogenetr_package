@@ -34,21 +34,46 @@ directory and build tools are configured correctly.
 
 ### 1.2 Pull the latest changes
 
-Make sure you’re working from the current state of the repository:
+Make sure you’re working from the current state of the repository. The
+default branch is `master`:
 
 ``` bash
 # In the terminal:
-git checkout main
-git pull origin main
+git checkout master
+git pull origin master
 ```
 
-### 1.3 Create a development branch
+### 1.3 Create or refresh the development branch
 
-Never work directly on `main`. Create a `dev` branch on the GitHub
-website.
+Never work directly on `master`. Use a `dev` branch.
 
-Switch to the `dev` branch in RStudio and pull from github to get up to
-date.
+The `dev` branch typically persists across release cycles: after each
+release is merged to `master` via pull request, the same `dev` branch is
+reused for the next round of work. So when you start a new cycle, the
+branch probably already exists but is behind `master`. You have two
+cases:
+
+- **`dev` already exists (typical case).** Fast-forward it to `master`
+  so you start from the latest state:
+
+  ``` bash
+  git checkout dev
+  git pull origin dev           # sync local dev with remote dev
+  git merge master --ff-only    # advance dev to master's tip
+  ```
+
+- **`dev` does not exist yet (first cycle).** Create it from `master`:
+
+  ``` bash
+  git checkout -b dev
+  git push -u origin dev
+  ```
+
+Either way, confirm you’re on `dev` before you start making changes:
+
+``` bash
+git branch --show-current       # should print: dev
+```
 
 ### 1.4 Load the package for interactive development
 
@@ -178,6 +203,20 @@ left build artifacts in the development directory.
 [`pkgdown::build_article()`](https://pkgdown.r-lib.org/reference/build_articles.html)
 renders a single article into the pkgdown site for local preview.)
 
+**Note on `devtools::check()` and vignettes.** Building the vignette
+requires `pandoc`. RStudio bundles it, so running `devtools::check()`
+from the RStudio Console or Terminal works out of the box. If you run
+`devtools::check()` from a plain R session outside RStudio
+(e.g. `Rscript -e "devtools::check()"` from cmd), the vignette build may
+fail with `Pandoc is required to build R Markdown vignettes`.
+Workarounds:
+
+- Run the check from RStudio (simplest).
+- Or install `pandoc` separately and make sure it’s on `PATH`.
+- Or skip the vignette during an interim check:
+  `devtools::check(vignettes = FALSE)`. This is fine for iterating; you
+  still want a full check (vignettes included) before pushing.
+
 ### 2.8 Update the README (if applicable)
 
 The README is generated from `README.Rmd`. If you change it, re-knit:
@@ -210,36 +249,63 @@ keys). Stage specific files rather than using `git add .` or
 ### 3.2 Push the branch to GitHub
 
 ``` bash
-# First push (sets up remote tracking):
-git push -u origin feature/my-new-feature
+# First push of a brand-new branch (sets up remote tracking):
+git push -u origin dev
 
 # Subsequent pushes:
 git push
 ```
 
-After pushing, the GitHub Actions workflows will run automatically on
-your branch:
-
-- **R-CMD-check.yaml** runs `R CMD check` on macOS, Windows, and Ubuntu
-  (with multiple R versions).
-- **test-coverage.yaml** runs `covr` and uploads results to Codecov,
-  updating the badge on your README.
+**Pushing to `dev` does NOT trigger CI by itself.** The GitHub Actions
+workflows in `.github/workflows/` are configured to run on pushes to
+`master` and on pull requests — not on pushes to `dev`. If you want CI
+results for your branch, open the pull request (next step). Once you do,
+the workflows run against the PR head.
 
 ### 3.3 Create a pull request
 
-Once your changes are complete and passing CI, create a pull request on
-GitHub to merge your branch into `main`. You can do this from the GitHub
-website or from the command line:
+With your changes pushed and local checks passing, open a pull request
+from `dev` to `master`. Opening the PR is what actually triggers CI on
+your work.
+
+The fastest path is the GitHub CLI:
 
 ``` bash
-# Using the GitHub CLI:
-gh pr create --title "Brief description" --body "Details about the changes"
+gh pr create --base master --head dev \
+  --title "1.x.y: brief summary" \
+  --body "$(cat <<'EOF'
+## Summary
+
+- Bullet points of what changed.
+
+## Test plan
+
+- [x] devtools::test()
+- [x] devtools::check() from RStudio (0/0/0 including vignettes)
+- [ ] R-CMD-check on Windows / macOS / Ubuntu (GitHub Actions)
+- [ ] test-coverage run (GitHub Actions) + codecov update
+EOF
+)"
 ```
 
-Or navigate to <https://github.com/k96nb01/immunogenetr_package> and
-click “Compare & pull request” when prompted.
+Alternatively, navigate to
+<https://github.com/k96nb01/immunogenetr_package> and click “Compare &
+pull request” when prompted.
 
-A pull request gives you a chance to review the full diff of your
+Once the PR is open, two workflows run automatically against the PR
+head:
+
+- **R-CMD-check.yaml** — `R CMD check` on macOS, Windows, and Ubuntu
+  (with multiple R versions).
+- **test-coverage.yaml** — `covr` run, results uploaded to Codecov,
+  README badge updated.
+
+Wait for both to go green before merging. The R-hub workflow
+(`rhub.yaml`) only runs on manual trigger (workflow_dispatch) — you can
+invoke it from the Actions tab if you want multi-platform checks beyond
+what R-CMD-check covers, but it is not required for every PR.
+
+A pull request also gives you a chance to review the full diff of your
 changes before merging. If you’re working with collaborators, they can
 review and comment on the PR before it’s merged.
 
@@ -249,17 +315,19 @@ After confirming that CI checks pass on the pull request:
 
 1.  Go to the pull request on GitHub.
 2.  Click **“Merge pull request”** (use “Squash and merge” if you want
-    to condense multiple commits into one clean commit on `main`).
+    to condense multiple commits into one clean commit on `master`).
 3.  Click **“Confirm merge”**.
-4.  Optionally click **“Delete branch”** to clean up the remote branch.
+4.  Do NOT delete the remote `dev` branch — it is reused for the next
+    release cycle (see §1.3). Leave it in place; you will fast-forward
+    it to the new `master` tip at the start of the next cycle.
 
 Then update your local repository:
 
 ``` bash
 # In the terminal:
-git checkout main
-git pull origin main
-git branch -d feature/my-new-feature   # delete the local branch
+git checkout master
+git pull origin master
+# (do NOT delete local 'dev' — same reason as above)
 ```
 
 ### 3.5 Working without a pull request (solo development)
@@ -268,16 +336,19 @@ If you prefer a simpler workflow without pull requests, you can merge
 locally:
 
 ``` bash
-# Switch back to main and merge your branch:
-git checkout main
-git pull origin main
-git merge feature/my-new-feature
-git push origin main
+# Switch back to master and merge your dev branch:
+git checkout master
+git pull origin master
+git merge dev
+git push origin master
 
-# Clean up the branch:
-git branch -d feature/my-new-feature
-git push origin --delete feature/my-new-feature
+# Leave the 'dev' branch in place for the next cycle.
 ```
+
+Note: skipping the pull request also skips the CI gate.
+`R-CMD-check.yaml` and `test-coverage.yaml` still run on the push to
+`master`, but by then it is too late to catch problems before they are
+on the default branch. Prefer the PR path when you can.
 
 This is faster for solo work but skips the review step that pull
 requests provide.
@@ -393,36 +464,318 @@ also deletes the `CRAN-SUBMISSION` file.
 
 ------------------------------------------------------------------------
 
+## Appendix A: Setting Up the pkgdown Documentation Site (one-time)
+
+This appendix describes the one-time procedure for launching the package
+documentation site at **<https://immunogenetr.org>**. After this is
+done, the site rebuilds automatically on every push to `master` and you
+do not need to revisit these steps. For ongoing local preview during
+normal development, see §A.8.
+
+Prerequisites:
+
+- You own `immunogenetr.org` (registered at Cloudflare).
+- You have admin access to the GitHub repo.
+- `master` is branch-protected, so all package changes go through `dev`
+  → PR → `master` (per Phase 3).
+
+### A.1 Bootstrap pkgdown from a dedicated branch
+
+Do not bundle this work into your release-cycle `dev` branch — pkgdown
+setup is orthogonal infrastructure and should land in its own atomic PR,
+decoupled from any in-flight package changes. Create a short-lived
+branch off `master`:
+
+``` bash
+git checkout master
+git pull origin master
+git checkout -b pkgdown-setup
+```
+
+Then from R in the package root:
+
+``` r
+
+usethis::use_pkgdown_github_pages()
+```
+
+This single command will:
+
+- Create `_pkgdown.yml` in the package root.
+- Add `docs/` to `.gitignore` and `.Rbuildignore`.
+- Add `.github/workflows/pkgdown.yaml` (the Action that builds and
+  deploys the site).
+- Create an empty `gh-pages` branch on the remote.
+- Configure GitHub Pages to publish from `gh-pages`.
+
+The local file changes are **not** committed for you — you’ll commit and
+PR them in §A.4.
+
+### A.2 Set the canonical site URL
+
+Open the newly created `_pkgdown.yml` and set the `url` field at the
+top:
+
+``` yaml
+url: https://immunogenetr.org
+
+template:
+  bootstrap: 5
+```
+
+The `url` value controls canonical links and the search index. Set it to
+the custom domain now, before DNS is wired up — you want the right URL
+baked into the site from the first deploy.
+
+### A.3 Preview locally
+
+Before pushing, build and preview the site:
+
+``` r
+
+pkgdown::build_site()
+```
+
+This builds into `docs/` and opens the site in your browser. Confirm
+that the function reference, vignette, and README render correctly.
+
+**Rendering gotchas encountered during initial setup** (worth knowing
+because GitHub renders the same source files differently than pkgdown
+does, so README/vignette content that looks right on the GitHub repo
+page can break on the pkgdown site — and vice versa):
+
+- **`^` in HLA GL strings rendering as superscript.** pkgdown renders
+  Markdown through pandoc, which has a `superscript` extension enabled
+  by default. Pandoc interprets `^…^` as `<sup>…</sup>`, which mangles
+  every GL string (and the `*` characters between caret pairs become
+  `<em>` italics for the same reason). Two strategies are in use:
+  - **README.Rmd:** the YAML sets
+    `md_extensions: -superscript-subscript` so the rendered `README.md`
+    keeps `\^` and `\*` escapes as literals, and a `kable_hla()` helper
+    escapes `*` and `^` per cell before calling
+    [`knitr::kable()`](https://rdrr.io/pkg/knitr/man/kable.html). This
+    means tables are regenerated live from the package on every knit
+    instead of being hand-pasted, so they don’t go stale when functions
+    change.
+  - **vignettes/immunogenetr.Rmd:** a `knit_print.data.frame` S3 method
+    in the setup chunk wraps `knitr::kable(x, format = "html")` output
+    in a pandoc raw-HTML block (```` ```{=html} ```` … ```` ``` ````).
+    The raw block tells pandoc to pass the HTML through verbatim,
+    bypassing its `markdown_in_html_blocks` extension that would
+    otherwise re-parse cell contents and re-trigger the superscript
+    problem.
+- **Hex sticker rendering at full image size.** The default pattern of
+  `<img src='...' height="139" />` in the README header isn’t honored
+  consistently by pkgdown’s CSS. Add an explicit `width` plus an inline
+  `style` attribute
+  (`style="height:139px; width:auto; max-width:120px;"`) to force the
+  size — inline style beats Bootstrap’s container rules.
+- **Vignette outputs appearing as code blocks instead of tables.** The
+  default `html_vignette` output prints data frames as monospace
+  `#>`-prefixed text. Setting `df_print: kable` in the YAML works for
+  direct
+  [`rmarkdown::render()`](https://pkgs.rstudio.com/rmarkdown/reference/render.html)
+  but pkgdown’s article rendering path doesn’t always honor it — use the
+  `knit_print` method described above to be reliable across both paths.
+- **DESCRIPTION `URL:` field must include the pkgdown site URL.**
+  [`pkgdown::build_site()`](https://pkgdown.r-lib.org/reference/build_site.html)
+  warns if the canonical site URL in `_pkgdown.yml` isn’t also listed in
+  DESCRIPTION’s `URL:` field. Add it as the first entry.
+
+### A.4 Commit, PR, merge
+
+Stage the new pkgdown files and open a PR as usual:
+
+``` bash
+git add _pkgdown.yml .gitignore .Rbuildignore .github/workflows/pkgdown.yaml
+git commit -m "Add pkgdown documentation site"
+git push -u origin pkgdown-setup
+gh pr create --base master --head pkgdown-setup \
+  --title "Add pkgdown documentation site" \
+  --body "Initial pkgdown setup; site deploys to immunogenetr.org on merge."
+```
+
+Once CI is green, merge to `master`. The `pkgdown.yaml` workflow now
+runs on every push to `master` and publishes to `gh-pages`. Confirm the
+first run completes successfully under the Actions tab. After the merge
+you can delete the `pkgdown-setup` branch — unlike `dev`, it is not
+reused.
+
+If your release-cycle `dev` branch already has unmerged work on it (so
+it has diverged from `master`), bring the pkgdown changes into it after
+this PR lands so `dev` stays current:
+
+``` bash
+git checkout dev
+git pull origin dev
+git merge master            # regular merge commit; not a fast-forward
+git push origin dev
+```
+
+### A.5 Set the custom domain on GitHub
+
+GitHub → repo **Settings** → **Pages**:
+
+- **Custom domain**: `immunogenetr.org` → **Save**. This writes a
+  `CNAME` file to the `gh-pages` branch.
+- **Enforce HTTPS**: tick this once it becomes available. It is grayed
+  out until GitHub finishes provisioning a Let’s Encrypt certificate. If
+  it stays grayed for more than ~30 minutes, recheck DNS in §A.6 (most
+  often the cause is Cloudflare proxying still being on).
+
+### A.6 Configure DNS at Cloudflare
+
+In the Cloudflare dashboard for `immunogenetr.org` → **DNS** →
+**Records**, add four `A` records on the apex (`@`), each pointing to a
+GitHub Pages IP:
+
+    185.199.108.153
+    185.199.109.153
+    185.199.110.153
+    185.199.111.153
+
+Critical: set proxy status on each to **DNS only** (gray cloud), not
+Proxied (orange cloud). With the orange cloud on, GitHub Pages cannot
+complete the Let’s Encrypt ACME challenge and HTTPS provisioning will
+fail. You can switch to Proxied later if you want, but only after also
+setting **SSL/TLS → Overview → encryption mode** to **Full** (not
+Flexible — Flexible causes a redirect loop).
+
+Recommended: also add four `AAAA` records on the apex (`@`) for IPv6
+reachability, again all set to **DNS only**:
+
+    2606:50c0:8000::153
+    2606:50c0:8001::153
+    2606:50c0:8002::153
+    2606:50c0:8003::153
+
+Optional: add a `CNAME` record `www` → `k96nb01.github.io` (DNS only) if
+you want `www.immunogenetr.org` to redirect to the apex.
+
+Cloudflare will display an orange banner reading “Proxying is required
+for most security and performance features.” **Ignore it.** That advice
+is for typical web origin servers, not for GitHub Pages with Let’s
+Encrypt. Leave every record DNS-only.
+
+DNS typically propagates in a few minutes. Verify with:
+
+``` bash
+nslookup immunogenetr.org
+```
+
+Once the apex resolves to the GitHub Pages IPs, return to **Settings →
+Pages** and tick **Enforce HTTPS**.
+
+### A.7 Confirm the site is live
+
+Visit <https://immunogenetr.org>. You should see the pkgdown homepage.
+From now on, every push to `master` triggers `pkgdown.yaml` and updates
+the site automatically — no manual deploys needed.
+
+### A.8 Ongoing: local preview during development
+
+After this setup, you can preview documentation changes locally any
+time:
+
+``` r
+
+pkgdown::build_site()                       # full rebuild (slow)
+pkgdown::build_reference()                  # function reference only (fast)
+pkgdown::build_article("immunogenetr")      # single named article (fastest)
+pkgdown::build_articles()                   # all articles
+```
+
+[`pkgdown::build_article()`](https://pkgdown.r-lib.org/reference/build_articles.html)
+is the recommended replacement for the deprecated
+`devtools::build_vignettes()` when you just want to preview a single
+vignette during development.
+
+The `docs/` directory is gitignored — only the `gh-pages` branch (built
+by CI on push to `master`) is reflected on the live site. Use local
+preview to catch bad markdown or broken cross-references before they hit
+master.
+
+### A.9 Ongoing maintenance: what (not) to do for routine updates
+
+Once §A.1–A.8 are done, the site is fully self-maintaining for normal
+development. **You do not need to revisit any of those steps for routine
+package work.** Specifically:
+
+| Concern | Status | Action needed |
+|----|----|----|
+| Site rebuild on README/vignette/code change | Automatic on every push to `master` (via `.github/workflows/pkgdown.yaml`) | None |
+| Adding a new vignette | Drop `vignettes/foo.Rmd` in, push to `master` | None beyond the normal package PR |
+| Adding a new exported function | Auto-discovered from `NAMESPACE`; reference page generated | None beyond `devtools::document()` |
+| DNS records at Cloudflare | Persist indefinitely | None unless changing host or domain |
+| Custom domain in GitHub Pages settings | Persists | None unless changing domain |
+| Let’s Encrypt TLS certificate | Auto-renewed by GitHub Pages backend (90-day rotation) | None |
+| Workflow Actions runner version | Pinned to `r-lib/actions` versions in the workflow file | Update only when intentionally moving to a newer Action |
+
+**When you actually need to touch pkgdown infrastructure:**
+
+- **You change the package’s hosted URL** (e.g. moving off
+  `immunogenetr.org`): update `_pkgdown.yml` `url:`, the `URL:` field in
+  `DESCRIPTION`, the `Custom domain` box in GitHub Pages settings, and
+  DNS records at the registrar. All four must agree.
+- **The pkgdown site stops building** after a push: check the latest
+  `pkgdown.yaml` run under the Actions tab. Most failures are
+  R/dependency drift on the runner — usually resolved by bumping
+  `r-lib/actions/setup-r-dependencies@v2` or pinning a stable R version
+  in the workflow.
+- **The site builds but the custom domain stops resolving:** check that
+  the four `A` records (and four `AAAA` records, if added) at Cloudflare
+  are still set to **DNS only** (grey cloud). Cloudflare occasionally
+  re-prompts to enable proxying — don’t.
+- **HTTPS shows a cert error:** the Let’s Encrypt cert renewal
+  occasionally fails if DNS proxying was inadvertently turned on. Toggle
+  the custom domain off and back on in GitHub Pages settings to force a
+  re-issuance.
+- **You upgrade pkgdown** (`install.packages("pkgdown")`): run
+  [`pkgdown::build_site()`](https://pkgdown.r-lib.org/reference/build_site.html)
+  locally and skim the output before pushing — major pkgdown versions
+  occasionally change the default template or CSS.
+
+------------------------------------------------------------------------
+
 ## Quick Reference
 
-| Task                         | Command                                  |
-|------------------------------|------------------------------------------|
-| Load package for development | `devtools::load_all()`                   |
-| Regenerate documentation     | `devtools::document()`                   |
-| Run tests                    | `devtools::test()`                       |
-| Run R CMD check              | `devtools::check()`                      |
-| Check code coverage          | `covr::package_coverage()`               |
-| Interactive coverage report  | `covr::report()`                         |
-| Preview a vignette           | `pkgdown::build_article("immunogenetr")` |
-| Knit README                  | `devtools::build_readme()`               |
-| Create release checklist     | `usethis::use_release_issue()`           |
-| Bump version                 | `usethis::use_version("patch")`          |
-| Check URLs                   | `urlchecker::url_check()`                |
-| Submit to CRAN               | `devtools::submit_cran()`                |
-| Create GitHub release        | `usethis::use_github_release()`          |
-| Bump to dev version          | `usethis::use_dev_version()`             |
+| Task | Command |
+|----|----|
+| Load package for development | `devtools::load_all()` |
+| Regenerate documentation | `devtools::document()` |
+| Run tests | `devtools::test()` |
+| Run R CMD check | `devtools::check()` |
+| Check code coverage | `covr::package_coverage()` |
+| Interactive coverage report | `covr::report()` |
+| Preview a vignette | `pkgdown::build_article("immunogenetr")` |
+| Knit README | `devtools::build_readme()` |
+| Create release checklist | `usethis::use_release_issue()` |
+| Bump version | `usethis::use_version("patch")` |
+| Check URLs | `urlchecker::url_check()` |
+| Submit to CRAN | `devtools::submit_cran()` |
+| Create GitHub release | `usethis::use_github_release()` |
+| Bump to dev version | `usethis::use_dev_version()` |
+| Build pkgdown site locally | [`pkgdown::build_site()`](https://pkgdown.r-lib.org/reference/build_site.html) |
+| Build pkgdown reference only | [`pkgdown::build_reference()`](https://pkgdown.r-lib.org/reference/build_reference.html) |
+| Build pkgdown articles only | [`pkgdown::build_articles()`](https://pkgdown.r-lib.org/reference/build_articles.html) |
 
 ------------------------------------------------------------------------
 
 ## immunogenetr-Specific Notes
 
 - **GitHub repo**: <https://github.com/k96nb01/immunogenetr_package>
+- **Documentation site**: <https://immunogenetr.org> (custom domain
+  owned by user, registered at Cloudflare; built by
+  `.github/workflows/pkgdown.yaml` and served from the `gh-pages`
+  branch). Initial setup procedure: see Appendix A.
 - **Codecov**: <https://app.codecov.io/gh/k96nb01/immunogenetr_package>
   (token stored as `CODECOV_TOKEN` in GitHub secrets)
 - **GitHub Actions workflows**:
   - `R-CMD-check.yaml` — multi-platform R CMD check
   - `test-coverage.yaml` — coverage reporting to Codecov
   - `rhub.yaml` — R-hub checks
+  - `pkgdown.yaml` — builds and publishes the documentation site to
+    `gh-pages` (i.e. immunogenetr.org) on every push to `master`
 - **Citation**: Published in *Human Immunology* (DOI:
   10.1016/j.humimm.2025.111619). Citation file at `inst/CITATION`.
 - **Vignette**: `vignettes/immunogenetr.Rmd` — “Getting Started with

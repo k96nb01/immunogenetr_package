@@ -18,6 +18,8 @@ independently validated according to local regulations.
 
 Useful links:
 
+- <https://immunogenetr.org>
+
 - <https://github.com/k96nb01/immunogenetr_package>
 
 - [doi:10.1016/j.humimm.2025.111619](https://doi.org/10.1016/j.humimm.2025.111619)
@@ -31,6 +33,9 @@ Useful links:
 ([ORCID](https://orcid.org/0000-0002-0046-2315))
 
 Authors:
+
+- Nicholas Brown <nicholas.brown@pennmedicine.upenn.edu>
+  ([ORCID](https://orcid.org/0000-0002-0046-2315))
 
 - Busra Coskun <bcoskun@sas.upenn.edu>
   ([ORCID](https://orcid.org/0009-0008-6828-3453))
