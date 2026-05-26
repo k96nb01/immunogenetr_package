@@ -14,7 +14,6 @@ Useful links:
   \item \url{https://immunogenetr.org}
   \item \url{https://github.com/k96nb01/immunogenetr_package}
   \item \doi{10.1016/j.humimm.2025.111619}
-  \item \url{https://k96nb01.github.io/immunogenetr_package/}
   \item Report bugs at \url{https://github.com/k96nb01/immunogenetr_package/issues}
 }
 
