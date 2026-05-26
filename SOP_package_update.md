@@ -49,7 +49,7 @@ The `dev` branch typically persists across release cycles: after each release is
   git push --force-with-lease   # update remote dev
   ```
 
-  **Why `reset --hard` rather than `merge --ff-only`?** If the previous release PR was merged with "Squash and merge" (recommended in §3.4), `master` now has one squashed commit while `dev` still has the original N individual commits — the branches have *diverged*, so `merge --ff-only` will fail with `Not possible to fast-forward, aborting`. The squashed commit on `master` contains the same content as the N commits on `dev`, just collapsed, so it's safe to discard `dev`'s old history by resetting. The force-push is needed because remote `dev` still has the pre-squash history; `--force-with-lease` protects against overwriting any new work pushed by someone else.
+  **Why `reset --hard` rather than `merge --ff-only`?** If the previous release PR was merged with "Squash and merge" (recommended in §5.1), `master` now has one squashed commit while `dev` still has the original N individual commits — the branches have *diverged*, so `merge --ff-only` will fail with `Not possible to fast-forward, aborting`. The squashed commit on `master` contains the same content as the N commits on `dev`, just collapsed, so it's safe to discard `dev`'s old history by resetting. The force-push is needed because remote `dev` still has the pre-squash history; `--force-with-lease` protects against overwriting any new work pushed by someone else.
 
   If the previous PR was merged with a regular merge commit (not squash), `merge --ff-only` works and the force-push is unneeded — but squash is the SOP-recommended path.
 - **`dev` does not exist yet (first cycle).** Create it from `master`:
@@ -179,7 +179,7 @@ This regenerates `README.md`. Do not edit `README.md` directly.
 
 ---
 
-## Phase 3: Committing, Pushing, and Merging
+## Phase 3: Committing, Pushing, and Opening the PR
 
 ### 3.1 Stage and commit changes
 
@@ -240,65 +240,19 @@ Wait for both to go green before merging. The R-hub workflow (`rhub.yaml`) only 
 
 A pull request also gives you a chance to review the full diff of your changes before merging. If you're working with collaborators, they can review and comment on the PR before it's merged.
 
-### 3.4 Merge the pull request
-
-After confirming that CI checks pass on the pull request:
-
-1. Go to the pull request on GitHub.
-2. Click **"Merge pull request"** (use "Squash and merge" if you want to condense multiple commits into one clean commit on `master`).
-3. Click **"Confirm merge"**.
-4. Do NOT delete the remote `dev` branch — it is reused for the next release cycle (see §1.3). Leave it in place; you will fast-forward it to the new `master` tip at the start of the next cycle.
-
-Then update your local repository:
-
-```bash
-# In the terminal:
-git checkout master
-git pull origin master
-# (do NOT delete local 'dev' — same reason as above)
-```
-
-### 3.5 Working without a pull request (solo development)
-
-If you prefer a simpler workflow without pull requests, you can merge locally:
-
-```bash
-# Switch back to master and merge your dev branch:
-git checkout master
-git pull origin master
-git merge dev
-git push origin master
-
-# Leave the 'dev' branch in place for the next cycle.
-```
-
-Note: skipping the pull request also skips the CI gate. `R-CMD-check.yaml` and `test-coverage.yaml` still run on the push to `master`, but by then it is too late to catch problems before they are on the default branch. Prefer the PR path when you can.
-
-This is faster for solo work but skips the review step that pull requests provide.
-
-Check the Actions tab on GitHub (https://github.com/k96nb01/immunogenetr_package/actions) to confirm everything passes.
+Leave the PR open through Phase 4. Merging happens in Phase 5.
 
 ---
 
 ## Phase 4: Preparing a CRAN Release
 
-### Phase 4 ordering — read this first
-
-The steps in Phase 4 must be done in numerical order, and **Phase 3.4 (merging the PR) interleaves between 4.4 and 4.5**. The actual sequence across both phases is:
-
-1. Phase 3.1–3.3: develop on `dev`, push, open PR.
-2. **Phase 4.1**: create release checklist with `use_release_issue()`. **Must come before 4.2**, because `use_release_issue()` reads `DESCRIPTION` and assumes the current version is the *released* one — if you've already bumped, the version offered for the new release will be wrong.
-3. **Phase 4.2**: bump the version with `use_version()` (on `dev`, so the PR picks up the bump).
-4. Phase 4.3, 4.4: comprehensive checks + `cran-comments.md`.
-5. **Phase 3.4**: merge the PR to `master`. Squash and merge. Do not delete `dev`.
-6. `git checkout master && git pull` locally.
-7. **Phase 4.5**: `submit_cran()` from the synced `master`.
-
-Branch protection on `master` is what forces this interleaving: the version bump and check-passing have to land on `dev` first because `master` cannot be committed to directly.
+With your PR open from Phase 3 and CI green, work through these steps on `dev`. Every change you make here updates the PR for another CI pass. The PR does not merge yet — Phase 5 handles the merge.
 
 ### 4.1 Create a release checklist
 
-When you're ready to release a new version to CRAN, create a structured checklist as a GitHub issue:
+**Do this before §4.2.** `use_release_issue()` reads `DESCRIPTION` and assumes the current version is the released one. If you've already bumped, the version it offers for the new release will be wrong.
+
+Create a structured checklist as a GitHub issue:
 
 ```r
 usethis::use_release_issue()
@@ -426,16 +380,33 @@ The `nosuggests` platform reports an ERROR at "checking re-building of vignette 
 This is the standard interaction between R-hub's `nosuggests` platform and vignettes built with the `rmarkdown` engine. CRAN's own incoming check runs with `_R_CHECK_FORCE_SUGGESTS_=false`, which downgrades this case to a NOTE. The `gcc16` and `donttest` platforms pass cleanly.
 ```
 
-### 4.5 Submit to CRAN
+---
 
-Make sure you've already merged the release PR to `master` (Phase 3.4) and synced locally:
+## Phase 5: Merge and Submit
+
+With Phase 4 complete and CI green, this phase moves the release from `dev` onto `master` and submits it to CRAN. After Phase 5, `master` reflects exactly what was submitted to CRAN — no extra commits.
+
+### 5.1 Merge the PR
+
+1. Go to the pull request on GitHub.
+2. Click the **Squash and merge** dropdown → "Squash and merge". Squash keeps `master`'s history one-commit-per-release; the individual development commits are preserved in the PR record.
+3. Click **Confirm squash and merge**.
+4. **Do NOT delete the remote `dev` branch** — it is reused for the next release cycle (per §1.3 and §6.2).
+
+### 5.2 Sync local master
+
+Update your local repository so the next step works from the post-merge state:
 
 ```bash
 git checkout master
 git pull origin master
 ```
 
-Then from R, in the package root:
+Don't delete local `dev` either — same reason as above.
+
+### 5.3 Submit to CRAN
+
+From R, in the package root (you should now be on `master`, synced with origin):
 
 ```r
 devtools::submit_cran()
@@ -445,7 +416,7 @@ What this actually does, step by step:
 
 1. Builds a source tarball (`immunogenetr_<version>.tar.gz`) from the current package directory.
 2. Uploads the tarball to CRAN's submission endpoint.
-3. Writes a `CRAN-SUBMISSION` file in the package root recording the submission details (commit SHA, date, version). This file is intentionally untracked-by-default — it persists locally until Phase 5.1 cleans it up.
+3. Writes a `CRAN-SUBMISSION` file in the package root recording the submission details (commit SHA, date, version). This file persists locally until §6.1 cleans it up.
 4. Triggers CRAN to email the maintainer address from `DESCRIPTION` with a confirmation link.
 
 **Critical: clicking the confirmation link is what actually submits the package.** Until you click, the package is queued but not in CRAN's incoming review. If you don't click within ~24 hours the submission is dropped silently. The email typically arrives within a few minutes; if you don't see it, check spam.
@@ -457,13 +428,13 @@ After confirmation, expect a sequence of automated emails over the next 24–72 
 - **Human review** — a CRAN reviewer eyeballs the submission for policy compliance. Most submissions pass without comment.
 - **Acceptance** — `"package immunogenetr <version> has been published on CRAN"`. The package goes live on CRAN's package index within a few hours of this email.
 
-If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Fix the issue, run `usethis::use_version("patch")` to bump to the next patch (e.g., 1.3.0 → 1.3.1), update `cran-comments.md`, and resubmit.
+If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Fix the issue, run `usethis::use_version("patch")` to bump to the next patch (e.g., 1.3.0 → 1.3.1), update `cran-comments.md`, and resubmit (returning to §5.3).
 
 ---
 
-## Phase 5: After CRAN Acceptance
+## Phase 6: After CRAN Acceptance
 
-### 5.1 Create a GitHub release
+### 6.1 Create a GitHub release
 
 Once CRAN has accepted the package:
 
@@ -473,7 +444,7 @@ usethis::use_github_release()
 
 This creates a Git tag and a corresponding GitHub release, using information from `CRAN-SUBMISSION` to populate the release notes. It also deletes the `CRAN-SUBMISSION` file.
 
-### 5.2 Begin the next release cycle
+### 6.2 Begin the next release cycle
 
 To start work on the next release, return to Phase 1. The `dev` branch is reused across cycles — fast-forward (or, after a squash merge, reset) it to the new `master` tip per §1.3, reload the package per §1.4, and bump to a new dev version per §1.5. Any open issues or features you want to address fit into Phase 2 from there.
 
