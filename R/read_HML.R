@@ -30,6 +30,9 @@
 #' @importFrom dplyr mutate
 #' @importFrom stringr str_extract
 #' @importFrom dplyr distinct
+#' @importFrom dplyr filter
+#' @importFrom dplyr summarise
+#' @importFrom stringr str_flatten
 #' @importFrom tidyr pivot_wider
 #' @importFrom tidyr unite
 

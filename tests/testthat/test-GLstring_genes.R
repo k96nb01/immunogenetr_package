@@ -111,3 +111,26 @@ test_that("GLstring_genes validates inputs", {
   # Non-data-frame should error.
   expect_error(GLstring_genes("not a data frame", "GL_string"))
 })
+
+# Regression test for an iteration-7 bug: regexpr(fixed = TRUE) returns
+# NA_integer_ on NA input, not -1, which then produced NA in the `has_star`
+# logical mask and crashed the [<-` subscript. The first draft of v2
+# crashed on a data frame with an NA in the GL_string column; the fix
+# was to guard has_star with !is.na(star_pos). Keep a test so any future
+# regex-mask refactor gets caught here.
+test_that("GLstring_genes handles NA entries in the GL_string column", {
+  table <- data.frame(
+    patient = c("P1", "P2"),
+    GL_string = c("HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01", NA_character_),
+    stringsAsFactors = FALSE
+  )
+  # No error.
+  result <- GLstring_genes(table, "GL_string")
+  expect_s3_class(result, "data.frame")
+  # Both rows preserved in output.
+  expect_equal(nrow(result), 2L)
+  # Row 1 populated, row 2 NA for every locus column.
+  expect_true(!is.na(result$HLA_A[1]))
+  expect_true(is.na(result$HLA_A[2]))
+  expect_true(is.na(result$HLA_B[2]))
+})

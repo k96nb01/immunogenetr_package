@@ -54,35 +54,40 @@ HLA_match_number <- function(GL_string_recip, GL_string_donor, loci, direction =
 
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional"))
 
-  # Single locus: return integer match count (2 - mismatch count)
-  if (length(loci) == 1) {
-    # Calculate matches as 2 minus the mismatch count for the given direction.
-    match_table <- tibble(mismatch = HLA_mismatch_number(
-      GL_string_recip, GL_string_donor, loci, direction
-    )) %>%
-      mutate(match = 2 - mismatch)
-    return(match_table$match)
-  } else {
-  # Multiple loci: return "Locus1=Count1, Locus2=Count2, ..." string
-  match_table <- tibble(mismatch = HLA_mismatch_number(
-    GL_string_recip, GL_string_donor, loci, direction
-  )) %>%
-    # Add a row number to combine data at the end.
-    mutate(case = row_number()) %>%
-    # Separate the loci.
-    separate_longer_delim(mismatch, delim = ", ") %>%
-    separate_wider_delim(mismatch, delim = "=", names = c("locus", "mismatches")) %>%
-    # Recode mismatches as integers
-    mutate(mismatches = as.integer(mismatches)) %>%
-    # Calculate matches as 2 - mismatch.
-    mutate(matches = 2 - mismatches) %>%
-    # Clean up table.
-    select(-mismatches) %>%
-    unite(locus, matches, col = "Matches", sep = "=") %>%
-    summarise(Matches = str_flatten(Matches, collapse = ", "), .by = case)
+  # Pull the per-locus per-pair mismatch count matrix directly from the
+  # internal helper, skipping the round-trip through HLA_mismatch_number's
+  # formatted string. Shape is (n_loci, n_pairs). homozygous_count is not
+  # exposed at this function's API (see test-HLA_match_number.R:67-68),
+  # so we always pass the default of 2.
+  mm <- hla_mismatch_count_matrix(
+    GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2
+  )
 
-  return(match_table$Matches)
+  n_loci <- length(loci)
+
+  # Single-locus: return the length-N match-count vector. The baseline used
+  # `tibble(mismatch = ...) |> mutate(match = 2 - mismatch)`, which produced
+  # a numeric (double) column because `2` is double. We preserve that type
+  # here with `2 - as.integer(mm[1, ])` so identical() holds against the
+  # pre-merge output.
+  if (n_loci == 1L) {
+    return(2 - as.integer(mm[1L, ]))
   }
-}
 
-globalVariables(c("mismatch", "matches", "Matches"))
+  # Multi-locus: build "LOCUS=Matches, LOCUS=Matches, ..." per pair. If any
+  # locus is NA for a pair (mismatch_base returned NA_character_), the whole
+  # pair is NA_character_, matching the baseline's tidyverse pipeline which
+  # let NA propagate through separate_wider_delim and unite.
+  n_pairs <- ncol(mm)
+  match_mat <- 2L - mm                         # (n_loci, n_pairs) integer
+  out <- character(n_pairs)
+  for (j in seq_len(n_pairs)) {
+    col <- match_mat[, j]
+    if (anyNA(col)) {
+      out[j] <- NA_character_
+    } else {
+      out[j] <- paste0(loci, "=", col, collapse = ", ")
+    }
+  }
+  out
+}

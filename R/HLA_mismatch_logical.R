@@ -43,75 +43,64 @@ HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, directi
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
 
   # Determine which direction(s) need to be computed.
-  # HvG and SOT only need the HvG direction; GvH only needs GvH.
-  # Bidirectional needs both to take the logical OR.
-  need_HvG <- (direction == "HvG" | direction == "SOT" | direction == "bidirectional")
-  need_GvH <- (direction == "GvH" | direction == "bidirectional")
+  need_HvG <- direction %in% c("HvG", "SOT", "bidirectional")
+  need_GvH <- direction %in% c("GvH", "bidirectional")
 
-  # Code to determine mismatch if a single locus was supplied.
-  if (length(loci) == 1) {
-    # Only compute the direction(s) we actually need.
-    if (need_HvG) {
-      HvG <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG"))
-    }
-    if (need_GvH) {
-      GvH <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH"))
-    }
-    # Return the result for the requested direction.
-    if (direction == "HvG" | direction == "SOT") {
-      return(HvG)
-    } else if (direction == "GvH") {
-      return(GvH)
-    } else {
-      # Bidirectional: TRUE if either direction has a mismatch.
-      return(HvG | GvH)
-    }
-  } else {
-    # Code to determine mismatch if multiple loci were supplied.
-    # Helper to build a logical mismatch table from HLA_mismatch_base output.
-    build_mm_table <- function(base_direction, col_name) {
-      tibble(raw = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, base_direction)) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(raw, delim = ", ") %>%
-        separate_wider_delim(raw, delim = "=", names = c("locus", "mismatches")) %>%
-        # Recode NA values to ensure accurate matching.
-        mutate(mismatches = na_if(mismatches, "NA")) %>%
-        # Determine if any mismatches are present.
-        mutate(!!col_name := !is.na(mismatches)) %>%
-        # Clean up table.
-        select(-mismatches)
-    }
-
-    # Only build the table(s) we actually need.
-    if (direction == "bidirectional") {
-      # Bidirectional needs both directions, joined together.
-      HvG_table <- build_mm_table("HvG", "HvG_MM")
-      GvH_table <- build_mm_table("GvH", "GvH_MM")
-      # Join and take the logical OR of both directions.
-      MM_table <- HvG_table %>%
-        left_join(GvH_table, join_by(locus, case)) %>%
-        mutate(bidirectional = HvG_MM | GvH_MM)
-      result_col <- "bidirectional"
-    } else if (direction == "HvG" | direction == "SOT") {
-      # Only need HvG direction.
-      MM_table <- build_mm_table("HvG", "HvG_MM")
-      result_col <- "HvG_MM"
-    } else {
-      # Only need GvH direction.
-      MM_table <- build_mm_table("GvH", "GvH_MM")
-      result_col <- "GvH_MM"
-    }
-
-    # Format the result as "Locus1=TRUE/FALSE, Locus2=TRUE/FALSE, ..." strings.
-    MM_table <- MM_table %>%
-      select(locus, case, all_of(result_col)) %>%
-      unite(locus, all_of(result_col), col = "MM", sep = "=") %>%
-      summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
-
-    return(MM_table$MM)
+  # Single-locus path: HLA_mismatch_base returns NA for a perfect match, or
+  # the mismatch value as a string. Presence of a mismatch == not NA.
+  if (length(loci) == 1L) {
+    if (need_HvG) HvG <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG"))
+    if (need_GvH) GvH <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH"))
+    return(switch(direction,
+      HvG           = HvG,
+      SOT           = HvG,
+      GvH           = GvH,
+      bidirectional = HvG | GvH
+    ))
   }
-}
 
-globalVariables(c("HvG_MM", "GvH_MM", ":="))
+  # Multi-locus path. HLA_mismatch_base returns a character vector where each
+  # element is "LOCUS1=VAL1, LOCUS2=VAL2, ..." with "NA" meaning no mismatch
+  # at that locus. We split each element once, compare the RHS to "NA" to get
+  # a logical mismatch matrix (n_loci x N_pairs), and format each column back
+  # into the user-facing "LOCUS=TRUE, LOCUS=FALSE" string.
+  n_loci <- length(loci)
+
+  mm_matrix <- function(raw) {
+    n <- length(raw)
+    out <- matrix(NA, nrow = n_loci, ncol = n)
+    for (j in seq_len(n)) {
+      rj <- raw[[j]]
+      if (is.na(rj)) next
+      parts <- strsplit(rj, ", ", fixed = TRUE)[[1L]]
+      eq_pos <- regexpr("=", parts, fixed = TRUE)
+      vals <- substr(parts, eq_pos + 1L, nchar(parts))
+      k <- min(length(vals), n_loci)
+      out[seq_len(k), j] <- vals[seq_len(k)] != "NA"
+    }
+    out
+  }
+
+  if (need_HvG) mm_HvG <- mm_matrix(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG"))
+  if (need_GvH) mm_GvH <- mm_matrix(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH"))
+
+  mm <- switch(direction,
+    HvG           = mm_HvG,
+    SOT           = mm_HvG,
+    GvH           = mm_GvH,
+    bidirectional = mm_HvG | mm_GvH
+  )
+
+  # Format each column into the "LOCUS=TRUE, LOCUS=FALSE" string.
+  n_pairs <- ncol(mm)
+  out <- character(n_pairs)
+  for (j in seq_len(n_pairs)) {
+    col <- mm[, j]
+    if (anyNA(col)) {
+      out[j] <- NA_character_
+    } else {
+      out[j] <- paste0(loci, "=", col, collapse = ", ")
+    }
+  }
+  out
+}

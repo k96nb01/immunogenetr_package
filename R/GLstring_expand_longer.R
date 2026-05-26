@@ -23,45 +23,112 @@
 #'
 #' @export
 #'
-#' @importFrom dplyr mutate
-#' @importFrom dplyr row_number
-#' @importFrom dplyr %>%
-#' @importFrom tidyr separate_longer_delim
-#' @importFrom tibble as_tibble
-#'
-
+#' @importFrom tibble tibble
+#' @importFrom stringi stri_split_fixed
 
 GLstring_expand_longer <- function(GL_string) {
-  # Validate input
+  # Validate input exactly as before so caller-visible errors are preserved.
   check_gl_string(GL_string, "GL_string")
 
-  as_tibble(GL_string) %>%
-    # Assign a unique identifier for each entry for the function
-    mutate(entry = row_number()) %>%
-    # Separate GL string precedence 0: possible gene locations
-    separate_longer_delim(value, delim = "?") %>%
-    # Assign a unique identifier for each possible gene location
-    mutate(possible_gene_location = row_number(), .by = entry) %>%
-    # Separate GL string precedence 1: gene/locus
-    separate_longer_delim(value, delim = "^") %>%
-    # Identify locus
-    mutate(locus = row_number(), .by = c(entry, possible_gene_location)) %>%
-    # Separate GL string precedence 2: genotype list
-    separate_longer_delim(value, delim = "|") %>%
-    # Identify genotype ambiguities
-    mutate(genotype_ambiguity = row_number(), .by = c(entry, possible_gene_location, locus)) %>%
-    # Separate GL string precedence 3: genotype
-    separate_longer_delim(value, delim = "+") %>%
-    # Identify genotypes
-    mutate(genotype = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity)) %>%
-    # Separate GL string precedence 4: haplotype
-    separate_longer_delim(value, delim = "~") %>%
-    # Identify haplotypes
-    mutate(haplotype = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype)) %>%
-    # Separate GL string precedence 5: allele list
-    separate_longer_delim(value, delim = "/") %>%
-    # Identify alleles
-    mutate(allele = row_number(), .by = c(entry, possible_gene_location, locus, genotype_ambiguity, genotype, haplotype))
+  # -------------------------------------------------------------------------
+  # Iteration 6 rewrite: replace the 7 separate_longer_delim + 6 group-by
+  # row_number() passes with a direct stri_split_fixed cascade. At each GL
+  # operator level we split every parent token in one C call, record the
+  # per-parent sibling count, and extend the parent ID vectors by
+  # rep.int() — which is vastly cheaper than tidyr's generic unchop and
+  # dplyr's grouped row_number().
+  #
+  # The output shape (tibble with integer index columns entry /
+  # possible_gene_location / locus / genotype_ambiguity / genotype /
+  # haplotype / allele and character `value`) is identical to the old
+  # version, so every downstream caller (HLA_prefix_remove in the old code
+  # path, tests, ambiguity_table_to_GLstring) sees the same columns.
+  # -------------------------------------------------------------------------
+
+  # split_one: apply stri_split_fixed at one GL-operator level. Returns the
+  # flattened child value vector, the child sibling-index vector (1..k per
+  # parent), and the replication count per parent so callers can extend
+  # the other index columns via rep.int().
+  split_one <- function(values, delim) {
+    parts <- stringi::stri_split_fixed(values, delim)
+    lens  <- lengths(parts)                 # siblings per parent
+    # sibling index 1..lens[i] for each parent. sequence() is C-backed and
+    # produces the concatenated counters in one call.
+    child_index <- sequence(lens)
+    list(
+      values = unlist(parts, use.names = FALSE),
+      child  = child_index,
+      lens   = lens
+    )
+  }
+
+  # Level 0 — one row per input GL string; `entry` starts as 1..N.
+  value <- GL_string
+  entry <- seq_along(GL_string)
+
+  # Level 1 — split at "?" (possible gene location).
+  s <- split_one(value, "?")
+  value <- s$values
+  possible_gene_location <- s$child
+  entry <- rep.int(entry, s$lens)
+
+  # Level 2 — split at "^" (locus).
+  s <- split_one(value, "^")
+  value <- s$values
+  locus <- s$child
+  entry <- rep.int(entry, s$lens)
+  possible_gene_location <- rep.int(possible_gene_location, s$lens)
+
+  # Level 3 — split at "|" (genotype ambiguity).
+  s <- split_one(value, "|")
+  value <- s$values
+  genotype_ambiguity <- s$child
+  entry <- rep.int(entry, s$lens)
+  possible_gene_location <- rep.int(possible_gene_location, s$lens)
+  locus <- rep.int(locus, s$lens)
+
+  # Level 4 — split at "+" (genotype / gene copy).
+  s <- split_one(value, "+")
+  value <- s$values
+  genotype <- s$child
+  entry <- rep.int(entry, s$lens)
+  possible_gene_location <- rep.int(possible_gene_location, s$lens)
+  locus <- rep.int(locus, s$lens)
+  genotype_ambiguity <- rep.int(genotype_ambiguity, s$lens)
+
+  # Level 5 — split at "~" (haplotype).
+  s <- split_one(value, "~")
+  value <- s$values
+  haplotype <- s$child
+  entry <- rep.int(entry, s$lens)
+  possible_gene_location <- rep.int(possible_gene_location, s$lens)
+  locus <- rep.int(locus, s$lens)
+  genotype_ambiguity <- rep.int(genotype_ambiguity, s$lens)
+  genotype <- rep.int(genotype, s$lens)
+
+  # Level 6 — split at "/" (allele list).
+  s <- split_one(value, "/")
+  value <- s$values
+  allele <- s$child
+  entry <- rep.int(entry, s$lens)
+  possible_gene_location <- rep.int(possible_gene_location, s$lens)
+  locus <- rep.int(locus, s$lens)
+  genotype_ambiguity <- rep.int(genotype_ambiguity, s$lens)
+  genotype <- rep.int(genotype, s$lens)
+  haplotype <- rep.int(haplotype, s$lens)
+
+  # Build the output tibble directly. tibble() with equal-length columns
+  # sidesteps all of tidyr's generic column-bookkeeping.
+  tibble(
+    value = value,
+    entry = entry,
+    possible_gene_location = possible_gene_location,
+    locus = locus,
+    genotype_ambiguity = genotype_ambiguity,
+    genotype = genotype,
+    haplotype = haplotype,
+    allele = allele
+  )
 }
 
 globalVariables(c(

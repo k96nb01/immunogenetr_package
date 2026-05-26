@@ -195,3 +195,53 @@ test_that("check_fields rejects non-numeric types", {
 test_that("check_fields rejects vectors of length > 1", {
   expect_error(check_fields(c(1, 2)), "must be an integer between 1 and 4")
 })
+
+# ===========================================================================
+# Tests for check_molecular_gl_string
+# ===========================================================================
+
+test_that("check_molecular_gl_string accepts valid molecular GL strings", {
+  expect_invisible(check_molecular_gl_string("HLA-A*01:01+HLA-A*02:01"))
+  expect_invisible(check_molecular_gl_string("HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"))
+  expect_invisible(check_molecular_gl_string(c(
+    "HLA-A*01:01+HLA-A*02:01",
+    "HLA-A*03:01+HLA-A*24:02"
+  )))
+  # Null-suffix alleles still contain '*'
+  expect_invisible(check_molecular_gl_string("HLA-A*01:01:02N+HLA-A*02:01"))
+  # Embedded NA is allowed (handled downstream)
+  expect_invisible(check_molecular_gl_string(c("HLA-A*01:01", NA_character_)))
+  # Bare NA is allowed
+  expect_invisible(check_molecular_gl_string(NA))
+})
+
+test_that("check_molecular_gl_string rejects serologic GL strings", {
+  expect_error(
+    check_molecular_gl_string("HLA-A1+HLA-A2"),
+    "must use molecular"
+  )
+  expect_error(
+    check_molecular_gl_string("HLA-DR52"),
+    "must use molecular"
+  )
+  # Mixed molecular + serologic inside one GL string is also rejected
+  expect_error(
+    check_molecular_gl_string("HLA-A*01:01+HLA-A*02:01^HLA-DR52"),
+    "HLA-DR52"
+  )
+})
+
+test_that("check_molecular_gl_string reports the offending element index and token", {
+  gl <- c("HLA-A*01:01+HLA-A*02:01", "HLA-A*03:01+HLA-DR52")
+  expect_error(
+    check_molecular_gl_string(gl),
+    "Element 2.*HLA-DR52"
+  )
+})
+
+test_that("check_molecular_gl_string inherits base gl_string checks", {
+  # NULL and non-character inputs are still rejected via check_gl_string()
+  expect_error(check_molecular_gl_string(NULL), "must be a character vector, not.*NULL")
+  expect_error(check_molecular_gl_string(123), "must be a character vector, not.*numeric")
+  expect_error(check_molecular_gl_string(character(0)), "must have length >= 1")
+})

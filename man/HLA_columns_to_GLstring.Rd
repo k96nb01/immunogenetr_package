@@ -56,18 +56,4 @@ HLA_typing_LIS \%>\%
   ) \%>\%
   select(patient, GL_string)
 
-# Using the base pipe:
-HLA_typing_LIS |>
-  mutate(
-    GL_string = HLA_columns_to_GLstring(
-      HLA_typing_LIS, # If using the base pipe, the first argument will have to be
-      # the working data frame.
-      HLA_typing_columns = mA1Cd.recipient:mDPB12cd.recipient,
-      prefix_to_remove = "m",
-      suffix_to_remove = "Cd.recipient"
-    ),
-    .after = patient
-  ) |>
-  select(patient, GL_string)
-
 }

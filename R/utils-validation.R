@@ -86,3 +86,36 @@ check_fields <- function(x, call = caller_env()) {
   }
   invisible(x)
 }
+
+# Validate that every allele in a GL string uses molecular nomenclature
+# (i.e. contains "*"). This is intended for callers that want to enforce
+# a molecular-only input — for example, an API layer that refuses to mix
+# serologic and molecular allele names. Serologic inputs like "HLA-DR52"
+# or "HLA-A1" are rejected with a message naming the offending tokens.
+#
+# Accepts the same special cases as check_gl_string(): a bare NA or a
+# character vector of all-NA is treated as "no data" and passes.
+check_molecular_gl_string <- function(x, arg_name = "data", call = caller_env()) {
+  check_gl_string(x, arg_name = arg_name, call = call)
+  if (is.logical(x) && all(is.na(x))) return(invisible(x))
+
+  # Split each GL string on any of the GL delimiters (^, +, |, /) and
+  # check that every non-empty, non-NA token contains "*".
+  for (i in seq_along(x)) {
+    if (is.na(x[[i]])) next
+    tokens <- strsplit(x[[i]], "[\\^+|/]", perl = TRUE)[[1L]]
+    tokens <- tokens[nzchar(tokens)]
+    if (length(tokens) == 0L) next
+    bad <- tokens[!grepl("*", tokens, fixed = TRUE)]
+    if (length(bad) > 0L) {
+      cli_abort(
+        c(
+          "{.arg {arg_name}} must use molecular HLA nomenclature (alleles containing {.val *}), not serologic.",
+          "x" = "Element {i} contains serologic allele{?s}: {.val {bad}}."
+        ),
+        call = call
+      )
+    }
+  }
+  invisible(x)
+}

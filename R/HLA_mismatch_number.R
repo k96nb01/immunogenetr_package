@@ -51,23 +51,13 @@
 #' )
 #'
 #' @export
-#'
-#' @importFrom dplyr join_by
-#' @importFrom dplyr mutate
-#' @importFrom dplyr summarise
-#' @importFrom dplyr left_join
-#' @importFrom dplyr na_if
-#' @importFrom stringr str_count
-#' @importFrom stringr str_flatten
-#' @importFrom tidyr separate_longer_delim
-#' @importFrom tidyr separate_wider_delim
-#' @importFrom tidyr replace_na
-#' @importFrom tibble tibble
-#' @importFrom tidyr unite
 
 
 HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, direction, homozygous_count = 2) {
-  # Validate inputs
+  # Validate inputs at the user-facing layer. The internal matrix helper
+  # (`hla_mismatch_count_matrix`) intentionally skips these checks so it can
+  # be called hot from HLA_match_number / HLA_match_summary_HCT without the
+  # same GL strings being re-validated on every invocation.
   check_gl_string(GL_string_recip, "GL_string_recip")
   check_gl_string(GL_string_donor, "GL_string_donor")
   check_loci(loci)
@@ -75,83 +65,124 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
 
   direction <- match.arg(direction, c("HvG", "GvH", "bidirectional", "SOT"))
 
-  # Helper to count mismatched alleles from HLA_mismatch_base output.
-  # The regex "(\\+|$)" matches each allele (separated by "+" or at end of string).
-  count_mismatches <- function(mismatch_str) {
-    replace_na(str_count(mismatch_str, "(\\+|$)"), 0)
+  # Build the per-locus per-pair integer mismatch count matrix. Shape is
+  # (n_loci, n_pairs) in both single-locus and multi-locus cases.
+  cnt <- hla_mismatch_count_matrix(
+    GL_string_recip, GL_string_donor, loci, direction, homozygous_count
+  )
+
+  n_loci <- length(loci)
+
+  # Single-locus: flatten the 1-row matrix to an integer vector. This matches
+  # the historical return type (integer vector of length n_pairs).
+  if (n_loci == 1L) {
+    return(as.integer(cnt[1L, ]))
   }
 
-  # Determine which direction(s) need to be computed.
-  # HvG and SOT only need the HvG direction; GvH only needs GvH.
-  # Bidirectional needs both to take the max.
-  need_HvG <- (direction == "HvG" | direction == "SOT" | direction == "bidirectional")
-  need_GvH <- (direction == "GvH" | direction == "bidirectional")
-
-  # Code to determine mismatch numbers if a single locus was supplied.
-  if (length(loci) == 1) {
-    # Only compute the direction(s) we actually need.
-    if (need_HvG) {
-      HvG <- count_mismatches(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count))
-    }
-    if (need_GvH) {
-      GvH <- count_mismatches(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count))
-    }
-    # Return the result for the requested direction.
-    if (direction == "HvG" | direction == "SOT") {
-      return(HvG)
-    } else if (direction == "GvH") {
-      return(GvH)
+  # Multi-locus: format each column as "LOCUS=Count, LOCUS=Count, ...". If any
+  # locus is NA for a pair (e.g. pair's mismatch_base returned NA_character_),
+  # the whole pair's string becomes NA_character_ to preserve the existing
+  # contract.
+  n_pairs <- ncol(cnt)
+  out <- character(n_pairs)
+  for (j in seq_len(n_pairs)) {
+    col <- cnt[, j]
+    if (anyNA(col)) {
+      out[j] <- NA_character_
     } else {
-      # Bidirectional: return the max of both directions.
-      return(pmax(HvG, GvH, na.rm = TRUE))
+      out[j] <- paste0(loci, "=", col, collapse = ", ")
     }
-  } else {
-    # Code to determine mismatch numbers if multiple loci were supplied.
-    # Helper to build a mismatch count table from HLA_mismatch_base output.
-    build_mm_table <- function(base_direction, col_name) {
-      tibble(raw = HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, base_direction, homozygous_count)) %>%
-        # Add a row number to combine data at the end.
-        mutate(case = row_number()) %>%
-        # Separate the loci.
-        separate_longer_delim(raw, delim = ", ") %>%
-        separate_wider_delim(raw, delim = "=", names = c("locus", "mismatches")) %>%
-        # Recode NA values to ensure accurate counting.
-        mutate(mismatches = na_if(mismatches, "NA")) %>%
-        # Count number of mismatches.
-        mutate(!!col_name := count_mismatches(mismatches)) %>%
-        # Clean up table.
-        select(-mismatches)
-    }
-
-    # Only build the table(s) we actually need.
-    if (direction == "bidirectional") {
-      # Bidirectional needs both directions, joined together.
-      HvG_table <- build_mm_table("HvG", "HvG_number")
-      GvH_table <- build_mm_table("GvH", "GvH_number")
-      # Join and take the max of both directions.
-      MM_table <- HvG_table %>%
-        left_join(GvH_table, join_by(locus, case)) %>%
-        mutate(bidirectional = pmax(HvG_number, GvH_number, na.rm = TRUE))
-      result_col <- "bidirectional"
-    } else if (direction == "HvG" | direction == "SOT") {
-      # Only need HvG direction.
-      MM_table <- build_mm_table("HvG", "HvG_number")
-      result_col <- "HvG_number"
-    } else {
-      # Only need GvH direction.
-      MM_table <- build_mm_table("GvH", "GvH_number")
-      result_col <- "GvH_number"
-    }
-
-    # Format the result as "Locus1=Count1, Locus2=Count2, ..." strings.
-    MM_table <- MM_table %>%
-      select(locus, case, all_of(result_col)) %>%
-      unite(locus, all_of(result_col), col = "MM", sep = "=") %>%
-      summarise(MM = str_flatten(MM, collapse = ", "), .by = case)
-    return(MM_table$MM)
   }
+  out
 }
 
-globalVariables(c(
-  "mismatches", "case", "HvG_number", "GvH_number", "MM", "bidirectional", ":="
-))
+
+# --- Internal helper ------------------------------------------------------
+#
+# Returns an integer matrix of shape (n_loci, n_pairs) of the per-locus
+# per-pair mismatch count. Column j is NA-filled when HLA_mismatch_base
+# returned NA_character_ for that pair. Direction semantics match the
+# user-facing HLA_mismatch_number: "HvG"/"SOT" use one call to the base,
+# "GvH" another, and "bidirectional" takes the element-wise max of the two.
+#
+# Inputs are assumed already validated — this helper is called from multiple
+# user-facing wrappers (HLA_mismatch_number, HLA_match_number,
+# HLA_match_summary_HCT) and does not re-run check_gl_string / check_loci /
+# check_homozygous_count. Direction is assumed to be one of the four allowed
+# strings (match.arg has already run).
+#
+# Rationale: the former in-place `count_matrix` closure inside
+# HLA_mismatch_number was duplicated in spirit by HLA_match_number (which
+# parsed the formatted "LOCUS=N, ..." string back to integers) and by
+# HLA_match_summary_HCT (which parsed it *again* to sum). Exposing the
+# matrix once lets the match wrappers consume it directly without any
+# string round-trip.
+
+hla_mismatch_count_matrix <- function(GL_string_recip, GL_string_donor, loci,
+                                      direction, homozygous_count = 2) {
+  n_loci <- length(loci)
+
+  # Pre-decide which directional base calls we need. "SOT" is a HvG alias
+  # (solid-organ transplantation uses the same calculation).
+  need_HvG <- direction %in% c("HvG", "SOT", "bidirectional")
+  need_GvH <- direction %in% c("GvH", "bidirectional")
+
+  # Count mismatched alleles in a single "VALUE" token from the base output.
+  # Base joins mismatches with "+", so the count is (# of "+") + 1 unless the
+  # token is the literal "NA" (meaning no mismatch at this locus for this
+  # pair). The `charToRaw` + as.raw(0x2B) trick counts the "+" byte directly
+  # in bytes without calling the regex engine; this was iteration 3's win
+  # and is preserved here.
+  count_val <- function(v) {
+    if (is.na(v) || v == "NA") return(0L)
+    sum(charToRaw(v) == as.raw(0x2B)) + 1L
+  }
+
+  # Build the integer matrix from a character vector of base-output strings.
+  # Single-locus and multi-locus are handled with a single code path — the
+  # single-locus base output is already the raw "VALUE" token per pair (no
+  # "LOCUS=" prefix and no ", " separator), so we branch once up top.
+  count_matrix <- function(raw) {
+    n <- length(raw)
+    out <- matrix(NA_integer_, nrow = n_loci, ncol = n)
+    if (n_loci == 1L) {
+      # Single-locus fast path: each element of `raw` is the VALUE token.
+      for (j in seq_len(n)) out[1L, j] <- count_val(raw[[j]])
+    } else {
+      # Multi-locus: split on ", " to get per-locus tokens, split each token
+      # at "=" with regexpr + substr (faster than a regex-based sub), count.
+      for (j in seq_len(n)) {
+        rj <- raw[[j]]
+        if (is.na(rj)) next
+        parts <- strsplit(rj, ", ", fixed = TRUE)[[1L]]
+        eq_pos <- regexpr("=", parts, fixed = TRUE)
+        vals <- substr(parts, eq_pos + 1L, nchar(parts))
+        k <- min(length(vals), n_loci)
+        for (i in seq_len(k)) out[i, j] <- count_val(vals[[i]])
+      }
+    }
+    out
+  }
+
+  if (need_HvG) {
+    mat_HvG <- count_matrix(
+      HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG", homozygous_count)
+    )
+  }
+  if (need_GvH) {
+    mat_GvH <- count_matrix(
+      HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH", homozygous_count)
+    )
+  }
+
+  # pmax on two matrices of identical shape preserves the matrix dim (tested
+  # locally against R 4.5.3). na.rm = TRUE mirrors the historical behavior
+  # of HLA_mismatch_number, where a single-side NA still contributes the
+  # non-NA side to the bidirectional count.
+  switch(direction,
+    HvG           = mat_HvG,
+    SOT           = mat_HvG,
+    GvH           = mat_GvH,
+    bidirectional = pmax(mat_HvG, mat_GvH, na.rm = TRUE)
+  )
+}
