@@ -250,7 +250,7 @@ With your PR open from Phase 3 and CI green, work through these steps on `dev`. 
 
 ### 4.1 Create a release checklist
 
-**Do this before §4.2.** `use_release_issue()` reads `DESCRIPTION` and assumes the current version is the released one. If you've already bumped, the version it offers for the new release will be wrong.
+**Do this before §4.4 (bumping the version).** `use_release_issue()` reads `DESCRIPTION` and assumes the current version is the released one. If you've already bumped, the version it offers for the new release will be wrong.
 
 Create a structured checklist as a GitHub issue:
 
@@ -269,19 +269,7 @@ This opens a GitHub issue with a tailored checklist based on whether this is a p
 
 Work through the checklist items in order, checking them off as you go.
 
-### 4.2 Bump the version number
-
-Use `usethis::use_version()` to increment the version in `DESCRIPTION`:
-
-```r
-usethis::use_version("patch")   # e.g., 1.1.0 -> 1.1.1
-usethis::use_version("minor")   # e.g., 1.1.0 -> 1.2.0
-usethis::use_version("major")   # e.g., 1.1.0 -> 2.0.0
-```
-
-This also updates the `NEWS.md` heading to reflect the new version number.
-
-### 4.3 Run comprehensive checks
+### 4.2 Run comprehensive checks
 
 Run the full check suite before submitting. Each item here is non-redundant — they catch different things.
 
@@ -311,6 +299,10 @@ For R-hub multi-platform checks, **don't install rhub locally** — modern `rhub
 
 The `[VM]` platforms (`linux`, `windows`, `macos`) just delegate to GHA runners — running them adds nothing on top of `R-CMD-check.yaml`. Sanitizer/valgrind/rchk containers target memory bugs in compiled code and don't apply to pure-R packages like this one.
 
+#### Reverse dependency check
+
+If immunogenetr ever gains reverse dependencies (other CRAN packages that depend on it), run `revdepcheck::revdep_check(num_workers = 4)` and disclose the result in `cran-comments.md`. Skip this step while there are none — the `use_release_issue()` checklist also only includes it conditionally. You can sanity-check from R with `devtools::revdep()` (returns the current list) or by visiting `https://cran.r-project.org/web/packages/immunogenetr/index.html` and looking at the "Reverse dependencies" section.
+
 #### Reading `devtools::check()` output
 
 **The summary box at the bottom of `devtools::check()` output can silently drop ERRORs.** Always check the `Status: N ERROR, M WARNING, K NOTE` line in the *middle* of the output (before the summary box), not just the `0 errors / 1 warning / 1 note`-style summary at the very bottom. If there's a mismatch, trust the middle line — that's R CMD check's verdict; the bottom is devtools post-processing.
@@ -339,7 +331,7 @@ devtools::check(remote = TRUE, manual = TRUE)
 
 Side note: `devtools::check()` may also print a `Warning in system2("quarto", "-V", ...)` about Quarto receiving `TMPDIR=...` as a positional argument. This is a Quarto CLI parsing bug on Windows, harmless, and unrelated to your package.
 
-### 4.4 Update cran-comments.md
+### 4.3 Update cran-comments.md
 
 Edit `cran-comments.md` in the package root to document your test results for the CRAN reviewers. Use your actual local platform/R version (not the literal text below — replace with your environment):
 
@@ -379,6 +371,20 @@ The `nosuggests` platform reports an ERROR at "checking re-building of vignette 
 
 This is the standard interaction between R-hub's `nosuggests` platform and vignettes built with the `rmarkdown` engine. CRAN's own incoming check runs with `_R_CHECK_FORCE_SUGGESTS_=false`, which downgrades this case to a NOTE. The `gcc16` and `donttest` platforms pass cleanly.
 ```
+
+### 4.4 Bump the version number
+
+This is the last step before merging. By bumping at the end of Phase 4 — after the comprehensive checks and `cran-comments.md` are settled — you avoid having to rebump if a check turns up something that requires reworking. This ordering matches the `use_release_issue()` checklist, which places `use_version()` under "Submit to CRAN," not "Prepare for release."
+
+Use `usethis::use_version()` to increment the version in `DESCRIPTION`:
+
+```r
+usethis::use_version("patch")   # e.g., 1.3.0 -> 1.3.1
+usethis::use_version("minor")   # e.g., 1.3.0 -> 1.4.0
+usethis::use_version("major")   # e.g., 1.3.0 -> 2.0.0
+```
+
+This also updates the `NEWS.md` heading to reflect the new version number. Push the version-bump commit so it shows up on the PR; once CI is green on that final push, you're ready for Phase 5.
 
 ---
 
