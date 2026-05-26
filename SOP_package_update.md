@@ -27,42 +27,30 @@ Open `immunogenetr.Rproj` in RStudio. This ensures your working directory and bu
 
 ### 1.2 Pull the latest changes
 
-Make sure you're working from the current state of the repository. The default branch is `master`:
+Make sure you're working from the current state of `master`. In the **RStudio Git pane** (top-right by default):
 
-```bash
-# In the terminal:
-git checkout master
-git pull origin master
-```
+1. Click the branch dropdown (top-right of the Git pane) and select `master`.
+2. Click the **Pull** button — the blue down-arrow icon at the top of the Git pane.
+
+The Git pane should briefly show a progress dialog, then return to a clean state with no pending changes.
 
 ### 1.3 Create or refresh the development branch
 
-Never work directly on `master`. Use a `dev` branch.
+Never work directly on `master`. Use a `dev` branch, which persists across release cycles.
 
-The `dev` branch typically persists across release cycles: after each release is merged to `master` via pull request, the same `dev` branch is reused for the next round of work. So when you start a new cycle, the branch probably already exists but is behind `master`. You have two cases:
+**If `dev` doesn't exist yet (first cycle):** From the R Console:
 
-- **`dev` already exists (typical case).** Advance it to the latest `master` so you start from the post-release state:
-  ```bash
-  git checkout dev
-  git pull origin dev           # sync local dev with remote dev
-  git reset --hard master       # advance dev to master's tip (see note below)
-  git push --force-with-lease   # update remote dev
-  ```
-
-  **Why `reset --hard` rather than `merge --ff-only`?** If the previous release PR was merged with "Squash and merge" (recommended in §5.1), `master` now has one squashed commit while `dev` still has the original N individual commits — the branches have *diverged*, so `merge --ff-only` will fail with `Not possible to fast-forward, aborting`. The squashed commit on `master` contains the same content as the N commits on `dev`, just collapsed, so it's safe to discard `dev`'s old history by resetting. The force-push is needed because remote `dev` still has the pre-squash history; `--force-with-lease` protects against overwriting any new work pushed by someone else.
-
-  If the previous PR was merged with a regular merge commit (not squash), `merge --ff-only` works and the force-push is unneeded — but squash is the SOP-recommended path.
-- **`dev` does not exist yet (first cycle).** Create it from `master`:
-  ```bash
-  git checkout -b dev
-  git push -u origin dev
-  ```
-
-Either way, confirm you're on `dev` before you start making changes:
-
-```bash
-git branch --show-current       # should print: dev
+```r
+usethis::pr_init("dev")
 ```
+
+This creates a fresh `dev` branch from `master`, checks it out locally, sets up upstream tracking, and prepares the branch for development.
+
+**If `dev` exists from a previous cycle:** In the RStudio Git pane, click the branch dropdown and switch to `dev`, then click **Pull** to sync any commits from the remote. You're ready to continue.
+
+You don't need to "reset" `dev` to `master` after a squash merge. The previous release's content is on `master` (in the single squashed commit from §5.1) AND on `dev` (in the original individual commits) — both represent the same code. New work simply goes on top of `dev`'s existing history. When the next release PR is opened, GitHub will diff `dev` against `master` and show only the *new* changes; the previously-squashed commits don't reappear in the PR diff. The PR's commit list will be informational only.
+
+Confirm you're on `dev`: the branch dropdown in the RStudio Git pane should read `dev`.
 
 ### 1.4 Load the package for interactive development
 
@@ -183,38 +171,32 @@ This regenerates `README.md`. Do not edit `README.md` directly.
 
 ### 3.1 Stage and commit changes
 
-Commit frequently as you work on the branch, with descriptive messages:
+Commit frequently as you work on the branch, with descriptive messages.
 
-```bash
-# In the terminal:
-git add <specific files>
-git commit -m "Brief description of changes"
+In the **RStudio Git pane**:
+
+1. Each modified or untracked file appears in the pane with a status icon (M for modified, ? for untracked, etc.).
+2. Tick the checkboxes next to the specific files you want to include in the commit. **Stage specific files** rather than ticking all — this avoids accidentally committing secrets (`.Renviron`, API keys) or stray files.
+3. Click **Commit** (or press `Ctrl+Alt+M`). A dialog opens showing the diff and a message field.
+4. Write a brief, descriptive commit message in the top text field.
+5. Click **Commit** in the dialog. The dialog can stay open for additional commits in the same session.
+
+### 3.2 Push and open the PR
+
+`usethis::pr_push()` does both steps in one call. From the R Console, while on `dev`:
+
+```r
+usethis::pr_push()
 ```
 
-Avoid committing files that contain secrets (e.g., `.Renviron`, API keys). Stage specific files rather than using `git add .` or `git add -A`.
+This pushes `dev` to GitHub (setting up remote tracking if needed), then opens your browser to the GitHub "compare & pull request" page for the branch.
 
-### 3.2 Push the branch to GitHub
+Fill in the PR title and body in the browser:
 
-```bash
-# First push of a brand-new branch (sets up remote tracking):
-git push -u origin dev
+- **Title**: `1.x.y: brief summary` (e.g., `1.4.0: HLA WHO update`)
+- **Body**: a short Summary section and a Test plan checklist, for example:
 
-# Subsequent pushes:
-git push
-```
-
-**Pushing to `dev` does NOT trigger CI by itself.** The GitHub Actions workflows in `.github/workflows/` are configured to run on pushes to `master` and on pull requests — not on pushes to `dev`. If you want CI results for your branch, open the pull request (next step). Once you do, the workflows run against the PR head.
-
-### 3.3 Create a pull request
-
-With your changes pushed and local checks passing, open a pull request from `dev` to `master`. Opening the PR is what actually triggers CI on your work.
-
-The fastest path is the GitHub CLI:
-
-```bash
-gh pr create --base master --head dev \
-  --title "1.x.y: brief summary" \
-  --body "$(cat <<'EOF'
+```markdown
 ## Summary
 
 - Bullet points of what changed.
@@ -225,22 +207,26 @@ gh pr create --base master --head dev \
 - [x] devtools::check() from RStudio (0/0/0 including vignettes)
 - [ ] R-CMD-check on Windows / macOS / Ubuntu (GitHub Actions)
 - [ ] test-coverage run (GitHub Actions) + codecov update
-EOF
-)"
 ```
 
-Alternatively, navigate to https://github.com/k96nb01/immunogenetr_package and click "Compare & pull request" when prompted.
+Click **Create pull request**.
+
+**For pushes after the PR is already open** (additional commits during Phase 4), just click the **Push** button (blue up-arrow) in the RStudio Git pane. `pr_push()` works too but the simple Push button is faster once the PR exists.
 
 Once the PR is open, two workflows run automatically against the PR head:
 
 - **R-CMD-check.yaml** — `R CMD check` on macOS, Windows, and Ubuntu (with multiple R versions).
 - **test-coverage.yaml** — `covr` run, results uploaded to Codecov, README badge updated.
 
-Wait for both to go green before merging. The R-hub workflow (`rhub.yaml`) only runs on manual trigger (workflow_dispatch) — you can invoke it from the Actions tab if you want multi-platform checks beyond what R-CMD-check covers, but it is not required for every PR.
-
-A pull request also gives you a chance to review the full diff of your changes before merging. If you're working with collaborators, they can review and comment on the PR before it's merged.
+Wait for both to go green before merging. The R-hub workflow (`rhub.yaml`) only runs on manual trigger (workflow_dispatch from the Actions tab) — see §4.2 for when to invoke it.
 
 Leave the PR open through Phase 4. Merging happens in Phase 5.
+
+#### Other useful `usethis` PR helpers
+
+- `usethis::pr_view()` — opens the current branch's PR in your browser. Useful when you're on `dev` and want to check CI status quickly.
+- `usethis::pr_resume()` — interactive picker to switch back to a previously-worked-on PR branch.
+- `usethis::pr_pull()` — pulls the latest commits on the current PR branch (useful if you push from another machine or someone else commits to the PR).
 
 ---
 
@@ -269,6 +255,22 @@ This opens a GitHub issue with a tailored checklist based on whether this is a p
 
 Work through the checklist items in order, checking them off as you go.
 
+#### Custom checklist items via `release_bullets()`
+
+The checklist that `use_release_issue()` generates is general-purpose. To add immunogenetr-specific items that should appear in every release issue, define a `release_bullets()` function in `R/utils-release.R`:
+
+```r
+release_bullets <- function() {
+  c(
+    "Verify DQA1/DPB1/DPA1 handling matches the latest WHO update",
+    "Check `inst/CITATION` DOI still resolves",
+    "Confirm `Haplotype_frequencies` dataset is up to date"
+  )
+}
+```
+
+This function should not be exported — it's internal infrastructure. `use_release_issue()` looks for it automatically when generating the checklist and appends any returned strings as additional bulleted items. Update the list as you discover new immunogenetr-specific things to remember during a release.
+
 ### 4.2 Run comprehensive checks
 
 Run the full check suite before submitting. Each item here is non-redundant — they catch different things.
@@ -290,6 +292,14 @@ urlchecker::url_check()
 # R is R-release, not R-devel.
 devtools::check_win_devel()
 ```
+
+Also refresh the GitHub-derived metadata in `DESCRIPTION` before submitting. From R:
+
+```r
+usethis::use_github_links()
+```
+
+This pulls the GitHub remote URL and writes/updates the `URL:` and `BugReports:` fields in `DESCRIPTION`. It's idempotent — if the fields are already correct, it does nothing. The canonical `use_release_issue()` checklist includes this as a conditional step.
 
 For R-hub multi-platform checks, **don't install rhub locally** — modern `rhub` v2 runs on GitHub Actions runners anyway, so the local invocation is just a remote queue. Instead, trigger the existing `rhub.yaml` workflow from the Actions tab (https://github.com/k96nb01/immunogenetr_package/actions/workflows/rhub.yaml) with **workflow_dispatch**. For the `config` input, the platforms that add coverage beyond the existing `R-CMD-check.yaml` GHA matrix are:
 
@@ -401,14 +411,12 @@ With Phase 4 complete and CI green, this phase moves the release from `dev` onto
 
 ### 5.2 Sync local master
 
-Update your local repository so the next step works from the post-merge state:
+Update your local repository so §5.3 works from the post-merge state. In the **RStudio Git pane**:
 
-```bash
-git checkout master
-git pull origin master
-```
+1. Click the branch dropdown and switch to `master`.
+2. Click the **Pull** button.
 
-Don't delete local `dev` either — same reason as above.
+The pull brings down the squashed release commit you just merged. Don't delete local `dev` either — same reason as in §5.1.
 
 ### 5.3 Submit to CRAN
 
@@ -644,11 +652,17 @@ Once §A.1–A.8 are done, the site is fully self-maintaining for normal develop
 | Run R CMD check (CRAN-flavored) | `devtools::check(remote = TRUE, manual = TRUE)` |
 | Submit to win-builder R-devel | `devtools::check_win_devel()` |
 | Check URLs | `urlchecker::url_check()` |
+| Refresh GitHub URL/BugReports in DESCRIPTION | `usethis::use_github_links()` |
 | Trigger R-hub multi-platform | (workflow_dispatch on `rhub.yaml` from Actions tab) |
 | Check code coverage | `covr::package_coverage()` |
 | Interactive coverage report | `covr::report()` |
 | Preview a vignette | `pkgdown::build_article("immunogenetr")` |
 | Knit README | `devtools::build_readme()` |
+| Create `dev` branch (first cycle) | `usethis::pr_init("dev")` |
+| Push branch + open PR creation page | `usethis::pr_push()` |
+| Open current PR in browser | `usethis::pr_view()` |
+| Switch back to a PR branch | `usethis::pr_resume()` |
+| Pull latest commits on PR branch | `usethis::pr_pull()` |
 | Create release checklist | `usethis::use_release_issue()` |
 | Bump version | `usethis::use_version("patch")` |
 | Bump to dev version | `usethis::use_dev_version()` |
