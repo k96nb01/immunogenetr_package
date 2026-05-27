@@ -165,6 +165,12 @@ devtools::build_readme()
 
 This regenerates `README.md`. Do not edit `README.md` directly.
 
+**If you changed `README.Rmd`, preview the pkgdown render locally before merging.** The pkgdown site renders `README.md` through a different pandoc invocation than GitHub does, so a README that looks right on the repo page can still break on immunogenetr.org. Catch regressions like the v1.3.0 hex sticker / GL string superscript regressions (see §A.3) *before* they hit `master` and auto-deploy:
+
+```r
+pkgdown::build_home()   # or pkgdown::build_site() for a full rebuild
+```
+
 ---
 
 ## Phase 3: Committing, Pushing, and Opening the PR
@@ -528,9 +534,11 @@ This builds into `docs/` and opens the site in your browser. Confirm that the fu
 **Rendering gotchas encountered during initial setup** (worth knowing because GitHub renders the same source files differently than pkgdown does, so README/vignette content that looks right on the GitHub repo page can break on the pkgdown site — and vice versa):
 
 - **`^` in HLA GL strings rendering as superscript.** pkgdown renders Markdown through pandoc, which has a `superscript` extension enabled by default. Pandoc interprets `^…^` as `<sup>…</sup>`, which mangles every GL string (and the `*` characters between caret pairs become `<em>` italics for the same reason). Two strategies are in use:
-  - **README.Rmd:** the YAML sets `md_extensions: -superscript-subscript` so the rendered `README.md` keeps `\^` and `\*` escapes as literals, and a `kable_hla()` helper escapes `*` and `^` per cell before calling `knitr::kable()`. This means tables are regenerated live from the package on every knit instead of being hand-pasted, so they don't go stale when functions change.
+  - **README.Rmd:** the YAML sets `md_extensions: -superscript-subscript` (belt-and-braces for any free-text `^` in the README body), and a `kable_hla()` helper wraps each character cell in backticks (code spans) before calling `knitr::kable()`. Code spans are treated as literal text by every markdown renderer, so `*` and `^` inside GL strings survive both the `github_document` → `README.md` step and pkgdown's pandoc invocation unchanged. Tables are regenerated live from the package on every knit instead of being hand-pasted, so they don't go stale when functions change.
+
+    **Do not "improve" `kable_hla()` to use `\*` / `\^` escaping instead.** That approach works for the `README.md` artifact rendered on GitHub but fails on pkgdown: pandoc's `github_document` writer drops the redundant `\^` escape (because superscript is disabled in YAML), leaving a bare `^` in `README.md` that pkgdown's pandoc (superscript enabled by default) re-interprets as `<sup>`. The escape strategy regressed the site at v1.3.0; PR #37 restored backtick wrapping.
   - **vignettes/immunogenetr.Rmd:** a `knit_print.data.frame` S3 method in the setup chunk wraps `knitr::kable(x, format = "html")` output in a pandoc raw-HTML block (```` ```{=html} ```` ... ```` ``` ````). The raw block tells pandoc to pass the HTML through verbatim, bypassing its `markdown_in_html_blocks` extension that would otherwise re-parse cell contents and re-trigger the superscript problem.
-- **Hex sticker rendering at full image size.** The default pattern of `<img src='...' height="139" />` in the README header isn't honored consistently by pkgdown's CSS. Add an explicit `width` plus an inline `style` attribute (`style="height:139px; width:auto; max-width:120px;"`) to force the size — inline style beats Bootstrap's container rules.
+- **Hex sticker rendering at full image size.** The default pattern of `<img src='...' height="139" />` in the README header isn't honored consistently by pkgdown's CSS. Add an explicit `width` plus an inline `style` attribute (`style="height:139px; width:auto; max-width:120px;"`) to force the size — inline style beats Bootstrap's container rules. **Do not strip these attributes during a README refresh** — they were dropped in the v1.3.0 README rewrite and the site regressed (restored in PR #37).
 - **Vignette outputs appearing as code blocks instead of tables.** The default `html_vignette` output prints data frames as monospace `#>`-prefixed text. Setting `df_print: kable` in the YAML works for direct `rmarkdown::render()` but pkgdown's article rendering path doesn't always honor it — use the `knit_print` method described above to be reliable across both paths.
 - **DESCRIPTION `URL:` field must include the pkgdown site URL.** `pkgdown::build_site()` warns if the canonical site URL in `_pkgdown.yml` isn't also listed in DESCRIPTION's `URL:` field. Add it as the first entry.
 
