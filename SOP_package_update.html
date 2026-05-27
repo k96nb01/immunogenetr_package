@@ -169,6 +169,9 @@
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">build_readme</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This regenerates <code>README.md</code>. Do not edit <code>README.md</code> directly.</p>
+<p><strong>If you changed <code>README.Rmd</code>, preview the pkgdown render locally before merging.</strong> The pkgdown site renders <code>README.md</code> through a different pandoc invocation than GitHub does, so a README that looks right on the repo page can still break on immunogenetr.org. Catch regressions like the v1.3.0 hex sticker / GL string superscript regressions (see §A.3) <em>before</em> they hit <code>master</code> and auto-deploy:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">pkgdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgdown.r-lib.org/reference/build_home.html" class="external-link">build_home</a></span><span class="op">(</span><span class="op">)</span>   <span class="co"># or pkgdown::build_site() for a full rebuild</span></span></code></pre></div>
 <hr></div>
 </div>
 <div class="section level2">
@@ -176,39 +179,39 @@
 <div class="section level3">
 <h3 id="id_31-stage-and-commit-changes">3.1 Stage and commit changes<a class="anchor" aria-label="anchor" href="#id_31-stage-and-commit-changes"></a></h3>
 <p>Commit frequently as you work on the branch, with descriptive messages:</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># In the terminal:</span></span>
-<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a><span class="fu">git</span> add <span class="op">&lt;</span>specific files<span class="op">&gt;</span></span>
-<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Brief description of changes"</span></span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># In the terminal:</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">git</span> add <span class="op">&lt;</span>specific files<span class="op">&gt;</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Brief description of changes"</span></span></code></pre></div>
 <p>Avoid committing files that contain secrets (e.g., <code>.Renviron</code>, API keys). Stage specific files rather than using <code>git add .</code> or <code>git add -A</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="id_32-push-the-branch-to-github">3.2 Push the branch to GitHub<a class="anchor" aria-label="anchor" href="#id_32-push-the-branch-to-github"></a></h3>
-<div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="co"># First push of a brand-new branch (sets up remote tracking):</span></span>
-<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">git</span> push <span class="at">-u</span> origin dev</span>
-<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a></span>
-<span id="cb17-4"><a href="#cb17-4" tabindex="-1"></a><span class="co"># Subsequent pushes:</span></span>
-<span id="cb17-5"><a href="#cb17-5" tabindex="-1"></a><span class="fu">git</span> push</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># First push of a brand-new branch (sets up remote tracking):</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a><span class="fu">git</span> push <span class="at">-u</span> origin dev</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co"># Subsequent pushes:</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a><span class="fu">git</span> push</span></code></pre></div>
 <p><strong>Pushing to <code>dev</code> does NOT trigger CI by itself.</strong> The GitHub Actions workflows in <code>.github/workflows/</code> are configured to run on pushes to <code>master</code> and on pull requests — not on pushes to <code>dev</code>. If you want CI results for your branch, open the pull request (next step). Once you do, the workflows run against the PR head.</p>
 </div>
 <div class="section level3">
 <h3 id="id_33-create-a-pull-request">3.3 Create a pull request<a class="anchor" aria-label="anchor" href="#id_33-create-a-pull-request"></a></h3>
 <p>With your changes pushed and local checks passing, open a pull request from <code>dev</code> to <code>master</code>. Opening the PR is what actually triggers CI on your work.</p>
 <p>The fastest path is the GitHub CLI:</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="ex">gh</span> pr create <span class="at">--base</span> master <span class="at">--head</span> dev <span class="dt">\</span></span>
-<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>  <span class="at">--title</span> <span class="st">"1.x.y: brief summary"</span> <span class="dt">\</span></span>
-<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a>  <span class="at">--body</span> <span class="st">"</span><span class="va">$(</span><span class="fu">cat</span> <span class="op">&lt;&lt;'EOF'</span></span>
-<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="st">## Summary</span></span>
-<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a></span>
-<span id="cb18-6"><a href="#cb18-6" tabindex="-1"></a><span class="st">- Bullet points of what changed.</span></span>
-<span id="cb18-7"><a href="#cb18-7" tabindex="-1"></a></span>
-<span id="cb18-8"><a href="#cb18-8" tabindex="-1"></a><span class="st">## Test plan</span></span>
-<span id="cb18-9"><a href="#cb18-9" tabindex="-1"></a></span>
-<span id="cb18-10"><a href="#cb18-10" tabindex="-1"></a><span class="st">- [x] devtools::test()</span></span>
-<span id="cb18-11"><a href="#cb18-11" tabindex="-1"></a><span class="st">- [x] devtools::check() from RStudio (0/0/0 including vignettes)</span></span>
-<span id="cb18-12"><a href="#cb18-12" tabindex="-1"></a><span class="st">- [ ] R-CMD-check on Windows / macOS / Ubuntu (GitHub Actions)</span></span>
-<span id="cb18-13"><a href="#cb18-13" tabindex="-1"></a><span class="st">- [ ] test-coverage run (GitHub Actions) + codecov update</span></span>
-<span id="cb18-14"><a href="#cb18-14" tabindex="-1"></a><span class="op">EOF</span></span>
-<span id="cb18-15"><a href="#cb18-15" tabindex="-1"></a><span class="va">)</span><span class="st">"</span></span></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="ex">gh</span> pr create <span class="at">--base</span> master <span class="at">--head</span> dev <span class="dt">\</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>  <span class="at">--title</span> <span class="st">"1.x.y: brief summary"</span> <span class="dt">\</span></span>
+<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a>  <span class="at">--body</span> <span class="st">"</span><span class="va">$(</span><span class="fu">cat</span> <span class="op">&lt;&lt;'EOF'</span></span>
+<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="st">## Summary</span></span>
+<span id="cb19-5"><a href="#cb19-5" tabindex="-1"></a></span>
+<span id="cb19-6"><a href="#cb19-6" tabindex="-1"></a><span class="st">- Bullet points of what changed.</span></span>
+<span id="cb19-7"><a href="#cb19-7" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" tabindex="-1"></a><span class="st">## Test plan</span></span>
+<span id="cb19-9"><a href="#cb19-9" tabindex="-1"></a></span>
+<span id="cb19-10"><a href="#cb19-10" tabindex="-1"></a><span class="st">- [x] devtools::test()</span></span>
+<span id="cb19-11"><a href="#cb19-11" tabindex="-1"></a><span class="st">- [x] devtools::check() from RStudio (0/0/0 including vignettes)</span></span>
+<span id="cb19-12"><a href="#cb19-12" tabindex="-1"></a><span class="st">- [ ] R-CMD-check on Windows / macOS / Ubuntu (GitHub Actions)</span></span>
+<span id="cb19-13"><a href="#cb19-13" tabindex="-1"></a><span class="st">- [ ] test-coverage run (GitHub Actions) + codecov update</span></span>
+<span id="cb19-14"><a href="#cb19-14" tabindex="-1"></a><span class="op">EOF</span></span>
+<span id="cb19-15"><a href="#cb19-15" tabindex="-1"></a><span class="va">)</span><span class="st">"</span></span></code></pre></div>
 <p>Alternatively, navigate to <a href="https://github.com/k96nb01/immunogenetr_package" class="external-link uri">https://github.com/k96nb01/immunogenetr_package</a> and click “Compare &amp; pull request” when prompted.</p>
 <p>Once the PR is open, two workflows run automatically against the PR head:</p>
 <ul><li>
@@ -226,21 +229,21 @@
 <li>Click <strong>“Confirm merge”</strong>.</li>
 <li>Do NOT delete the remote <code>dev</code> branch — it is reused for the next release cycle (see §1.3). Leave it in place; you will fast-forward it to the new <code>master</code> tip at the start of the next cycle.</li>
 </ol><p>Then update your local repository:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co"># In the terminal:</span></span>
-<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a><span class="fu">git</span> checkout master</span>
-<span id="cb19-3"><a href="#cb19-3" tabindex="-1"></a><span class="fu">git</span> pull origin master</span>
-<span id="cb19-4"><a href="#cb19-4" tabindex="-1"></a><span class="co"># (do NOT delete local 'dev' — same reason as above)</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># In the terminal:</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="fu">git</span> checkout master</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">git</span> pull origin master</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="co"># (do NOT delete local 'dev' — same reason as above)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="id_35-working-without-a-pull-request-solo-development">3.5 Working without a pull request (solo development)<a class="anchor" aria-label="anchor" href="#id_35-working-without-a-pull-request-solo-development"></a></h3>
 <p>If you prefer a simpler workflow without pull requests, you can merge locally:</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># Switch back to master and merge your dev branch:</span></span>
-<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a><span class="fu">git</span> checkout master</span>
-<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a><span class="fu">git</span> pull origin master</span>
-<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a><span class="fu">git</span> merge dev</span>
-<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="fu">git</span> push origin master</span>
-<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a></span>
-<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a><span class="co"># Leave the 'dev' branch in place for the next cycle.</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="co"># Switch back to master and merge your dev branch:</span></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a><span class="fu">git</span> checkout master</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a><span class="fu">git</span> pull origin master</span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="fu">git</span> merge dev</span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a><span class="fu">git</span> push origin master</span>
+<span id="cb21-6"><a href="#cb21-6" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" tabindex="-1"></a><span class="co"># Leave the 'dev' branch in place for the next cycle.</span></span></code></pre></div>
 <p>Note: skipping the pull request also skips the CI gate. <code>R-CMD-check.yaml</code> and <code>test-coverage.yaml</code> still run on the push to <code>master</code>, but by then it is too late to catch problems before they are on the default branch. Prefer the PR path when you can.</p>
 <p>This is faster for solo work but skips the review step that pull requests provide.</p>
 <p>Check the Actions tab on GitHub (<a href="https://github.com/k96nb01/immunogenetr_package/actions" class="external-link uri">https://github.com/k96nb01/immunogenetr_package/actions</a>) to confirm everything passes.</p>
@@ -251,7 +254,7 @@
 <div class="section level3">
 <h3 id="id_41-create-a-release-checklist">4.1 Create a release checklist<a class="anchor" aria-label="anchor" href="#id_41-create-a-release-checklist"></a></h3>
 <p>When you’re ready to release a new version to CRAN, create a structured checklist as a GitHub issue:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_release_issue</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This opens a GitHub issue with a tailored checklist based on whether this is a patch, minor, or major release. The checklist includes items like:</p>
 <ul><li>Checking your current CRAN status and any existing NOTEs.</li>
@@ -265,7 +268,7 @@
 <div class="section level3">
 <h3 id="id_42-bump-the-version-number">4.2 Bump the version number<a class="anchor" aria-label="anchor" href="#id_42-bump-the-version-number"></a></h3>
 <p>Use <code>usethis::use_version()</code> to increment the version in <code>DESCRIPTION</code>:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_version</span><span class="op">(</span><span class="st">"patch"</span><span class="op">)</span>   <span class="co"># e.g., 1.1.0 -&gt; 1.1.1</span></span>
 <span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_version</span><span class="op">(</span><span class="st">"minor"</span><span class="op">)</span>   <span class="co"># e.g., 1.1.0 -&gt; 1.2.0</span></span>
 <span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_version</span><span class="op">(</span><span class="st">"major"</span><span class="op">)</span>   <span class="co"># e.g., 1.1.0 -&gt; 2.0.0</span></span></code></pre></div>
@@ -274,7 +277,7 @@
 <div class="section level3">
 <h3 id="id_43-run-comprehensive-checks">4.3 Run comprehensive checks<a class="anchor" aria-label="anchor" href="#id_43-run-comprehensive-checks"></a></h3>
 <p>Run the full check suite before submitting:</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Standard check</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">check</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
@@ -304,7 +307,7 @@ There are currently no downstream dependencies for this package.</code></pre>
 </div>
 <div class="section level3">
 <h3 id="id_45-submit-to-cran">4.5 Submit to CRAN<a class="anchor" aria-label="anchor" href="#id_45-submit-to-cran"></a></h3>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">submit_cran</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This builds the package, submits it to CRAN, and creates a <code>CRAN-SUBMISSION</code> file that records the submission details. You will receive a confirmation email from CRAN that you need to respond to.</p>
 <hr></div>
@@ -314,7 +317,7 @@ There are currently no downstream dependencies for this package.</code></pre>
 <div class="section level3">
 <h3 id="id_51-create-a-github-release">5.1 Create a GitHub release<a class="anchor" aria-label="anchor" href="#id_51-create-a-github-release"></a></h3>
 <p>Once CRAN has accepted the package:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_github_release</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This creates a Git tag and a corresponding GitHub release, using information from <code>CRAN-SUBMISSION</code> to populate the release notes. It also deletes the <code>CRAN-SUBMISSION</code> file.</p>
 <hr></div>
@@ -330,11 +333,11 @@ There are currently no downstream dependencies for this package.</code></pre>
 </ul><div class="section level3">
 <h3 id="a1-bootstrap-pkgdown-from-a-dedicated-branch">A.1 Bootstrap pkgdown from a dedicated branch<a class="anchor" aria-label="anchor" href="#a1-bootstrap-pkgdown-from-a-dedicated-branch"></a></h3>
 <p>Do not bundle this work into your release-cycle <code>dev</code> branch — pkgdown setup is orthogonal infrastructure and should land in its own atomic PR, decoupled from any in-flight package changes. Create a short-lived branch off <code>master</code>:</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="fu">git</span> checkout master</span>
-<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a><span class="fu">git</span> pull origin master</span>
-<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a><span class="fu">git</span> checkout <span class="at">-b</span> pkgdown-setup</span></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="fu">git</span> checkout master</span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a><span class="fu">git</span> pull origin master</span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a><span class="fu">git</span> checkout <span class="at">-b</span> pkgdown-setup</span></code></pre></div>
 <p>Then from R in the package root:</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_pkgdown_github_pages</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This single command will:</p>
 <ul><li>Create <code>_pkgdown.yml</code> in the package root.</li>
@@ -347,28 +350,29 @@ There are currently no downstream dependencies for this package.</code></pre>
 <div class="section level3">
 <h3 id="a2-set-the-canonical-site-url">A.2 Set the canonical site URL<a class="anchor" aria-label="anchor" href="#a2-set-the-canonical-site-url"></a></h3>
 <p>Open the newly created <code>_pkgdown.yml</code> and set the <code>url</code> field at the top:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a><span class="fu">url</span><span class="kw">:</span><span class="at"> https://immunogenetr.org</span></span>
-<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a></span>
-<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a><span class="fu">template</span><span class="kw">:</span></span>
-<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a><span class="at">  </span><span class="fu">bootstrap</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">url</span><span class="kw">:</span><span class="at"> https://immunogenetr.org</span></span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a></span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a><span class="fu">template</span><span class="kw">:</span></span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a><span class="at">  </span><span class="fu">bootstrap</span><span class="kw">:</span><span class="at"> </span><span class="dv">5</span></span></code></pre></div>
 <p>The <code>url</code> value controls canonical links and the search index. Set it to the custom domain now, before DNS is wired up — you want the right URL baked into the site from the first deploy.</p>
 </div>
 <div class="section level3">
 <h3 id="a3-preview-locally">A.3 Preview locally<a class="anchor" aria-label="anchor" href="#a3-preview-locally"></a></h3>
 <p>Before pushing, build and preview the site:</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgdown.r-lib.org/reference/build_site.html" class="external-link">build_site</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This builds into <code>docs/</code> and opens the site in your browser. Confirm that the function reference, vignette, and README render correctly.</p>
 <p><strong>Rendering gotchas encountered during initial setup</strong> (worth knowing because GitHub renders the same source files differently than pkgdown does, so README/vignette content that looks right on the GitHub repo page can break on the pkgdown site — and vice versa):</p>
 <ul><li>
 <strong><code>^</code> in HLA GL strings rendering as superscript.</strong> pkgdown renders Markdown through pandoc, which has a <code>superscript</code> extension enabled by default. Pandoc interprets <code>^…^</code> as <code>&lt;sup&gt;…&lt;/sup&gt;</code>, which mangles every GL string (and the <code>*</code> characters between caret pairs become <code>&lt;em&gt;</code> italics for the same reason). Two strategies are in use:
 <ul><li>
-<strong>README.Rmd:</strong> the YAML sets <code>md_extensions: -superscript-subscript</code> so the rendered <code>README.md</code> keeps <code>\^</code> and <code>\*</code> escapes as literals, and a <code>kable_hla()</code> helper escapes <code>*</code> and <code>^</code> per cell before calling <code><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">knitr::kable()</a></code>. This means tables are regenerated live from the package on every knit instead of being hand-pasted, so they don’t go stale when functions change.</li>
-<li>
-<strong>vignettes/immunogenetr.Rmd:</strong> a <code>knit_print.data.frame</code> S3 method in the setup chunk wraps <code>knitr::kable(x, format = "html")</code> output in a pandoc raw-HTML block (<code>```{=html}</code> … <code>```</code>). The raw block tells pandoc to pass the HTML through verbatim, bypassing its <code>markdown_in_html_blocks</code> extension that would otherwise re-parse cell contents and re-trigger the superscript problem.</li>
+<p><strong>README.Rmd:</strong> the YAML sets <code>md_extensions: -superscript-subscript</code> (belt-and-braces for any free-text <code>^</code> in the README body), and a <code>kable_hla()</code> helper wraps each character cell in backticks (code spans) before calling <code><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">knitr::kable()</a></code>. Code spans are treated as literal text by every markdown renderer, so <code>*</code> and <code>^</code> inside GL strings survive both the <code>github_document</code> → <code>README.md</code> step and pkgdown’s pandoc invocation unchanged. Tables are regenerated live from the package on every knit instead of being hand-pasted, so they don’t go stale when functions change.</p>
+<p><strong>Do not “improve” <code>kable_hla()</code> to use <code>\*</code> / <code>\^</code> escaping instead.</strong> That approach works for the <code>README.md</code> artifact rendered on GitHub but fails on pkgdown: pandoc’s <code>github_document</code> writer drops the redundant <code>\^</code> escape (because superscript is disabled in YAML), leaving a bare <code>^</code> in <code>README.md</code> that pkgdown’s pandoc (superscript enabled by default) re-interprets as <code>&lt;sup&gt;</code>. The escape strategy regressed the site at v1.3.0; PR #37 restored backtick wrapping.</p>
+</li>
+<li><p><strong>vignettes/immunogenetr.Rmd:</strong> a <code>knit_print.data.frame</code> S3 method in the setup chunk wraps <code>knitr::kable(x, format = "html")</code> output in a pandoc raw-HTML block (<code>```{=html}</code> … <code>```</code>). The raw block tells pandoc to pass the HTML through verbatim, bypassing its <code>markdown_in_html_blocks</code> extension that would otherwise re-parse cell contents and re-trigger the superscript problem.</p></li>
 </ul></li>
 <li>
-<strong>Hex sticker rendering at full image size.</strong> The default pattern of <code>&lt;img src='...' height="139" /&gt;</code> in the README header isn’t honored consistently by pkgdown’s CSS. Add an explicit <code>width</code> plus an inline <code>style</code> attribute (<code>style="height:139px; width:auto; max-width:120px;"</code>) to force the size — inline style beats Bootstrap’s container rules.</li>
+<strong>Hex sticker rendering at full image size.</strong> The default pattern of <code>&lt;img src='...' height="139" /&gt;</code> in the README header isn’t honored consistently by pkgdown’s CSS. Add an explicit <code>width</code> plus an inline <code>style</code> attribute (<code>style="height:139px; width:auto; max-width:120px;"</code>) to force the size — inline style beats Bootstrap’s container rules. <strong>Do not strip these attributes during a README refresh</strong> — they were dropped in the v1.3.0 README rewrite and the site regressed (restored in PR #37).</li>
 <li>
 <strong>Vignette outputs appearing as code blocks instead of tables.</strong> The default <code>html_vignette</code> output prints data frames as monospace <code>#&gt;</code>-prefixed text. Setting <code>df_print: kable</code> in the YAML works for direct <code><a href="https://pkgs.rstudio.com/rmarkdown/reference/render.html" class="external-link">rmarkdown::render()</a></code> but pkgdown’s article rendering path doesn’t always honor it — use the <code>knit_print</code> method described above to be reliable across both paths.</li>
 <li>
@@ -377,18 +381,18 @@ There are currently no downstream dependencies for this package.</code></pre>
 <div class="section level3">
 <h3 id="a4-commit-pr-merge">A.4 Commit, PR, merge<a class="anchor" aria-label="anchor" href="#a4-commit-pr-merge"></a></h3>
 <p>Stage the new pkgdown files and open a PR as usual:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="fu">git</span> add _pkgdown.yml .gitignore .Rbuildignore .github/workflows/pkgdown.yaml</span>
-<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Add pkgdown documentation site"</span></span>
-<span id="cb31-3"><a href="#cb31-3" tabindex="-1"></a><span class="fu">git</span> push <span class="at">-u</span> origin pkgdown-setup</span>
-<span id="cb31-4"><a href="#cb31-4" tabindex="-1"></a><span class="ex">gh</span> pr create <span class="at">--base</span> master <span class="at">--head</span> pkgdown-setup <span class="dt">\</span></span>
-<span id="cb31-5"><a href="#cb31-5" tabindex="-1"></a>  <span class="at">--title</span> <span class="st">"Add pkgdown documentation site"</span> <span class="dt">\</span></span>
-<span id="cb31-6"><a href="#cb31-6" tabindex="-1"></a>  <span class="at">--body</span> <span class="st">"Initial pkgdown setup; site deploys to immunogenetr.org on merge."</span></span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="fu">git</span> add _pkgdown.yml .gitignore .Rbuildignore .github/workflows/pkgdown.yaml</span>
+<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a><span class="fu">git</span> commit <span class="at">-m</span> <span class="st">"Add pkgdown documentation site"</span></span>
+<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a><span class="fu">git</span> push <span class="at">-u</span> origin pkgdown-setup</span>
+<span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a><span class="ex">gh</span> pr create <span class="at">--base</span> master <span class="at">--head</span> pkgdown-setup <span class="dt">\</span></span>
+<span id="cb32-5"><a href="#cb32-5" tabindex="-1"></a>  <span class="at">--title</span> <span class="st">"Add pkgdown documentation site"</span> <span class="dt">\</span></span>
+<span id="cb32-6"><a href="#cb32-6" tabindex="-1"></a>  <span class="at">--body</span> <span class="st">"Initial pkgdown setup; site deploys to immunogenetr.org on merge."</span></span></code></pre></div>
 <p>Once CI is green, merge to <code>master</code>. The <code>pkgdown.yaml</code> workflow now runs on every push to <code>master</code> and publishes to <code>gh-pages</code>. Confirm the first run completes successfully under the Actions tab. After the merge you can delete the <code>pkgdown-setup</code> branch — unlike <code>dev</code>, it is not reused.</p>
 <p>If your release-cycle <code>dev</code> branch already has unmerged work on it (so it has diverged from <code>master</code>), bring the pkgdown changes into it after this PR lands so <code>dev</code> stays current:</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="fu">git</span> checkout dev</span>
-<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a><span class="fu">git</span> pull origin dev</span>
-<span id="cb32-3"><a href="#cb32-3" tabindex="-1"></a><span class="fu">git</span> merge master            <span class="co"># regular merge commit; not a fast-forward</span></span>
-<span id="cb32-4"><a href="#cb32-4" tabindex="-1"></a><span class="fu">git</span> push origin dev</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="fu">git</span> checkout dev</span>
+<span id="cb33-2"><a href="#cb33-2" tabindex="-1"></a><span class="fu">git</span> pull origin dev</span>
+<span id="cb33-3"><a href="#cb33-3" tabindex="-1"></a><span class="fu">git</span> merge master            <span class="co"># regular merge commit; not a fast-forward</span></span>
+<span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a><span class="fu">git</span> push origin dev</span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="a5-set-the-custom-domain-on-github">A.5 Set the custom domain on GitHub<a class="anchor" aria-label="anchor" href="#a5-set-the-custom-domain-on-github"></a></h3>
@@ -414,7 +418,7 @@ There are currently no downstream dependencies for this package.</code></pre>
 <p>Optional: add a <code>CNAME</code> record <code>www</code> → <code>k96nb01.github.io</code> (DNS only) if you want <code>www.immunogenetr.org</code> to redirect to the apex.</p>
 <p>Cloudflare will display an orange banner reading “Proxying is required for most security and performance features.” <strong>Ignore it.</strong> That advice is for typical web origin servers, not for GitHub Pages with Let’s Encrypt. Leave every record DNS-only.</p>
 <p>DNS typically propagates in a few minutes. Verify with:</p>
-<div class="sourceCode" id="cb35"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="ex">nslookup</span> immunogenetr.org</span></code></pre></div>
+<div class="sourceCode" id="cb36"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb36-1"><a href="#cb36-1" tabindex="-1"></a><span class="ex">nslookup</span> immunogenetr.org</span></code></pre></div>
 <p>Once the apex resolves to the GitHub Pages IPs, return to <strong>Settings → Pages</strong> and tick <strong>Enforce HTTPS</strong>.</p>
 </div>
 <div class="section level3">
@@ -424,7 +428,7 @@ There are currently no downstream dependencies for this package.</code></pre>
 <div class="section level3">
 <h3 id="a8-ongoing-local-preview-during-development">A.8 Ongoing: local preview during development<a class="anchor" aria-label="anchor" href="#a8-ongoing-local-preview-during-development"></a></h3>
 <p>After this setup, you can preview documentation changes locally any time:</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">pkgdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgdown.r-lib.org/reference/build_site.html" class="external-link">build_site</a></span><span class="op">(</span><span class="op">)</span>                       <span class="co"># full rebuild (slow)</span></span>
 <span><span class="fu">pkgdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgdown.r-lib.org/reference/build_reference.html" class="external-link">build_reference</a></span><span class="op">(</span><span class="op">)</span>                  <span class="co"># function reference only (fast)</span></span>
 <span><span class="fu">pkgdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgdown.r-lib.org/reference/build_articles.html" class="external-link">build_article</a></span><span class="op">(</span><span class="st">"immunogenetr"</span><span class="op">)</span>      <span class="co"># single named article (fastest)</span></span>
