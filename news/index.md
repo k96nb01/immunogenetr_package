@@ -2,6 +2,8 @@
 
 ## immunogenetr 1.3.0
 
+CRAN release: 2026-05-26
+
 - Rewrote `HLA_prefix_remove` to skip the GL-string
   expand-and-reassemble round-trip. The previous implementation expanded
   each GL string into an ambiguity tibble, ran `str_replace` on it, and
