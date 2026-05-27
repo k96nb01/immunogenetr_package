@@ -17,26 +17,31 @@ knitr::opts_chunk$set(
   warning = FALSE    # suppress dplyr summarise/grouping messages
 )
 
-# kable_hla(): wrap knitr::kable with per-cell escaping of the HLA
-# metacharacters '*' and '^'. GitHub's markdown renderer (GFM) treats
-# '*' pairs inside pipe-table cells as italic markers and '^' pairs as
-# superscript (via pandoc's intermediate step). Escaping them to '\*' and
-# '\^' produces literal output on GitHub without affecting other renderers.
+# kable_hla(): wrap knitr::kable, rendering each character cell as a
+# code span (backtick-wrapped). HLA GL strings contain '*' and '^', both
+# of which trigger markdown formatting downstream: GitHub Flavored Markdown
+# turns '*...*' into italics, and pandoc's superscript extension (enabled
+# by default in pkgdown's render pipeline) turns '^...^' into <sup>...</sup>.
+# Wrapping cell values in backticks bypasses both because content inside
+# a code span is treated as literal text by every markdown renderer.
+# This survives the github_document -> README.md -> pkgdown round-trip,
+# which '\\*' / '\\^' escaping does not (pandoc drops the redundant '\\^'
+# escape when superscript is disabled, leaving a bare '^' that pkgdown
+# then re-interprets).
 #
 # Uses an explicit column loop rather than `df[] <- lapply(df, ...)` so the
 # function is robust to tibble-specific [<- methods.
 kable_hla <- function(df) {
   for (nm in names(df)) {
     if (is.character(df[[nm]])) {
-      df[[nm]] <- gsub("\\*", "\\\\*", df[[nm]])
-      df[[nm]] <- gsub("\\^", "\\\\^", df[[nm]])
+      df[[nm]] <- paste0("`", df[[nm]], "`")
     }
   }
   knitr::kable(df)
 }
 ```
 
-# immunogenetr <img src='man/figures/immunogenetr_sticker.png' align="right" height="139" />
+# immunogenetr <img src='man/figures/immunogenetr_sticker.png' align="right" width="120" height="139" style="height:139px; width:auto; max-width:120px;" alt="immunogenetr hex sticker" />
 
 <!-- badges: start -->
 
