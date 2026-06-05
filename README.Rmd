@@ -47,6 +47,8 @@ kable_hla <- function(df) {
 
 [![codecov](https://codecov.io/gh/k96nb01/immunogenetr_package/graph/badge.svg?token=16D4U43VET)](https://app.codecov.io/gh/k96nb01/immunogenetr_package)
 [![R-CMD-check](https://github.com/k96nb01/immunogenetr_package/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/k96nb01/immunogenetr_package/actions/workflows/R-CMD-check.yaml)
+[![CRAN status](https://www.r-pkg.org/badges/version/immunogenetr)](https://CRAN.R-project.org/package=immunogenetr)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/immunogenetr)](https://CRAN.R-project.org/package=immunogenetr)
 <!-- badges: end -->
 
 immunogenetr is a comprehensive toolkit for clinical HLA informatics. It is built on tidyverse principles and makes use of genotype list string (GL string, https://glstring.org/) for storing and using HLA genotype data. 

@@ -27,37 +27,30 @@ Open `immunogenetr.Rproj` in RStudio. This ensures your working directory and bu
 
 ### 1.2 Pull the latest changes
 
-Make sure you're working from the current state of the repository. The default branch is `master`:
+Make sure you're working from the current state of `master`. In the **RStudio Git pane** (top-right by default):
 
-```bash
-# In the terminal:
-git checkout master
-git pull origin master
-```
+1. Click the branch dropdown (top-right of the Git pane) and select `master`.
+2. Click the **Pull** button — the blue down-arrow icon at the top of the Git pane.
+
+The Git pane should briefly show a progress dialog, then return to a clean state with no pending changes.
 
 ### 1.3 Create or refresh the development branch
 
-Never work directly on `master`. Use a `dev` branch.
+Never work directly on `master`. Use a `dev` branch, which persists across release cycles.
 
-The `dev` branch typically persists across release cycles: after each release is merged to `master` via pull request, the same `dev` branch is reused for the next round of work. So when you start a new cycle, the branch probably already exists but is behind `master`. You have two cases:
+**If `dev` doesn't exist yet (first cycle):** From the R Console:
 
-- **`dev` already exists (typical case).** Fast-forward it to `master` so you start from the latest state:
-  ```bash
-  git checkout dev
-  git pull origin dev           # sync local dev with remote dev
-  git merge master --ff-only    # advance dev to master's tip
-  ```
-- **`dev` does not exist yet (first cycle).** Create it from `master`:
-  ```bash
-  git checkout -b dev
-  git push -u origin dev
-  ```
-
-Either way, confirm you're on `dev` before you start making changes:
-
-```bash
-git branch --show-current       # should print: dev
+```r
+usethis::pr_init("dev")
 ```
+
+This creates a fresh `dev` branch from `master`, checks it out locally, sets up upstream tracking, and prepares the branch for development.
+
+**If `dev` exists from a previous cycle:** In the RStudio Git pane, click the branch dropdown and switch to `dev`, then click **Pull** to sync any commits from the remote. You're ready to continue.
+
+You don't need to "reset" `dev` to `master` after a squash merge. The previous release's content is on `master` (in the single squashed commit from §5.1) AND on `dev` (in the original individual commits) — both represent the same code. New work simply goes on top of `dev`'s existing history. When the next release PR is opened, GitHub will diff `dev` against `master` and show only the *new* changes; the previously-squashed commits don't reappear in the PR diff. The PR's commit list will be informational only.
+
+Confirm you're on `dev`: the branch dropdown in the RStudio Git pane should read `dev`.
 
 ### 1.4 Load the package for interactive development
 
@@ -67,19 +60,13 @@ devtools::load_all()
 
 This simulates installing the package so you can test functions interactively without a full install. Run this any time you change code and want to test it.
 
-### 1.5 Prepare for continued development
-
-Bump to a development version so that subsequent work is clearly distinguished from the released version:
+### 1.5 Bump to a development version
 
 ```r
 usethis::use_dev_version()
 ```
 
-This changes the version in `DESCRIPTION` to something like `1.2.0.9000`, signaling that this is a development version.
-
-### 1.6 Add a new NEWS.md heading
-
-`use_dev_version()` will also add a new heading to `NEWS.md` for the development version. Start logging changes under this heading.
+This does two things in one shot: it changes the version in `DESCRIPTION` to something like `1.2.0.9000` (signaling a development version that's clearly distinguished from any released version), and adds a new heading to `NEWS.md` for the development cycle. Start logging changes under that new heading as you work.
 
 ---
 
@@ -186,42 +173,36 @@ pkgdown::build_home()   # or pkgdown::build_site() for a full rebuild
 
 ---
 
-## Phase 3: Committing, Pushing, and Merging
+## Phase 3: Committing, Pushing, and Opening the PR
 
 ### 3.1 Stage and commit changes
 
-Commit frequently as you work on the branch, with descriptive messages:
+Commit frequently as you work on the branch, with descriptive messages.
 
-```bash
-# In the terminal:
-git add <specific files>
-git commit -m "Brief description of changes"
+In the **RStudio Git pane**:
+
+1. Each modified or untracked file appears in the pane with a status icon (M for modified, ? for untracked, etc.).
+2. Tick the checkboxes next to the specific files you want to include in the commit. **Stage specific files** rather than ticking all — this avoids accidentally committing secrets (`.Renviron`, API keys) or stray files.
+3. Click **Commit** (or press `Ctrl+Alt+M`). A dialog opens showing the diff and a message field.
+4. Write a brief, descriptive commit message in the top text field.
+5. Click **Commit** in the dialog. The dialog can stay open for additional commits in the same session.
+
+### 3.2 Push and open the PR
+
+`usethis::pr_push()` does both steps in one call. From the R Console, while on `dev`:
+
+```r
+usethis::pr_push()
 ```
 
-Avoid committing files that contain secrets (e.g., `.Renviron`, API keys). Stage specific files rather than using `git add .` or `git add -A`.
+This pushes `dev` to GitHub (setting up remote tracking if needed), then opens your browser to the GitHub "compare & pull request" page for the branch.
 
-### 3.2 Push the branch to GitHub
+Fill in the PR title and body in the browser:
 
-```bash
-# First push of a brand-new branch (sets up remote tracking):
-git push -u origin dev
+- **Title**: `1.x.y: brief summary` (e.g., `1.4.0: HLA WHO update`)
+- **Body**: a short Summary section and a Test plan checklist, for example:
 
-# Subsequent pushes:
-git push
-```
-
-**Pushing to `dev` does NOT trigger CI by itself.** The GitHub Actions workflows in `.github/workflows/` are configured to run on pushes to `master` and on pull requests — not on pushes to `dev`. If you want CI results for your branch, open the pull request (next step). Once you do, the workflows run against the PR head.
-
-### 3.3 Create a pull request
-
-With your changes pushed and local checks passing, open a pull request from `dev` to `master`. Opening the PR is what actually triggers CI on your work.
-
-The fastest path is the GitHub CLI:
-
-```bash
-gh pr create --base master --head dev \
-  --title "1.x.y: brief summary" \
-  --body "$(cat <<'EOF'
+```markdown
 ## Summary
 
 - Bullet points of what changed.
@@ -232,66 +213,38 @@ gh pr create --base master --head dev \
 - [x] devtools::check() from RStudio (0/0/0 including vignettes)
 - [ ] R-CMD-check on Windows / macOS / Ubuntu (GitHub Actions)
 - [ ] test-coverage run (GitHub Actions) + codecov update
-EOF
-)"
 ```
 
-Alternatively, navigate to https://github.com/k96nb01/immunogenetr_package and click "Compare & pull request" when prompted.
+Click **Create pull request**.
+
+**For pushes after the PR is already open** (additional commits during Phase 4), just click the **Push** button (blue up-arrow) in the RStudio Git pane. `pr_push()` works too but the simple Push button is faster once the PR exists.
 
 Once the PR is open, two workflows run automatically against the PR head:
 
 - **R-CMD-check.yaml** — `R CMD check` on macOS, Windows, and Ubuntu (with multiple R versions).
 - **test-coverage.yaml** — `covr` run, results uploaded to Codecov, README badge updated.
 
-Wait for both to go green before merging. The R-hub workflow (`rhub.yaml`) only runs on manual trigger (workflow_dispatch) — you can invoke it from the Actions tab if you want multi-platform checks beyond what R-CMD-check covers, but it is not required for every PR.
+Wait for both to go green before merging. The R-hub workflow (`rhub.yaml`) only runs on manual trigger (workflow_dispatch from the Actions tab) — see §4.2 for when to invoke it.
 
-A pull request also gives you a chance to review the full diff of your changes before merging. If you're working with collaborators, they can review and comment on the PR before it's merged.
+Leave the PR open through Phase 4. Merging happens in Phase 5.
 
-### 3.4 Merge the pull request
+#### Other useful `usethis` PR helpers
 
-After confirming that CI checks pass on the pull request:
-
-1. Go to the pull request on GitHub.
-2. Click **"Merge pull request"** (use "Squash and merge" if you want to condense multiple commits into one clean commit on `master`).
-3. Click **"Confirm merge"**.
-4. Do NOT delete the remote `dev` branch — it is reused for the next release cycle (see §1.3). Leave it in place; you will fast-forward it to the new `master` tip at the start of the next cycle.
-
-Then update your local repository:
-
-```bash
-# In the terminal:
-git checkout master
-git pull origin master
-# (do NOT delete local 'dev' — same reason as above)
-```
-
-### 3.5 Working without a pull request (solo development)
-
-If you prefer a simpler workflow without pull requests, you can merge locally:
-
-```bash
-# Switch back to master and merge your dev branch:
-git checkout master
-git pull origin master
-git merge dev
-git push origin master
-
-# Leave the 'dev' branch in place for the next cycle.
-```
-
-Note: skipping the pull request also skips the CI gate. `R-CMD-check.yaml` and `test-coverage.yaml` still run on the push to `master`, but by then it is too late to catch problems before they are on the default branch. Prefer the PR path when you can.
-
-This is faster for solo work but skips the review step that pull requests provide.
-
-Check the Actions tab on GitHub (https://github.com/k96nb01/immunogenetr_package/actions) to confirm everything passes.
+- `usethis::pr_view()` — opens the current branch's PR in your browser. Useful when you're on `dev` and want to check CI status quickly.
+- `usethis::pr_resume()` — interactive picker to switch back to a previously-worked-on PR branch.
+- `usethis::pr_pull()` — pulls the latest commits on the current PR branch (useful if you push from another machine or someone else commits to the PR).
 
 ---
 
 ## Phase 4: Preparing a CRAN Release
 
+With your PR open from Phase 3 and CI green, work through these steps on `dev`. Every change you make here updates the PR for another CI pass. The PR does not merge yet — Phase 5 handles the merge.
+
 ### 4.1 Create a release checklist
 
-When you're ready to release a new version to CRAN, create a structured checklist as a GitHub issue:
+**Do this before §4.4 (bumping the version).** `use_release_issue()` reads `DESCRIPTION` and assumes the current version is the released one. If you've already bumped, the version it offers for the new release will be wrong.
+
+Create a structured checklist as a GitHub issue:
 
 ```r
 usethis::use_release_issue()
@@ -308,39 +261,95 @@ This opens a GitHub issue with a tailored checklist based on whether this is a p
 
 Work through the checklist items in order, checking them off as you go.
 
-### 4.2 Bump the version number
+#### Custom checklist items via `release_bullets()`
 
-Use `usethis::use_version()` to increment the version in `DESCRIPTION`:
+The checklist that `use_release_issue()` generates is general-purpose. To add immunogenetr-specific items that should appear in every release issue, define a `release_bullets()` function in `R/utils-release.R`:
 
 ```r
-usethis::use_version("patch")   # e.g., 1.1.0 -> 1.1.1
-usethis::use_version("minor")   # e.g., 1.1.0 -> 1.2.0
-usethis::use_version("major")   # e.g., 1.1.0 -> 2.0.0
+release_bullets <- function() {
+  c(
+    "Verify DQA1/DPB1/DPA1 handling matches the latest WHO update",
+    "Check `inst/CITATION` DOI still resolves",
+    "Confirm `Haplotype_frequencies` dataset is up to date"
+  )
+}
 ```
 
-This also updates the `NEWS.md` heading to reflect the new version number.
+This function should not be exported — it's internal infrastructure. `use_release_issue()` looks for it automatically when generating the checklist and appends any returned strings as additional bulleted items. Update the list as you discover new immunogenetr-specific things to remember during a release.
 
-### 4.3 Run comprehensive checks
+### 4.2 Run comprehensive checks
 
-Run the full check suite before submitting:
+Run the full check suite before submitting. Each item here is non-redundant — they catch different things.
 
 ```r
-# Standard check
-devtools::check()
-
-# Check for CRAN-specific issues
+# CRAN-flavored check: builds PDF manual, validates URLs against the live web,
+# enables the same env vars CRAN's incoming check uses. Strict superset of
+# devtools::check() — don't run both, just this one.
 devtools::check(remote = TRUE, manual = TRUE)
 
-# Check URLs in documentation
+# Explicit URL audit across DESCRIPTION/README/vignette/man.
+# Faster and more thorough than the URL pass inside check(remote = TRUE).
 urlchecker::url_check()
 
-# Check on R-hub for additional platforms
-rhub::rhub_check()
+# Submit to win-builder for an R-devel check on Windows. CRAN's submission
+# pipeline mirrors this; a clean win-builder result is the strongest
+# pre-submission signal. Results are emailed (no local output) within
+# ~30-90 min on weekdays. Required even on a Windows host — your local
+# R is R-release, not R-devel.
+devtools::check_win_devel()
 ```
 
-### 4.4 Update cran-comments.md
+Also refresh the GitHub-derived metadata in `DESCRIPTION` before submitting. From R:
 
-Edit `cran-comments.md` in the package root to document your test results for the CRAN reviewers. A typical format:
+```r
+usethis::use_github_links()
+```
+
+This pulls the GitHub remote URL and writes/updates the `URL:` and `BugReports:` fields in `DESCRIPTION`. It's idempotent — if the fields are already correct, it does nothing. The canonical `use_release_issue()` checklist includes this as a conditional step.
+
+For R-hub multi-platform checks, **don't install rhub locally** — modern `rhub` v2 runs on GitHub Actions runners anyway, so the local invocation is just a remote queue. Instead, trigger the existing `rhub.yaml` workflow from the Actions tab (https://github.com/k96nb01/immunogenetr_package/actions/workflows/rhub.yaml) with **workflow_dispatch**. For the `config` input, the platforms that add coverage beyond the existing `R-CMD-check.yaml` GHA matrix are:
+
+- `donttest` — runs `\donttest{}` examples (CRAN does this; the standard `R-CMD-check.yaml` skips them).
+- `nosuggests` — package check with Suggests packages absent (CRAN does this).
+- `gcc16` — closest to CRAN's `r-devel-linux-x86_64-fedora-gcc` reference build.
+
+The `[VM]` platforms (`linux`, `windows`, `macos`) just delegate to GHA runners — running them adds nothing on top of `R-CMD-check.yaml`. Sanitizer/valgrind/rchk containers target memory bugs in compiled code and don't apply to pure-R packages like this one.
+
+#### Reverse dependency check
+
+If immunogenetr ever gains reverse dependencies (other CRAN packages that depend on it), run `revdepcheck::revdep_check(num_workers = 4)` and disclose the result in `cran-comments.md`. Skip this step while there are none — the `use_release_issue()` checklist also only includes it conditionally. You can sanity-check from R with `devtools::revdep()` (returns the current list) or by visiting `https://cran.r-project.org/web/packages/immunogenetr/index.html` and looking at the "Reverse dependencies" section.
+
+#### Reading `devtools::check()` output
+
+**The summary box at the bottom of `devtools::check()` output can silently drop ERRORs.** Always check the `Status: N ERROR, M WARNING, K NOTE` line in the *middle* of the output (before the summary box), not just the `0 errors / 1 warning / 1 note`-style summary at the very bottom. If there's a mismatch, trust the middle line — that's R CMD check's verdict; the bottom is devtools post-processing.
+
+#### TinyTeX / PDF manual troubleshooting
+
+`devtools::check(manual = TRUE)` builds the PDF manual via TinyTeX. Three failure modes recur:
+
+- **`Cannot find pcrr8t.mf` (or similar missing font metric).** Your local TinyTeX is on an older TeX Live year than the current CTAN — TeX Live's yearly release cycle disallows cross-year installs from the same `tlmgr`. Fix with `tinytex::reinstall_tinytex()` (downloads ~100 MB, takes a few minutes). After reinstall, install the base 35 PostScript font packages explicitly:
+  ```r
+  tinytex::tlmgr_install(c("psnfss", "courier", "helvetic"))
+  ```
+  **Do not** try to install `urw-base35` — it is not present in Yihui's TLNet mirror (the rhub.yaml-and-tinytex default). The individual font packages above are the right install.
+
+- **`checking PDF version of manual ... WARNING` with `LaTeX errors found:` followed by nothing, plus a NOTE about a leftover `immunogenetr-manual.tex` in the check directory.** Both messages have the same root cause: `makeindex` is missing from PATH, so the with-index PDF build can't generate the `.ind` file and texi2pdf leaves intermediate artifacts behind. Fix:
+  ```r
+  tinytex::tlmgr_install("makeindex")
+  ```
+
+After any TinyTeX change, **wipe the check directory before re-running** — its `.Rcheck` lingers between runs and can make the leftover-`.tex` NOTE persist even after the underlying issue is fixed:
+
+```r
+unlink("../immunogenetr.Rcheck", recursive = TRUE)
+devtools::check(remote = TRUE, manual = TRUE)
+```
+
+Side note: `devtools::check()` may also print a `Warning in system2("quarto", "-V", ...)` about Quarto receiving `TMPDIR=...` as a positional argument. This is a Quarto CLI parsing bug on Windows, harmless, and unrelated to your package.
+
+### 4.3 Update cran-comments.md
+
+Edit `cran-comments.md` in the package root to document your test results for the CRAN reviewers. Use your actual local platform/R version (not the literal text below — replace with your environment):
 
 ```
 ## R CMD check results
@@ -348,27 +357,104 @@ Edit `cran-comments.md` in the package root to document your test results for th
 0 errors | 0 warnings | 0 notes
 
 ## Test environments
-- local macOS (R 4.x.x)
+- local <your OS> (R <your R version>)
+- win-builder R-devel
 - GitHub Actions: macOS-latest (release), windows-latest (release), ubuntu-latest (devel, release, oldrel-1)
-- R-hub
+- R-hub: donttest, nosuggests, gcc16
 
 ## Downstream dependencies
 There are currently no downstream dependencies for this package.
 ```
 
-### 4.5 Submit to CRAN
+#### Disclosing the R-hub `nosuggests` vignette error
+
+The `nosuggests` platform will report an ERROR for vignette re-building if your vignette uses the `rmarkdown` engine (which immunogenetr's does):
+
+```
+Error: processing vignette 'immunogenetr.Rmd' failed with diagnostics:
+there is no package called 'rmarkdown'
+```
+
+This is **not a real CRAN blocker** — CRAN's own incoming check runs with `_R_CHECK_FORCE_SUGGESTS_=false`, which downgrades this exact case to a NOTE. The R-hub `nosuggests` platform doesn't set that env var, so it surfaces as ERROR. Disclose it explicitly in `cran-comments.md` so reviewers know you ran the check and understand the discrepancy:
+
+```
+## R-hub notes
+
+The `nosuggests` platform reports an ERROR at "checking re-building of vignette outputs":
+
+    Error: processing vignette 'immunogenetr.Rmd' failed with diagnostics:
+    there is no package called 'rmarkdown'
+
+This is the standard interaction between R-hub's `nosuggests` platform and vignettes built with the `rmarkdown` engine. CRAN's own incoming check runs with `_R_CHECK_FORCE_SUGGESTS_=false`, which downgrades this case to a NOTE. The `gcc16` and `donttest` platforms pass cleanly.
+```
+
+### 4.4 Bump the version number
+
+This is the last step before merging. By bumping at the end of Phase 4 — after the comprehensive checks and `cran-comments.md` are settled — you avoid having to rebump if a check turns up something that requires reworking. This ordering matches the `use_release_issue()` checklist, which places `use_version()` under "Submit to CRAN," not "Prepare for release."
+
+Use `usethis::use_version()` to increment the version in `DESCRIPTION`:
+
+```r
+usethis::use_version("patch")   # e.g., 1.3.0 -> 1.3.1
+usethis::use_version("minor")   # e.g., 1.3.0 -> 1.4.0
+usethis::use_version("major")   # e.g., 1.3.0 -> 2.0.0
+```
+
+This also updates the `NEWS.md` heading to reflect the new version number. Push the version-bump commit so it shows up on the PR; once CI is green on that final push, you're ready for Phase 5.
+
+---
+
+## Phase 5: Merge and Submit
+
+With Phase 4 complete and CI green, this phase moves the release from `dev` onto `master` and submits it to CRAN. After Phase 5, `master` reflects exactly what was submitted to CRAN — no extra commits.
+
+### 5.1 Merge the PR
+
+1. Go to the pull request on GitHub.
+2. Click the **Squash and merge** dropdown → "Squash and merge". Squash keeps `master`'s history one-commit-per-release; the individual development commits are preserved in the PR record.
+3. Click **Confirm squash and merge**.
+4. **Do NOT delete the remote `dev` branch** — it is reused for the next release cycle (per §1.3 and §6.2).
+
+### 5.2 Sync local master
+
+Update your local repository so §5.3 works from the post-merge state. In the **RStudio Git pane**:
+
+1. Click the branch dropdown and switch to `master`.
+2. Click the **Pull** button.
+
+The pull brings down the squashed release commit you just merged. Don't delete local `dev` either — same reason as in §5.1.
+
+### 5.3 Submit to CRAN
+
+From R, in the package root (you should now be on `master`, synced with origin):
 
 ```r
 devtools::submit_cran()
 ```
 
-This builds the package, submits it to CRAN, and creates a `CRAN-SUBMISSION` file that records the submission details. You will receive a confirmation email from CRAN that you need to respond to.
+What this actually does, step by step:
+
+1. Builds a source tarball (`immunogenetr_<version>.tar.gz`) from the current package directory.
+2. Uploads the tarball to CRAN's submission endpoint.
+3. Writes a `CRAN-SUBMISSION` file in the package root recording the submission details (commit SHA, date, version). This file persists locally until §6.1 cleans it up.
+4. Triggers CRAN to email the maintainer address from `DESCRIPTION` with a confirmation link.
+
+**Critical: clicking the confirmation link is what actually submits the package.** Until you click, the package is queued but not in CRAN's incoming review. If you don't click within ~24 hours the submission is dropped silently. The email typically arrives within a few minutes; if you don't see it, check spam.
+
+After confirmation, expect a sequence of automated emails over the next 24–72 hours:
+
+- **"Submission acknowledged"** — confirms CRAN received the click. Submission is now in the incoming queue.
+- **Pretest results** (sometimes) — CRAN runs `R CMD check --as-cran` on a few platforms. If anything fails, you'll get an email naming the issue. Common pretest failures: URLs that respond differently from CRAN's IP, missing copyright entries in `inst/COPYRIGHTS`, NEWS.md formatting.
+- **Human review** — a CRAN reviewer eyeballs the submission for policy compliance. Most submissions pass without comment.
+- **Acceptance** — `"package immunogenetr <version> has been published on CRAN"`. The package goes live on CRAN's package index within a few hours of this email.
+
+If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Fix the issue, run `usethis::use_version("patch")` to bump to the next patch (e.g., 1.3.0 → 1.3.1), update `cran-comments.md`, and resubmit (returning to §5.3).
 
 ---
 
-## Phase 5: After CRAN Acceptance
+## Phase 6: After CRAN Acceptance
 
-### 5.1 Create a GitHub release
+### 6.1 Create a GitHub release
 
 Once CRAN has accepted the package:
 
@@ -378,7 +464,11 @@ usethis::use_github_release()
 
 This creates a Git tag and a corresponding GitHub release, using information from `CRAN-SUBMISSION` to populate the release notes. It also deletes the `CRAN-SUBMISSION` file.
 
+### 6.2 Begin the next release cycle
 
+To start work on the next release, return to Phase 1. The `dev` branch is reused across cycles — fast-forward (or, after a squash merge, reset) it to the new `master` tip per §1.3, reload the package per §1.4, and bump to a new dev version per §1.5. Any open issues or features you want to address fit into Phase 2 from there.
+
+This is the "loop close" of the SOP: every accepted release ends with the next one beginning on a refreshed `dev`.
 
 ---
 
@@ -567,17 +657,25 @@ Once §A.1–A.8 are done, the site is fully self-maintaining for normal develop
 | Load package for development | `devtools::load_all()` |
 | Regenerate documentation | `devtools::document()` |
 | Run tests | `devtools::test()` |
-| Run R CMD check | `devtools::check()` |
+| Run R CMD check (CRAN-flavored) | `devtools::check(remote = TRUE, manual = TRUE)` |
+| Submit to win-builder R-devel | `devtools::check_win_devel()` |
+| Check URLs | `urlchecker::url_check()` |
+| Refresh GitHub URL/BugReports in DESCRIPTION | `usethis::use_github_links()` |
+| Trigger R-hub multi-platform | (workflow_dispatch on `rhub.yaml` from Actions tab) |
 | Check code coverage | `covr::package_coverage()` |
 | Interactive coverage report | `covr::report()` |
 | Preview a vignette | `pkgdown::build_article("immunogenetr")` |
 | Knit README | `devtools::build_readme()` |
+| Create `dev` branch (first cycle) | `usethis::pr_init("dev")` |
+| Push branch + open PR creation page | `usethis::pr_push()` |
+| Open current PR in browser | `usethis::pr_view()` |
+| Switch back to a PR branch | `usethis::pr_resume()` |
+| Pull latest commits on PR branch | `usethis::pr_pull()` |
 | Create release checklist | `usethis::use_release_issue()` |
 | Bump version | `usethis::use_version("patch")` |
-| Check URLs | `urlchecker::url_check()` |
+| Bump to dev version | `usethis::use_dev_version()` |
 | Submit to CRAN | `devtools::submit_cran()` |
 | Create GitHub release | `usethis::use_github_release()` |
-| Bump to dev version | `usethis::use_dev_version()` |
 | Build pkgdown site locally | `pkgdown::build_site()` |
 | Build pkgdown reference only | `pkgdown::build_reference()` |
 | Build pkgdown articles only | `pkgdown::build_articles()` |
