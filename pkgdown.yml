@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   immunogenetr: immunogenetr.html
-last_built: 2026-05-27T11:26Z
+last_built: 2026-06-05T22:26Z
 urls:
   reference: https://immunogenetr.org/reference
   article: https://immunogenetr.org/articles
