@@ -1,3 +1,5 @@
+# immunogenetr (development version)
+
 # immunogenetr 1.3.0
 
 * Rewrote `HLA_prefix_remove` to skip the GL-string expand-and-reassemble round-trip. The previous implementation expanded each GL string into an ambiguity tibble, ran `str_replace` on it, and reassembled — which was the dominant cost in any pipeline that called `HLA_prefix_remove` per cell. Now four direct regex passes on the GL-string character vector. ~100× faster end-to-end, up to ~420× less memory allocated on 100,000-input workloads. Because many other functions in the package (including `HLA_columns_to_GLstring`) call `HLA_prefix_remove` internally, every downstream caller picks up the speedup for free.
