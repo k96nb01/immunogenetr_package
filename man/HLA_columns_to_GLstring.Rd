@@ -8,7 +8,8 @@ HLA_columns_to_GLstring(
   data,
   HLA_typing_columns,
   prefix_to_remove = "",
-  suffix_to_remove = ""
+  suffix_to_remove = "",
+  nomenclature = NULL
 )
 }
 \arguments{
@@ -23,6 +24,18 @@ columns named "mDRB11Cd" and "mDRB12Cd" should use the `prefix_to_remove` value 
 
 \item{suffix_to_remove}{An optional string of characters to remove from the
 locus names. Using the example above, the `suffix_to_remove` value will be "Cd".}
+
+\item{nomenclature}{An optional declaration of the output nomenclature, applied
+per locus. By default (`NULL`) each cell is auto-detected: a value is molecular
+if it contains a colon, starts with a zero, contains a non-leading asterisk, or
+sits in a DQA1/DPA1/DPB1 column (a bare leading asterisk such as `"*17"` is
+treated as serologic). Supply `"mol"` or `"ser"` to force every selected locus
+to that nomenclature, or a named vector to set it per locus, e.g.
+`c("HLA-Cw" = "ser", "HLA-DRB1" = "mol")`. Keys may be given in either the
+molecular or serologic spelling of a locus (`"HLA-C"` and `"HLA-Cw"` are
+equivalent). Relabeling is structural only: `"ser"` strips any asterisk and
+uses the serologic locus name; `"mol"` uses the molecular locus name. No
+cross-nomenclature allele translation is performed.}
 }
 \value{
 A list of GL strings in the order of the original data frame.

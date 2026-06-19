@@ -43,20 +43,22 @@ The issue itself proposed "probably two bugs": (1) `HLA_mismatch_x` should accep
 Tested the exact reproduction against three source trees by loading each with `pkgload::load_all`:
 v1.2.0 (tag), v1.3.0 (tag), and dev (1.3.0.9000). R 4.6.0.
 
-| | `HLA_columns_to_GLstring("*17")` | mismatch on `HLA-Cw*17` | mismatch on `HLA-Cw17` |
-|---|---|---|---|
-| **1.2.0** | `HLA-Cw7+HLA-Cw17` ✅ | ERROR (missing locus) | `2` ✅ |
-| **1.3.0** | `HLA-Cw7+HLA-Cw*17` ❌ | ERROR (missing locus) | `2` ✅ |
-| **dev**   | `HLA-Cw7+HLA-Cw*17` ❌ | ERROR (missing locus) | `2` ✅ |
+| | `Cw` col `w7`+`*17` | `Cw` col `*07:01` (colon) | mismatch on `HLA-Cw*17` | mismatch on `HLA-Cw17` |
+|---|---|---|---|---|
+| **1.2.0** | `HLA-Cw7+HLA-Cw17` ✅ | `HLA-Cw*07:01` ❌ | ERROR (missing locus) | `2` ✅ |
+| **1.3.0** | `HLA-Cw7+HLA-Cw*17` ❌ | `HLA-Cw*07:01` ❌ | ERROR (missing locus) | `2` ✅ |
+| **dev**   | `HLA-Cw7+HLA-Cw*17` ❌ | `HLA-Cw*07:01` ❌ | ERROR (missing locus) | `2` ✅ |
 
-**Conclusion — the bug has two halves with different histories:**
+**Conclusion — the bug has two halves, and Half 1 is narrower than first thought:**
 
-- **Half 1 (`HLA_columns_to_GLstring` emitting `HLA-Cw*17`) is a 1.3.0 regression.** 1.2.0 produced the clean `HLA-Cw17` for the same input.
-- **Half 2 (mismatch functions choking on an asterisk in a serologic-style allele) is pre-existing.** All three versions error identically. It was simply never *reached* in 1.2.0 because nothing produced that malformed string.
+- **Half 1 — the malformed `HLA-Cw*…` output. The `Cw` locus-naming defect is mostly PRE-EXISTING** (1.2.0 emits `HLA-Cw*07:01` too — see the colon column). It surfaces for *any* molecular value the `Cw` column classifies as molecular (colon / leading-zero). **Only the bare-`*` case is a true 1.3.0 regression:** `*17` (no colon, no leading zero) was serologic `HLA-Cw17` in 1.2.0 but became molecular `HLA-Cw*17` in 1.3.0, via the new `has_asterisk` rule. So "go back to the 1.2.0 default" means specifically *restore the bare-`*` = serologic behavior*; it does **not** by itself fix the colon case (which was always malformed).
+- **Half 2 — mismatch functions choking on an asterisk in a serologic-style allele — is fully pre-existing.** All three versions error identically. It was simply never *reached* in 1.2.0 because nothing produced that malformed string.
 
 ---
 
-## 3. Root cause — Half 1 (the 1.3.0 regression)
+## 3. Root cause — Half 1 (two distinct sub-issues)
+
+### 3a. Classification (the bare-`*` regression)
 
 The 1.3.0 "Iteration 6" rewrite of `HLA_columns_to_GLstring` (merge of `immunogenetr_fast`, commit `d46b11c`) added a new molecular-classification clause that did not exist in 1.2.0:
 
@@ -65,9 +67,13 @@ has_asterisk   <- !is.na(raw) & grepl("*", raw, fixed = TRUE)
 molecular_cell <- has_colon | has_leading_zero | has_asterisk | is_mol_col[col_idx]
 ```
 
-This `has_asterisk` clause is **working as intended** and we are **keeping it**. A `*` is a correct molecular signal; it was added to rescue low-resolution molecular alleles like `A*01` / `B*07` (no colon, no leading zero) that 1.2.0 misclassified as serologic.
+The `has_asterisk` clause was added (correctly) to rescue low-resolution molecular alleles like `A*01` / `B*07` (no colon, no leading zero) that 1.2.0 misclassified as serologic (`HLA-A01`) — the PIRCHE / Hilary Mehler bug, which has a regression test. But it is **too broad**: it also captures a **bare leading `*`** like `*17`, which 1.2.0 treated as serologic (`HLA-Cw17`).
 
-The actual defect is on the **emit** side, not the classify side:
+**Fix (Option Y, decided 2026-06-19):** narrow the rule so a `*` signals molecular **only when it is not the first character** — i.e. `has '*' AND does not start with '*'`. This keeps `A*01` molecular (preserves the PIRCHE fix) while restoring `*17` to serologic (matches 1.2.0). Verified against all probed cases; breaks no existing test (every PIRCHE/DRB test has a token before the `*`).
+
+### 3b. Emit-side locus naming (pre-existing, fixed by default under Option Y)
+
+This defect is **not** new in 1.3.0 — 1.2.0 emits `HLA-Cw*07:01` for a colon-bearing molecular value in a `Cw` column too. The defect is on the **emit** side, not the classify side:
 
 ```r
 final_type <- ifelse(
@@ -107,15 +113,15 @@ Confirmed by experiment (dev): asterisk-allele **second** errors; asterisk-allel
 
 ## 5. Agreed design — `HLA_columns_to_GLstring`
 
-> **Status: deferred.** Per 2026-06-18 decision, do **not** modify `HLA_columns_to_GLstring` yet (not even the standalone `Cw → C` fix). Capture here; implement later.
+> **Status (2026-06-19): IMPLEMENTED for `HLA_columns_to_GLstring`.** The §5 spec (Option Y default + `nomenclature` parameter + canonical-locus grouping + DR `"mol"` lookup + Bw guard + `DPB` label) is done. Full suite green (492 pass, 0 fail). The original issue #40 workflow now resolves end-to-end (`HLA_columns_to_GLstring` ⇒ `HLA-Cw7+HLA-Cw17`; `HLA_mismatch_number` ⇒ `2`). **Still deferred:** the `extract_locus_name` hardening in `HLA_mismatch_base` (§4) and the companion interactive helper (§6).
 
-### 5.1 Auto-detection — unchanged
+### 5.1 Auto-detection (default) — refined per Option Y
 
-A cell is molecular if it contains `*`, `:`, or a leading `0`. Keep exactly as-is. This stays the **default** behavior when `nomenclature` is not supplied (backward compatible).
+A cell is molecular if it contains `:`, starts with `0`, contains a **non-leading** `*`, or is a DQA1/DPB1/DPA1 column. The change from dev: a **bare leading `*`** is no longer a molecular signal (§3a). This is the default when `nomenclature` is not supplied, and the full default behavior is specified in §5.3 ("Default behavior — Option Y").
 
-### 5.2 Standalone naming fix (the Half-1 bug)
+### 5.2 Standalone naming fix (the Half-1 emit defect)
 
-On the molecular branch, emit molecular locus names. **Only `Cw → C` is affected** in the auto-detect path. `Bw` is special — see §5.5.
+On the molecular branch, emit molecular locus names. **Only `Cw → C` is affected** in the auto-detect path. Under Option Y this applies **by default** (not just under `nomenclature = "mol"`), so a genuinely-molecular `Cw` value emits `HLA-C*…`. `Bw` is special — see §5.5.
 
 ### 5.3 New `nomenclature` parameter — naive relabel only
 
@@ -136,6 +142,22 @@ HLA_columns_to_GLstring(data, HLA_typing_columns,
 
 Values: `"mol"` (molecular) / `"ser"` (serologic). Default (absent): current auto-detect.
 
+**The parameter is locus-wide, and a locus is a single entity regardless of nomenclature spelling.** This is firm (NB, 2026-06-19):
+
+- `C`, `Cw`, and `C*…` are all the **same locus**. The function must recognize every spelling as one locus when grouping. Likewise `DR`/`DRB1`, `DQ`/`DQB1`, etc.
+- **A locus is never split across `^`.** `^` separates *loci*; `+` joins entries *within* a locus. So `HLA-Cw7^HLA-C*17` is **forbidden output** — those are the same locus and must share one `+`-joined group. (My earlier "split" idea was wrong.)
+- When `nomenclature` declares a locus `"mol"` or `"ser"`, **every** entry at that locus is converted to the chosen spelling, then grouped together.
+- The named-vector **key may be given in either spelling** — `c("HLA-Cw" = "ser")` and `c("HLA-C" = "ser")` are equivalent (both name the C locus). Internally normalize the key to a canonical locus identity.
+
+**✅ Default behavior (RESOLVED — Option Y, NB 2026-06-19).** With no `nomenclature` argument the function does **per-cell auto-detect**, restoring 1.2.0 behavior for the ambiguous bare-`*` case *and* always using clean molecular locus names:
+
+- Classification: molecular if it contains `:`, starts with `0`, contains a **non-leading** `*`, or is a DQA1/DPB1/DPA1 column (§3a). A **bare leading `*` is serologic** (the `*` is stripped) → `*17` ⇒ `HLA-Cw17`.
+- Naming: a genuinely-molecular `Cw` value emits the **molecular** locus name → `*07:01` ⇒ `HLA-C*07:01` (not the malformed `HLA-Cw*07:01`). This is the "always-clean" half of Option Y; it goes beyond literal 1.2.0 (which emitted the malformed form).
+- Grouping uses the **canonical locus identity** (§5.4), so a mixed-nomenclature locus stays one `+` group, never `^`-split. Worked example: `Cw` column `*17` + `*07:01` ⇒ `HLA-Cw17+HLA-C*07:01` (one C group, mixed spelling — honest, since the two values genuinely differ in nomenclature and we don't translate).
+- Net: issue #40 default ⇒ `HLA-Cw7+HLA-Cw17` (= 1.2.0). The `nomenclature` parameter is the way to force a single nomenclature across the locus.
+
+(Option X — strict literal 1.2.0, leaving `HLA-Cw*07:01` malformed by default — was rejected.)
+
 Relabel rules:
 
 - **`"mol"`** — strip a leading `w` and any `*`, then emit `<molecular-locus>*<allele>`.
@@ -144,18 +166,30 @@ Relabel rules:
 - **`"ser"`** — strip any `*`, then emit `<serologic-locus><allele>`.
   - `*17` → `HLA-Cw17`.
 
-### 5.4 Locus-label maps (labels only — never translate the allele itself)
+### 5.4 Canonical locus-identity table (labels only — never translate the allele itself)
 
-| molecular | serologic |
-|---|---|
-| C | Cw |
-| DRB1 / DRB3 / DRB4 / DRB5 | DR |
-| DQB1 | DQ |
-| DQA1 | DQA |
-| DPB1 | **DPB** |
-| DPA1 | DPA |
+This table defines **which spellings are the same locus**. It serves two jobs: (a) grouping — all spellings of a locus collapse to one canonical identity so the locus is never `^`-split; (b) relabeling — the chosen output nomenclature picks the column to emit. The named-vector key may be supplied in **either** column and is normalized to the canonical locus.
+
+| canonical locus | molecular spelling | serologic spelling |
+|---|---|---|
+| A | A | A *(same)* |
+| B | B | B *(same)* |
+| C | C | Cw |
+| DRB1 | DRB1 | DR |
+| DRB3 | DRB3 | DR51 *(see §5.6)* |
+| DRB4 | DRB4 | DR53 *(see §5.6)* |
+| DRB5 | DRB5 | DR52 *(see §5.6)* |
+| DQB1 | DQB1 | DQ |
+| DQA1 | DQA1 | DQA |
+| DPB1 | DPB1 | **DPB** |
+| DPA1 | DPA1 | DPA |
+| **Bw** | *(none — epitope)* | Bw *(never relabeled; see §5.5)* |
+
+Only loci whose molecular and serologic names **differ** (C, DR/DRB·, DQ, DQA, DP·) can be `^`-split by the *current* code, because A/B already share one label. The unification work must make every row above collapse to one group.
 
 **⚠ Fix the existing `serologic_map`:** it currently maps `HLA-DPB1 → HLA-DP`. `DP` was the pre-formalization label; the formalized serologic name is **`DPB`**. Update `DP → DPB`. This must stay in sync with the issue-33 serologic work.
+
+> Note on DR51/52/53 ↔ DRB5/3/4: the serologic→molecular mapping is **not** numeric-sequential (51→DRB**5**, 52→DRB**3**, 53→DRB**4**). See §5.6.
 
 ### 5.5 Bw is an epitope — never relabel
 
@@ -192,28 +226,31 @@ Translation (especially serologic → molecular, which is one-to-many) is **out 
 
 ---
 
-## 7. Decisions locked in (2026-06-18)
+## 7. Decisions locked in (2026-06-18, updated 2026-06-19)
 
-1. Keep the `*`=molecular auto-detection rule. It works as intended.
-2. The Half-1 defect is the **emitted locus label** (`Cw → C` on the molecular branch), not classification.
-3. `Bw` is an epitope: never relabeled, never forced molecular.
-4. New `nomenclature` parameter: tidyselect-style, `"mol"`/`"ser"`, scalar **or** per-locus named vector; default = current auto-detect.
-5. Relabeling is **naive/structural only**. No era-translation in this package. Improper outputs (`HLA-C*9`) are allowed; the helper validates.
-6. `serologic_map`: change `DPB1: DP → DPB`; keep in sync with issue #33.
-7. The mismatch `extract_locus_name` fragility is real and pre-existing — **defer the fix**, but record it.
-8. **Do not modify `HLA_columns_to_GLstring` yet** — capture the plan first (this note), implement later.
+1. `*`=molecular, but **refined** (Option Y, 2026-06-19): a `*` signals molecular only when **not the first character**. A bare leading `*` (e.g. `*17`) is serologic — restores 1.2.0 while keeping the PIRCHE `A*01` fix (§3a).
+2. Half-1 has two parts: (a) the bare-`*` classification regression (1.3.0-only, §3a); (b) the emitted-locus-label defect `Cw → C` (mostly pre-existing, §3b). Both fixed **by default** under Option Y.
+3. **Default mode = Option Y** (§5.3): restore 1.2.0 for the bare-`*` case **and** always emit clean molecular locus names. Issue #40 default ⇒ `HLA-Cw7+HLA-Cw17`. Option X (strict 1.2.0, leaving `HLA-Cw*07:01` malformed) was rejected.
+4. A locus is one entity across nomenclatures; **never `^`-split** it. Group on canonical locus identity (§5.4).
+5. `Bw` is an epitope: never relabeled, never forced molecular.
+6. New `nomenclature` parameter: tidyselect-style, `"mol"`/`"ser"`, scalar **or** per-locus named vector (key accepted in either spelling); default = Option-Y auto-detect.
+7. Relabeling is **naive/structural only**. No era-translation in this package. Improper outputs (`HLA-C*9`) are allowed; the helper validates.
+8. `serologic_map`: change `DPB1: DP → DPB`; keep in sync with issue #33.
+9. The mismatch `extract_locus_name` fragility is real and pre-existing — **defer the fix**, but record it.
+10. **Tests written first (2026-06-19):** `tests/testthat/test-HLA_columns_to_GLstring_nomenclature.R` — Part A locks current behavior; Part B is the `skip()`-guarded spec (un-skip per piece as implemented). Function code itself **not yet modified**.
 
 ---
 
 ## 8. TODO / where to pick up
 
-- [ ] **`HLA_columns_to_GLstring`** — implement §5: the `Cw → C` molecular-naming fix **plus** the `nomenclature` parameter together (one design pass over the locus-naming logic).
-- [ ] Fix `serologic_map`: `DPB1: DP → DPB` (§5.4) — reconcile with issue #33.
-- [ ] **`extract_locus_name`** (`HLA_mismatch_base.R`) — parse locus per-allele instead of slicing before the first `*` (§4).
-- [ ] **Test fixtures:** the exact issue-40 reproduction; `mol`/`ser` scalar and named-vector forms; the DR 51/52/53→DRB5/3/4 lookup; `Bw4`/`Bw6` left untouched; mixed-nomenclature mismatch groups (asterisk-first and asterisk-second).
-- [ ] **Regression guard:** A/B/C/DR/DQ output for existing inputs must be byte-identical when `nomenclature` is not supplied.
+- [x] **Test fixtures** (2026-06-19): `tests/testthat/test-HLA_columns_to_GLstring_nomenclature.R`. Part A (8 tests, passing) locks current behavior; Part B (14 tests, `skip()`-guarded) is the Option-Y spec — issue-40 default, bare-`*` serologic, Option-Y clean naming, never-`^`-split invariant, `mol`/`ser` scalar + named-vector forms, cross-spelling key, DR 51/52/53→DRB·, Bw untouched, DPB label.
+- [x] **`HLA_columns_to_GLstring`** — implemented §5 (2026-06-19): Option-Y classification (bare-`*` serologic), canonical-locus grouping + Cw→C clean naming, `nomenclature` scalar + named-vector (cross-spelling keys), DR `"mol"` 51/52/53→DRB·*XX lookup, Bw guard, `DPB` label. `man/` regenerated.
+- [x] `serologic_map`: `DPB1: DP → DPB` done (§5.4). *Still reconcile the allele-level DPB semantics with issue #33.*
+- [x] **Regression guard:** full suite green — 492 pass, 0 fail (incl. the PIRCHE low-res test and `test_sero`).
+- [x] **Characterization test deleted** and replaced by Part B "DESIRED (default)". §2 dev row is now effectively `HLA-Cw7+HLA-Cw17`.
+- [ ] **`extract_locus_name`** (`HLA_mismatch_base.R`) — parse locus per-allele instead of slicing before the first `*` (§4). Deferred (issue-40 workflow already unblocked because the function no longer emits the malformed string).
 - [ ] Build the companion interactive helper (§6); decide where era-translation lives (own function vs. HLAtools dependency — see issue-33 §4.4).
-- [ ] Sanity-check the empirical version table (§2) survives once fixes land.
+- [ ] Decide whether to keep `nomenclature` as the last argument (chosen for back-compat) or move it earlier before a release.
 
 ---
 
