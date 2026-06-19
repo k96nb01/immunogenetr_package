@@ -152,23 +152,33 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
   extract_locus_name <- function(allele_str) {
     n <- length(allele_str)
     if (n == 0L) return(character(0L))
+    # Each entry is a "+"-joined group of alleles that all share one locus, so
+    # the locus of the group is the locus of its FIRST allele. Parse that single
+    # allele rather than slicing the whole joined string: the old "everything
+    # before the first '*'" slice overshot when a serologic allele preceded a
+    # molecular one in the same group (e.g. "HLA-Cw7+HLA-Cw*17" yielded the bogus
+    # locus "HLA-Cw7+HLA-Cw"), which then read as a missing locus. (issue #40)
+    plus_pos <- regexpr("+", allele_str, fixed = TRUE)
+    first_allele <- allele_str
+    has_plus <- plus_pos > 0L
+    first_allele[has_plus] <- substr(allele_str[has_plus], 1L, plus_pos[has_plus] - 1L)
     # Single substr(1, 8) classifies DRB3/4/5 in either nomenclature.
-    is_drb345 <- substr(allele_str, 1L, 8L) %in% drb345_prefixes
-    has_star  <- grepl("*", allele_str, fixed = TRUE)
+    is_drb345 <- substr(first_allele, 1L, 8L) %in% drb345_prefixes
+    has_star  <- grepl("*", first_allele, fixed = TRUE)
     out <- character(n)
     out[is_drb345] <- "HLA-DRB3/4/5"
     # Remaining molecular entries: everything before the '*'. regexpr + substr
     # avoids the regex engine's backtracking machinery on this hot path.
     mol_ix <- has_star & !is_drb345
     if (any(mol_ix)) {
-      star_pos <- regexpr("*", allele_str[mol_ix], fixed = TRUE)
-      out[mol_ix] <- substr(allele_str[mol_ix], 1L, star_pos - 1L)
+      star_pos <- regexpr("*", first_allele[mol_ix], fixed = TRUE)
+      out[mol_ix] <- substr(first_allele[mol_ix], 1L, star_pos - 1L)
     }
     # Remaining serologic entries: leading "HLA-<letters>" prefix. This is
     # a rarely-hit path (only non-DR serologic input), so a simple sub() is fine.
     ser_ix <- !has_star & !is_drb345
     if (any(ser_ix)) {
-      out[ser_ix] <- sub("^(HLA-[A-Za-z]+).*$", "\\1", allele_str[ser_ix], perl = TRUE)
+      out[ser_ix] <- sub("^(HLA-[A-Za-z]+).*$", "\\1", first_allele[ser_ix], perl = TRUE)
     }
     out
   }

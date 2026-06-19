@@ -107,13 +107,13 @@ That slice only lands on the right locus when the **first** allele in the group 
 
 Confirmed by experiment (dev): asterisk-allele **second** errors; asterisk-allele **first** (`HLA-Cw*17+HLA-Cw7`) returns `2`. For a clean single `HLA-Cw*17` it would extract `HLA-Cw` correctly. The failure is specifically a **mixed-nomenclature group** (serologic + molecular under one locus) hitting the "first asterisk" heuristic.
 
-**Fix (deferred, recorded):** make `extract_locus_name` parse each allele's locus individually rather than slicing the rejoined group. Robust regardless of how the GL string was produced. **Decision: leave for later** — once `HLA_columns_to_GLstring` emits a single consistent nomenclature per locus, the mismatch path stops seeing mixed groups in practice. Come back and harden it anyway.
+**✅ Fixed (2026-06-19).** `extract_locus_name` now parses the locus from the **first allele** of each `+`-joined group (the group is one locus, so the first allele's locus is the group's locus) instead of slicing the whole rejoined string before the first `*`. Robust regardless of allele order or how the GL string was produced. Verified: the exact issue #40 call `HLA_mismatch_number("HLA-Cw10+HLA-Cw6", "HLA-Cw7+HLA-Cw*17", "HLA-Cw", direction = "SOT", homozygous_count = 1)` now returns `2` (was a "missing locus" error). Regression tests added to `test-HLA_mismatch_base.R` (asterisk-first and asterisk-second). Full suite green (494 pass).
 
 ---
 
 ## 5. Agreed design — `HLA_columns_to_GLstring`
 
-> **Status (2026-06-19): IMPLEMENTED for `HLA_columns_to_GLstring`.** The §5 spec (Option Y default + `nomenclature` parameter + canonical-locus grouping + DR `"mol"` lookup + Bw guard + `DPB` label) is done. Full suite green (492 pass, 0 fail). The original issue #40 workflow now resolves end-to-end (`HLA_columns_to_GLstring` ⇒ `HLA-Cw7+HLA-Cw17`; `HLA_mismatch_number` ⇒ `2`). **Still deferred:** the `extract_locus_name` hardening in `HLA_mismatch_base` (§4) and the companion interactive helper (§6).
+> **Status (2026-06-19): both halves of issue #40 IMPLEMENTED.** §5 (`HLA_columns_to_GLstring`: Option Y default + `nomenclature` parameter + canonical-locus grouping + DR `"mol"` lookup + Bw guard + `DPB` label) and §4 (`extract_locus_name` first-allele parse in `HLA_mismatch_base`) are done. Full suite green (494 pass, 0 fail). Original workflow resolves end-to-end, and the exact reported `HLA_mismatch_number` call returns `2`. **Still deferred:** the companion interactive helper (§6) and reconciling DPB allele-level semantics with issue #33.
 
 ### 5.1 Auto-detection (default) — refined per Option Y
 
@@ -248,7 +248,7 @@ Translation (especially serologic → molecular, which is one-to-many) is **out 
 - [x] `serologic_map`: `DPB1: DP → DPB` done (§5.4). *Still reconcile the allele-level DPB semantics with issue #33.*
 - [x] **Regression guard:** full suite green — 492 pass, 0 fail (incl. the PIRCHE low-res test and `test_sero`).
 - [x] **Characterization test deleted** and replaced by Part B "DESIRED (default)". §2 dev row is now effectively `HLA-Cw7+HLA-Cw17`.
-- [ ] **`extract_locus_name`** (`HLA_mismatch_base.R`) — parse locus per-allele instead of slicing before the first `*` (§4). Deferred (issue-40 workflow already unblocked because the function no longer emits the malformed string).
+- [x] **`extract_locus_name`** (`HLA_mismatch_base.R`) — done (2026-06-19): parses the locus from the first allele of each group. Both halves of issue #40 now resolved; even a hand-written/legacy `HLA-Cw*17` no longer errors in the mismatch functions.
 - [ ] Build the companion interactive helper (§6); decide where era-translation lives (own function vs. HLAtools dependency — see issue-33 §4.4).
 - [ ] Decide whether to keep `nomenclature` as the last argument (chosen for back-compat) or move it earlier before a release.
 

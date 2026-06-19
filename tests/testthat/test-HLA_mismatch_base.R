@@ -166,3 +166,25 @@ test_that("HLA_mismatch_base returns NA for perfect match at single locus", {
   expect_true(is.na(result))
 })
 
+test_that("locus is parsed per-allele: a serologic allele before an asterisk allele does not error (issue #40)", {
+  # Regression for issue #40. The locus of a "+"-joined group is taken from its
+  # FIRST allele, so a serologic allele preceding a molecular (asterisk) one in
+  # the same group no longer makes the parse overshoot to a bogus locus
+  # ("HLA-Cw7+HLA-Cw") that read as a missing locus.
+  recip <- "HLA-Cw10+HLA-Cw6"
+
+  # Asterisk-bearing allele SECOND (the order reported in the issue): used to error.
+  donor_star_2nd <- "HLA-Cw7+HLA-Cw*17"
+  expect_equal(
+    HLA_mismatch_base(recip, donor_star_2nd, "HLA-Cw", direction = "HvG", homozygous_count = 1),
+    "HLA-Cw7+HLA-Cw*17"
+  )
+
+  # Asterisk-bearing allele FIRST: already worked; must keep working.
+  donor_star_1st <- "HLA-Cw*17+HLA-Cw7"
+  expect_equal(
+    HLA_mismatch_base(recip, donor_star_1st, "HLA-Cw", direction = "HvG", homozygous_count = 1),
+    "HLA-Cw*17+HLA-Cw7"
+  )
+})
+
