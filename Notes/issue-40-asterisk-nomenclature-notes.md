@@ -243,6 +243,14 @@ Translation (especially serologic → molecular, which is one-to-many) is **out 
 
 ## 8. TODO / where to pick up
 
+> **▶ Resume here (next session).** Issue #40 is **functionally complete** — both halves fixed, committed, and pushed to `dev` (commits `8d9b502`, `1a3d647`); working tree clean; full suite 494 pass. Nothing on issue #40 is blocking. Remaining work is **optional/follow-on**, in rough priority order:
+> 1. **Companion interactive helper** (§6) — the next substantive build. Scans a table, warns on would-be non-existent antigens, holds era-translation tables. Decide first: own function vs. depend on HLAtools (issue-33 §4.4).
+> 2. **`nomenclature` arg position** — currently last (back-compat). Decide whether to move it earlier before any release/version bump.
+> 3. **DPB allele-level serologic semantics** — only the *label* (`DPB`) is settled; the value rules belong to **issue #33** (see [issue-33 notes](issue-33-serologic-nomenclature-notes.md)).
+> 4. Separate threads in §9 (HLA- prefix tolerance; colleague PDF/txt for issue #33).
+>
+> No version bump / NEWS entry was made (still `1.3.0.9000`); add one if/when these changes go toward a release per the package-update SOP.
+
 - [x] **Test fixtures** (2026-06-19): `tests/testthat/test-HLA_columns_to_GLstring_nomenclature.R`. Part A (8 tests, passing) locks current behavior; Part B (14 tests, `skip()`-guarded) is the Option-Y spec — issue-40 default, bare-`*` serologic, Option-Y clean naming, never-`^`-split invariant, `mol`/`ser` scalar + named-vector forms, cross-spelling key, DR 51/52/53→DRB·, Bw untouched, DPB label.
 - [x] **`HLA_columns_to_GLstring`** — implemented §5 (2026-06-19): Option-Y classification (bare-`*` serologic), canonical-locus grouping + Cw→C clean naming, `nomenclature` scalar + named-vector (cross-spelling keys), DR `"mol"` 51/52/53→DRB·*XX lookup, Bw guard, `DPB` label. `man/` regenerated.
 - [x] `serologic_map`: `DPB1: DP → DPB` done (§5.4). *Still reconcile the allele-level DPB semantics with issue #33.*
