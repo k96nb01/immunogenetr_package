@@ -25,7 +25,7 @@ Classification-relevant steps:
 2. **Serologic name map** — each molecular locus also has a serologic name. This map already encodes the "drop the trailing 1" rule:
    - `HLA-DQA1` → `HLA-DQA`
    - `HLA-DPA1` → `HLA-DPA`
-   - `HLA-DPB1` → `HLA-DP`
+   - `HLA-DPB1` → `HLA-DP`  ⚠ **outdated** — the formalized serologic name is `HLA-DPB`, not `HLA-DP` (`DP` predates formalization). Fix to `DPB`. See [issue-40-asterisk-nomenclature-notes.md](issue-40-asterisk-nomenclature-notes.md) §5.4.
    - `HLA-DQB1` → `HLA-DQ`
    - `HLA-DRB1` → `HLA-DR`
 3. **Per-cell molecular test** (the heart of the issue):
