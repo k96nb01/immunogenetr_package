@@ -1,9 +1,9 @@
 # Working notes — Issue #33: serologic nomenclature for DQA1/DPA1/DPB1 (and beyond)
 
-**Date:** 2026-06-10
+**Date:** 2026-06-10 (updated 2026-06-20)
 **Package:** immunogenetr (dev branch, version 1.3.0.9000)
 **Issue:** https://github.com/k96nb01/immunogenetr_package/issues/33
-**Status:** Design / scoping. No code written yet. Blocked on real-world example data and colleague input.
+**Status:** Design / scoping. No issue-#33 code written yet. **Key approach decided 2026-06-20: encode nomenclature PATTERNS, not reference tables (see §5.4).** Realistic dev data now available (`HLA_typing_synthetic_LIS`, see §6). The issue-#40 work already landed the structural locus-identity backbone this builds on.
 
 ---
 
@@ -123,29 +123,27 @@ Proposed shape:
 
 For exploratory work, a **separate** function could scan a table, report the ambiguous cells, and return a column→nomenclature mapping the user then passes into `HLA_columns_to_GLstring`. This keeps the core transformation pure and reproducible while still offering a guided console workflow when wanted.
 
-### 5.4 Reference data the solution will need
+### 5.4 Approach: encode PATTERNS, not reference tables — DECIDED 2026-06-20
 
-- A validated list of **current** serologic specificities per locus (broad/split/associated), including the new DQA/DPA/DP entries.
-- **Era-translation** tables for renamed associated antigens (e.g. `A203` → `A0203`).
-- The structural "drop the 1" relationship (molecular `DQA1*NN` ↔ serologic `DQANN`) is a useful internal consistency check.
+**NB decision (2026-06-20):** do **not** bake a full serologic-nomenclature reference table into this package, and do **not** translate between nomenclature eras. Other packages (notably **HLAtools**) already maintain authoritative antigen lists and era translation; replicating that here is out of scope and would saddle the package with a constantly-maintained reference.
 
-Candidate authoritative sources:
+Instead, **encode the structural patterns (the grammar) of valid serologic nomenclature.** Classify/validate a value by whether it **conforms to the pattern** for its locus, not by membership in a fixed antigen list. Consequences:
 
-- **IPD-IMGT/HLA `rel_dna_ser.txt`** — canonical machine-readable allele → serologic-equivalent mapping. Best provenance for a CRAN package.
-- **hla.alleles.org** antigen pages (human-facing; less regular to parse):
-  - https://hla.alleles.org/pages/antigens/associated_antigens/
-  - https://hla.alleles.org/pages/antigens/hla_antigens/
-  - https://hla.alleles.org/pages/antigens/broads_and_splits/
-- **HLAtools** package — era-translation capability; investigate reuse.
-- Possibly user/colleague-provided WHO 2026-04 update tables.
+- A value that matches a locus's serologic pattern is handled **even if that specific antigen does not (yet) exist** in the published nomenclature.
+- **Forward-compatible:** the WHO adds new antigens on an ongoing basis; pattern-based handling keeps working with no package data update.
+- Keeps the package lean — no maintenance-burden reference table, no era tables.
+- The interactive helper (§5.3) validates the **same way**: it flags values that do not conform to *any* locus's serologic grammar, rather than checking against a master antigen list.
 
-Note: the antigen lists pulled during this session came through a summarizing fetch and are **not yet authoritative**. Confirm formats against `rel_dna_ser.txt` or a primary source before building anything.
+What "patterns" means (to be specified precisely at implementation): the per-locus token grammar — e.g. serologic C is `Cw` + digits; DQA is `DQA` + digits; DP is `DPB`/`DPA` + digits; broads/splits/associated antigens are digit strings (optionally with `(split)` notation like `A24(9)`); and the structural "drop/keep the 1" molecular↔serologic locus relationship. The **canonical locus-identity + naming tables already added for issue #40** (`HLA_columns_to_GLstring`, see [issue-40 notes §5.4](issue-40-asterisk-nomenclature-notes.md)) are the structural backbone; issue #33 extends this with per-value pattern checks.
+
+**Out of scope (defer to HLAtools or the caller):** era translation of renamed antigens (e.g. `A203` ↔ `A0203`), and any authoritative "does this exact antigen exist?" lookup. The IPD-IMGT/HLA `rel_dna_ser.txt` and hla.alleles.org antigen pages remain references *if a pattern ever needs validating against reality*, but we are explicitly not depending on them at runtime.
 
 ---
 
 ## 6. Cross-cutting requirements (regardless of approach)
 
-- **Test fixture** covering, per locus: hi-res molecular, low-res molecular (`01`, `01:01`), `locus*field`, serologic (`DQA01`, `A2`, `A24(9)`), bare ambiguous (`1`, `0201`), legacy associated antigens (`A203`), and both column-name conventions (`DQA1` vs `DQA`). This is the "test data" the issue is blocked on.
+- **Realistic dev/test data now available (2026-06-20):** `HLA_typing_synthetic_LIS` — a 63-row synthetic LIS "Patient" table added to the package (`data/`, documented, with a test). **Key property (NB):** its molecular (`m…`) columns contain a **mix of true molecular (`31:01`) and serologic (`w6`) values**, because the source lab historically stored serologic typing in the molecular columns. That mixed-nomenclature-within-a-molecular-column case is exactly the wild-caught input the classifier must handle, so this is the **primary fixture** for issue #33. View with `data(HLA_typing_synthetic_LIS)` after reinstalling the dev build.
+- **Hand-built edge-case fixture** still useful, covering per locus: hi-res molecular, low-res molecular (`01`, `01:01`), `locus*field`, serologic (`DQA01`, `A2`, `A24(9)`), bare ambiguous (`1`, `0201`), and both column-name conventions (`DQA1` vs `DQA`). (Era-specific cases like legacy `A203` are out of scope per §5.4.)
 - **Conflict-signaling decision:** silent default vs. warning vs. an argument forcing an explicit declaration. (Leaning: default + warning.)
 - **Regression guard:** A/B/C/DR/DQ output must be byte-identical before and after the change.
 
@@ -161,16 +159,18 @@ Note: the antigen lists pulled during this session came through a summarizing fe
 
 **On our side:**
 
-- Gather real-world example tables to drive the test fixture.
-- Confirm the current and prior serologic formats against an authoritative source (`rel_dna_ser.txt`).
-- Investigate HLAtools era-translation — reuse vs. reimplement.
-- Once data and conventions are settled, choose the concrete classification precedence and implement, with the warning path and regression guard.
+- [x] Gather real-world example tables — done: `HLA_typing_synthetic_LIS` (§6).
+- [ ] **Specify the per-locus serologic grammar** (the "patterns" of §5.4): write down, per locus, the exact token + digit rules that define a conforming serologic value (incl. broad/split/associated forms and `A24(9)`-style splits).
+- [ ] Implement pattern-based classification/validation, reusing the issue-#40 canonical locus backbone; add the warning path and regression guard.
+- [ ] Build the interactive helper to flag non-conforming values (pattern-based, no master list).
+- ~~Confirm formats against `rel_dna_ser.txt` / investigate HLAtools era-translation~~ — dropped per the §5.4 patterns-not-tables decision (era translation is out of scope).
 
 ---
 
 ## 8. Decisions locked in so far
 
+- **Patterns, not tables (2026-06-20):** encode the *grammar* of valid serologic nomenclature; do **not** bake in a full antigen reference table, and do **not** translate between nomenclature eras. A value is handled if it conforms to its locus's pattern, even if it isn't (yet) a published antigen — forward-compatible as the nomenclature grows. Era translation and authoritative existence checks are out of scope (defer to HLAtools). (§5.4)
 - The core function will **not** become interactive.
-- Nomenclature will be **caller-declared at the column level**, defaulting to molecular for backward compatibility.
+- Nomenclature will be **caller-declared at the column level**, defaulting to molecular for backward compatibility. *(Note: the issue-#40 work implemented the `nomenclature` parameter on `HLA_columns_to_GLstring` with this column-level model — issue #33 builds on it.)*
 - Ambiguous cells will trigger a **warning**, never a silent guess.
 - The fix is scoped to `HLA_columns_to_GLstring`; downstream functions already handle correctly-labeled input.

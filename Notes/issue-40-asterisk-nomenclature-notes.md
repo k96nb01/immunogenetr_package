@@ -218,11 +218,10 @@ Nothing special: `DQ → DQB1`, value carried as-is (`7` → `HLA-DQB1*7`).
 
 A separate, opt-in function for exploratory work:
 
-- Scans a table and reports cells that would produce **non-existent antigens** (e.g. the `HLA-C*9` from a `w9` forced to molecular).
-- Holds the **era/translation tables** (e.g. the serologic↔molecular renames, `A203 → A0203`).
+- Scans a table and reports cells that **do not conform to the serologic grammar** for their locus (pattern-based — see the decision below), so the user can spot likely mistyped/misclassified cells.
 - Keeps the core `HLA_columns_to_GLstring` pure, reproducible, and non-interactive.
 
-Translation (especially serologic → molecular, which is one-to-many) is **out of scope** for the core function and stays behind this helper. See issue-33 notes §5.3 for the broader interactive-helper discussion.
+**Updated 2026-06-20 — patterns, not tables:** the helper validates by *pattern conformance*, NOT against a baked-in master antigen list, and does **not** hold era/translation tables. A value that matches its locus's serologic grammar is accepted even if that exact antigen isn't (yet) published; era translation (e.g. `A203 ↔ A0203`) and serologic→molecular conversion are **out of scope** for this package — defer to HLAtools or the caller. Full rationale in [issue-33 notes §5.4](issue-33-serologic-nomenclature-notes.md). (This supersedes the earlier "holds era/translation tables" plan.)
 
 ---
 
@@ -243,13 +242,16 @@ Translation (especially serologic → molecular, which is one-to-many) is **out 
 
 ## 8. TODO / where to pick up
 
-> **▶ Resume here (next session).** Issue #40 is **functionally complete** — both halves fixed, committed, and pushed to `dev` (commits `8d9b502`, `1a3d647`); working tree clean; full suite 494 pass. Nothing on issue #40 is blocking. Remaining work is **optional/follow-on**, in rough priority order:
-> 1. **Companion interactive helper** (§6) — the next substantive build. Scans a table, warns on would-be non-existent antigens, holds era-translation tables. Decide first: own function vs. depend on HLAtools (issue-33 §4.4).
-> 2. **`nomenclature` arg position** — currently last (back-compat). Decide whether to move it earlier before any release/version bump.
-> 3. **DPB allele-level serologic semantics** — only the *label* (`DPB`) is settled; the value rules belong to **issue #33** (see [issue-33 notes](issue-33-serologic-nomenclature-notes.md)).
-> 4. Separate threads in §9 (HLA- prefix tolerance; colleague PDF/txt for issue #33).
+> **▶ Resume here (next session).** Issue #40 is **functionally complete** — both halves fixed, committed, pushed to `dev` (commits `8d9b502`, `1a3d647`); verified end-to-end against the real `hla_donor_assessment` report (rendered clean on the dev build; crashed on 1.3.0). Realistic dev data `HLA_typing_synthetic_LIS` added and pushed (`6bdc88d`). Working tree clean. Remaining work is **optional/follow-on**, in rough priority order:
+> 1. **Issue #33 — serologic patterns.** The next substantive build. Now unblocked: realistic data exists (`HLA_typing_synthetic_LIS`) and the approach is decided — **encode the per-locus serologic grammar (patterns), NOT a reference table or era translation** (see [issue-33 notes §5.4 + §7](issue-33-serologic-nomenclature-notes.md)). First step: write down the per-locus pattern grammar.
+> 2. **Companion interactive helper** (§6) — pattern-based validator (flags values that don't conform to any locus's serologic grammar). Builds on #1; **no era-translation tables** (decision changed 2026-06-20).
+> 3. **`nomenclature` arg position** — currently last (back-compat). Decide whether to move it earlier before any release/version bump.
+> 4. **DPB allele-level serologic semantics** — only the *label* (`DPB`) is settled; the value rules belong to issue #33.
+> 5. Separate threads in §9 (HLA- prefix tolerance; colleague PDF/txt for issue #33).
 >
 > No version bump / NEWS entry was made (still `1.3.0.9000`); add one if/when these changes go toward a release per the package-update SOP.
+>
+> **Dev build note:** the installed `immunogenetr` (1.3.0.9000) predates the `HLA_typing_synthetic_LIS` dataset — reinstall (`devtools::install("C:/GitHub/immunogenetr_package")`) or `load_all()` to access it as `data(HLA_typing_synthetic_LIS)`.
 
 - [x] **Test fixtures** (2026-06-19): `tests/testthat/test-HLA_columns_to_GLstring_nomenclature.R`. Part A (8 tests, passing) locks current behavior; Part B (14 tests, `skip()`-guarded) is the Option-Y spec — issue-40 default, bare-`*` serologic, Option-Y clean naming, never-`^`-split invariant, `mol`/`ser` scalar + named-vector forms, cross-spelling key, DR 51/52/53→DRB·, Bw untouched, DPB label.
 - [x] **`HLA_columns_to_GLstring`** — implemented §5 (2026-06-19): Option-Y classification (bare-`*` serologic), canonical-locus grouping + Cw→C clean naming, `nomenclature` scalar + named-vector (cross-spelling keys), DR `"mol"` 51/52/53→DRB·*XX lookup, Bw guard, `DPB` label. `man/` regenerated.

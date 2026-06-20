@@ -37,6 +37,12 @@ and \code{NA}s. Both serologic (\code{A1Cd:dq2cd}) and molecular
 DRB3/4/5, DQB1, DQA1, DPB1 and DPA1 loci.
 }
 \details{
+Note that the molecular (\code{m...}) columns deliberately contain a
+\emph{mix} of true molecular values (e.g. \code{"31:01"}) and serologic
+values (e.g. \code{"w6"}): the source laboratory historically recorded
+serologic typing in the molecular columns, so this captures that real-world
+mixed-nomenclature-within-a-column case.
+
 All identifiers, names and dates are synthetic.
 }
 \keyword{datasets}
