@@ -1,11 +1,11 @@
 #' @title read_HML
 #'
-#' @description Reads the GL strings of HML files and returns a tibble with
+#' @description Reads the GL Strings of HML files and returns a tibble with
 #' the full genotype for each sample.
 #'
 #' @param HML_file The path to an HML file.
 #'
-#' @return A tibble with the sample name and the GL string.
+#' @return A tibble with the sample name and the GL String.
 #'
 #' @examples
 #' HML_1 <- system.file("extdata", "HML_1.hml", package = "immunogenetr")
@@ -74,11 +74,11 @@ read_HML <- function(HML_file) {
   # Filter for all the children in the HML file that represent a sample.
   samples <- xml_find_all(HML, sample_xpath, ns)
 
-  # Get sample number and GL strings for each sample.
+  # Get sample number and GL Strings for each sample.
   GL_strings <- map(samples, function(node) {
     # Get sample ID.
     sampleID <- xml_attr(node, "id")
-    # Get GL strings.
+    # Get GL Strings.
     glstring <- xml_text(xml_find_all(node, glstring_xpath, ns))
     # Combine to a tibble.
     tibble(sampleID, glstring)
@@ -87,7 +87,7 @@ read_HML <- function(HML_file) {
   # Combine to a single tibble.
   combined <- bind_rows(GL_strings)
 
-  # Some implementations of HML put the same locus in multiple nodes; this combines them with "+" to form a compliant GL string
+  # Some implementations of HML put the same locus in multiple nodes; this combines them with "+" to form a compliant GL String
   reduced <- combined %>%
     mutate(locus = str_extract(glstring, "[^//*]+")) %>%
     mutate(glstring = paste0(glstring, collapse = "+"), .by = c(sampleID, locus)) %>%
@@ -96,7 +96,7 @@ read_HML <- function(HML_file) {
     filter(!is.na(sampleID) & !is.na(glstring)) %>%
     select(-locus)
 
-  # Combine to a single GL string per sample
+  # Combine to a single GL String per sample
   summarise(reduced, GL_string = str_flatten(glstring, collapse = "^"), .by = sampleID)
 }
 

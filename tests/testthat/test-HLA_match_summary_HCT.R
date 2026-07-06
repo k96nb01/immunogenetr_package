@@ -49,7 +49,7 @@ test_that("HLA_match_summary_HCT rejects NULL inputs", {
   expect_error(HLA_match_summary_HCT(gl, NULL, match_grade = "Xof8"), "GL_string_donor")
 })
 
-test_that("HLA_match_summary_HCT rejects non-character GL strings", {
+test_that("HLA_match_summary_HCT rejects non-character GL Strings", {
   gl <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01^HLA-C*03:04+HLA-C*07:01^HLA-DRB1*04:01+HLA-DRB1*07:01"
   expect_error(HLA_match_summary_HCT(123, gl, match_grade = "Xof8"), "must be a character")
 })

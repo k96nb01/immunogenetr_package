@@ -125,7 +125,7 @@ test_that("HLA_mismatch_base rejects NULL inputs", {
   expect_error(HLA_mismatch_base(gl, gl, NULL, "HvG"), "loci")
 })
 
-test_that("HLA_mismatch_base rejects non-character GL strings", {
+test_that("HLA_mismatch_base rejects non-character GL Strings", {
   gl <- "HLA-A*01:01+HLA-A*02:01"
   expect_error(HLA_mismatch_base(123, gl, "HLA-A", "HvG"), "must be a character")
   expect_error(HLA_mismatch_base(gl, 123, "HLA-A", "HvG"), "must be a character")
@@ -136,7 +136,7 @@ test_that("HLA_mismatch_base rejects invalid direction", {
   expect_error(HLA_mismatch_base(gl, gl, "HLA-A", "invalid"))
 })
 
-test_that("HLA_mismatch_base rejects ambiguous GL strings", {
+test_that("HLA_mismatch_base rejects ambiguous GL Strings", {
   gl_ambig <- "HLA-A*01:01/HLA-A*01:02+HLA-A*02:01"
   gl_normal <- "HLA-A*01:01+HLA-A*02:01"
   expect_error(HLA_mismatch_base(gl_ambig, gl_normal, "HLA-A", "HvG"), "ambiguous")

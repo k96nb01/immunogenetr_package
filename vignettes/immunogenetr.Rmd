@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
 # the default monospace console-style print. The kable HTML is wrapped in a
 # pandoc raw-HTML block (```{=html} ... ```) so pandoc passes the content
 # through verbatim. Without this, pandoc's markdown_in_html_blocks extension
-# re-parses the cell contents as markdown, turning "^...^" in GL strings
+# re-parses the cell contents as markdown, turning "^...^" in GL Strings
 # into <sup>...</sup>.
 knit_print.data.frame <- function(x, ...) {
   html <- as.character(knitr::kable(x, format = "html"))
@@ -33,14 +33,14 @@ registerS3method("knit_print", "tbl",        knit_print.data.frame, envir = asNa
 ## Overview
 
 immunogenetr is a comprehensive toolkit for clinical HLA informatics, built on
-tidyverse principles. It uses the genotype list string
-(GL string, <https://glstring.org/>) as its core data structure for storing and
+tidyverse principles. It uses the Genotype List String
+(GL String, <https://glstring.org/>) as its core data structure for storing and
 computing HLA genotype data.
 
 This vignette walks through the main workflows:
 
-1. Converting tabular HLA data to GL strings
-2. Splitting GL strings back into individual loci
+1. Converting tabular HLA data to GL Strings
+2. Splitting GL Strings back into individual loci
 3. Calculating mismatches between recipient and donor
 4. Summarizing HLA matching for transplantation
 5. Working with HLA allele names (truncation, prefixes, regex)
@@ -53,7 +53,7 @@ library(immunogenetr)
 library(dplyr)
 ```
 
-## Converting tabular HLA data to GL strings
+## Converting tabular HLA data to GL Strings
 
 Clinical HLA data is typically stored in a tabular format, with each allele in
 its own column. immunogenetr includes the `HLA_typing_1` dataset as an example:
@@ -64,34 +64,34 @@ head(HLA_typing_1, 3)
 ```
 
 The `HLA_columns_to_GLstring()` function converts these columns into a single
-GL string per individual. When used inside `mutate()`, pass `.` as the first
+GL String per individual. When used inside `mutate()`, pass `.` as the first
 argument to reference the working data frame:
 ```{r}
 HLA_typing_GL <- HLA_typing_1 %>%
-  # Convert all typing columns (A1 through DPB1_2) into a GL string.
+  # Convert all typing columns (A1 through DPB1_2) into a GL String.
   mutate(
     GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = A1:DPB1_2),
     .after = patient
   ) %>%
-  # Keep only patient ID and the new GL string column.
+  # Keep only patient ID and the new GL String column.
   select(patient, GL_string)
 
-# View the GL strings.
+# View the GL Strings.
 (HLA_typing_GL)
 ```
 
-Each GL string encodes the full genotype: alleles within a gene copy are
+Each GL String encodes the full genotype: alleles within a gene copy are
 separated by `/` (ambiguity), gene copies by `+`, and loci by `^`.
 
-## Splitting GL strings into loci
+## Splitting GL Strings into loci
 
-To go the other direction, `GLstring_genes()` splits a GL string back into
+To go the other direction, `GLstring_genes()` splits a GL String back into
 separate columns by locus:
 
 ```{r}
-# Take the first patient's GL string and split it into locus columns.
+# Take the first patient's GL String and split it into locus columns.
 # Note: GLstring_genes and GLstring_genes_expanded use pivot_longer on all
-# columns, so only pass the GL string column (no other data types).
+# columns, so only pass the GL String column (no other data types).
 single_patient <- HLA_typing_GL[1, "GL_string", drop = FALSE]
 GLstring_genes(single_patient, "GL_string")
 ```
@@ -106,7 +106,7 @@ GLstring_genes_expanded(single_patient, "GL_string")
 ## Calculating HLA mismatches
 
 The mismatch functions are the core of immunogenetr. They all take a recipient
-GL string, a donor GL string, one or more loci, and a direction.
+GL String, a donor GL String, one or more loci, and a direction.
 
 Let's set up a recipient/donor pair:
 
@@ -214,7 +214,7 @@ donors %>% select(donor, match_8of8)
 # Truncate a four-field allele to two fields.
 HLA_truncate("HLA-A*02:01:01:01", fields = 2)
 
-# Works on full GL strings too.
+# Works on full GL Strings too.
 HLA_truncate("HLA-A*02:01:01:01+HLA-A*03:01:01:02^HLA-B*07:02:01:01+HLA-B*44:02:01:01",
   fields = 2
 )
@@ -239,7 +239,7 @@ HLA_prefix_add("02:01", "HLA-A*")
 HLA_prefix_add("A*02:01")
 ```
 
-### Regex for GL string searching
+### Regex for GL String searching
 
 `GLstring_regex()` creates regex patterns that accurately search within GL
 strings, preventing partial matches across field boundaries:
@@ -273,7 +273,7 @@ names(who_names)
 
 ## Reading HML files
 
-The `read_HML()` function extracts GL strings from HML (HLA Markup Language)
+The `read_HML()` function extracts GL Strings from HML (HLA Markup Language)
 files, which are a standard format for reporting HLA typing results from
 next-generation sequencing:
 

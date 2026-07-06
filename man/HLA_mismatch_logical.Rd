@@ -7,9 +7,9 @@
 HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci, direction)
 }
 \arguments{
-\item{GL_string_recip}{A GL strings representing the recipient's HLA genotypes.}
+\item{GL_string_recip}{A GL Strings representing the recipient's HLA genotypes.}
 
-\item{GL_string_donor}{A GL strings representing the donor's HLA genotypes.}
+\item{GL_string_donor}{A GL Strings representing the donor's HLA genotypes.}
 
 \item{loci}{A character vector specifying the loci to be considered for
 mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)

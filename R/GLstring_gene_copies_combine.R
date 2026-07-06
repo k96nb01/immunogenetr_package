@@ -1,7 +1,7 @@
 #' @title GLstring_gene_copies_combine
 #'
 #' @description A function for combining two columns of typing from the same
-#' locus into a single column in the appropriate GL string format.
+#' locus into a single column in the appropriate GL String format.
 #'
 #' @param .data A data frame
 #' @param columns The names of the columns in the data frame that contain typing
@@ -10,7 +10,7 @@
 #' data frame. Default is "sample".
 #'
 #' @return A data frame with the specified columns combined into a single column
-#' for each locus, in GL string format.
+#' for each locus, in GL String format.
 #'
 #' @examples
 #' library(dplyr)

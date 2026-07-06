@@ -13,9 +13,9 @@ HLA_mismatch_number(
 )
 }
 \arguments{
-\item{GL_string_recip}{A GL string representing the recipient's HLA genotype.}
+\item{GL_string_recip}{A GL String representing the recipient's HLA genotype.}
 
-\item{GL_string_donor}{A GL string representing the donor's HLA genotype.}
+\item{GL_string_donor}{A GL String representing the donor's HLA genotype.}
 
 \item{loci}{A character vector specifying the loci to be considered for
 mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)
@@ -29,10 +29,10 @@ mismatching in solid organ transplantation).}
 
 \item{homozygous_count}{An integer specifying how to count homozygous mismatches.
 Defaults to 2, where homozygous mismatches are treated as two mismatches,
-regardless if one or two alleles are supplied in the GL string (in cases
+regardless if one or two alleles are supplied in the GL String (in cases
 where one allele is supplied, it is duplicated by the function). If
 specified as 1, homozygous mismatches are only counted once, regardless of
-whether one or two alleles are supplied in the GL string (in cases where
+whether one or two alleles are supplied in the GL String (in cases where
 two alleles are supplied, the second identical allele is deleted).}
 }
 \value{

@@ -3,7 +3,7 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 
-test_that("ambiguity_table_to_GLstring correctly converts data frame to GL string", {
+test_that("ambiguity_table_to_GLstring correctly converts data frame to GL String", {
   data <- tribble(
     ~value,                  ~entry, ~possible_gene_location, ~locus, ~genotype_ambiguity, ~genotype, ~haplotype, ~allele,
     "HLA-A*01:01:01:01",     1,      1,                       1,      1,                   1,         1,          1,

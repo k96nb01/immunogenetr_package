@@ -7,7 +7,7 @@
 HLA_prefix_remove(data, keep_locus = FALSE)
 }
 \arguments{
-\item{data}{A string with a single HLA allele, a GL string of HLA alleles,
+\item{data}{A string with a single HLA allele, a GL String of HLA alleles,
 or a character vector containing either of the previous.}
 
 \item{keep_locus}{A logical value indicating whether to retain any locus values.
@@ -19,7 +19,7 @@ A vector modified to remove HLA and optionally locus prefixes.
 \description{
 This function removes HLA and optionally locus prefixes from a string of HLA typing:
 "HLA-A2" changes to "A2" or "2". By default, HLA and locus prefixes are removed. This function
-also works on each allele in a GL string.
+also works on each allele in a GL String.
 }
 \examples{
 # The HLA_typing_1 dataset contains a table with HLA typing spread across multiple columns:

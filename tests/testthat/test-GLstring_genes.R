@@ -3,7 +3,7 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 
-test_that("GLstring_genes correctly processes GL strings", {
+test_that("GLstring_genes correctly processes GL Strings", {
   # Basic test with three loci separated by "^".
   table <- data.frame(
     GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02",
@@ -16,14 +16,14 @@ test_that("GLstring_genes correctly processes GL strings", {
   expect_s3_class(result, "data.frame")
   # Should have HLA_A, HLA_C, HLA_B columns (tidyverse-repaired names).
   expect_true(all(c("HLA_A", "HLA_C", "HLA_B") %in% colnames(result)))
-  # Each locus column should contain the correct GL string fragment.
+  # Each locus column should contain the correct GL String fragment.
   expect_true("HLA-A*29:02+HLA-A*30:02" %in% result$HLA_A)
   expect_true("HLA-C*06:02+HLA-C*07:01" %in% result$HLA_C)
   expect_true("HLA-B*08:01+HLA-B*13:02" %in% result$HLA_B)
 })
 
 test_that("GLstring_genes handles a full HLA typing with many loci", {
-  # GL string with standard HCT loci: A, B, C, DRB1, DQB1.
+  # GL String with standard HCT loci: A, B, C, DRB1, DQB1.
   gl <- paste(
     "HLA-A*02:01+HLA-A*03:01",
     "HLA-B*07:02+HLA-B*44:02",
@@ -63,9 +63,9 @@ test_that("GLstring_genes handles multiple rows", {
   expect_true(all(c("HLA_A", "HLA_B") %in% colnames(result)))
 })
 
-test_that("GLstring_genes handles GL strings with ambiguity (slash notation)", {
+test_that("GLstring_genes handles GL Strings with ambiguity (slash notation)", {
 
-  # A GL string with allele-level ambiguity using "/" delimiter.
+  # A GL String with allele-level ambiguity using "/" delimiter.
   gl <- "HLA-A*02:01/HLA-A*02:06+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02"
   table <- data.frame(GL_string = gl, stringsAsFactors = FALSE)
 
@@ -76,7 +76,7 @@ test_that("GLstring_genes handles GL strings with ambiguity (slash notation)", {
   expect_true("HLA_B" %in% colnames(result))
 })
 
-test_that("GLstring_genes handles a single-locus GL string", {
+test_that("GLstring_genes handles a single-locus GL String", {
   # Only one locus, no "^" separator.
   table <- data.frame(
     GL_string = "HLA-A*01:01+HLA-A*02:01",
@@ -91,7 +91,7 @@ test_that("GLstring_genes handles a single-locus GL string", {
 })
 
 test_that("GLstring_genes handles DRB3/4/5 loci", {
-  # GL string including DRB345 loci.
+  # GL String including DRB345 loci.
   gl <- paste(
     "HLA-DRB1*04:01+HLA-DRB1*07:01",
     "HLA-DRB4*01:03+HLA-DRB4*01:01",

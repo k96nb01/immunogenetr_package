@@ -1,14 +1,14 @@
 #' @title GLstring_genotype_ambiguity
 #'
-#' @description This function processes GL strings in the specified columns of
+#' @description This function processes GL Strings in the specified columns of
 #' a data frame to retain only the first genotype ambiguity, optionally
 #' retaining the remaining ambiguities in a separate column with "_ambiguity"
 #' appended. The function ensures that genes have been separated from the GL
 #' strings prior to execution; otherwise, an error will be thrown if a "^" is
-#' detected in the GL strings.
+#' detected in the GL Strings.
 #'
 #' @param data A data frame
-#' @param columns The names of the columns in the data frame that contain GL strings
+#' @param columns The names of the columns in the data frame that contain GL Strings
 #' @param keep_ambiguities A logical value indicating whether to retain the
 #' remaining ambiguities in separate columns with "_genotype_ambiguity" appended
 #' to the original column names. Default is FALSE.
@@ -52,12 +52,12 @@ GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE)
   cols2mod <- names(select(data, {{ columns }}))
 
   # Check for "^" in any of the selected columns, which indicates genes
-  # haven't been separated from the GL string yet.
+  # haven't been separated from the GL String yet.
   if (any(str_detect(unlist(data[cols2mod]), "\\^"), na.rm = TRUE)) {
-    cli_abort("Genes must be separated before {.fn GLstring_genotype_ambiguity} can be used. Process GL strings with {.fn GLstring_genes} first.")
+    cli_abort("Genes must be separated before {.fn GLstring_genotype_ambiguity} can be used. Process GL Strings with {.fn GLstring_genes} first.")
   }
 
-  # Copy GL string to a new ambiguity column.
+  # Copy GL String to a new ambiguity column.
   data %>%
     mutate(across({{ cols2mod }},
       ~ as.character(.),

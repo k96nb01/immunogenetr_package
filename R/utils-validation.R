@@ -4,7 +4,7 @@
 #' @importFrom cli cli_abort
 #' @importFrom rlang caller_env
 
-# Validate that a GL string argument is a non-empty character vector.
+# Validate that a GL String argument is a non-empty character vector.
 # Allows NA values within the vector (handled downstream), but rejects
 # NULL, non-character types, and zero-length input.
 check_gl_string <- function(x, arg_name = "data", call = caller_env()) {
@@ -87,7 +87,7 @@ check_fields <- function(x, call = caller_env()) {
   invisible(x)
 }
 
-# Validate that every allele in a GL string uses molecular nomenclature
+# Validate that every allele in a GL String uses molecular nomenclature
 # (i.e. contains "*"). This is intended for callers that want to enforce
 # a molecular-only input — for example, an API layer that refuses to mix
 # serologic and molecular allele names. Serologic inputs like "HLA-DR52"
@@ -99,7 +99,7 @@ check_molecular_gl_string <- function(x, arg_name = "data", call = caller_env())
   check_gl_string(x, arg_name = arg_name, call = call)
   if (is.logical(x) && all(is.na(x))) return(invisible(x))
 
-  # Split each GL string on any of the GL delimiters (^, +, |, /) and
+  # Split each GL String on any of the GL delimiters (^, +, |, /) and
   # check that every non-empty, non-NA token contains "*".
   for (i in seq_along(x)) {
     if (is.na(x[[i]])) next

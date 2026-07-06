@@ -5,9 +5,9 @@ library(testthat)
 # ===========================================================================
 
 test_that("check_gl_string accepts valid character vectors", {
-  # Single GL string
+  # Single GL String
   expect_invisible(check_gl_string("HLA-A*01:01+HLA-A*02:01"))
-  # Vector of GL strings
+  # Vector of GL Strings
 
   expect_invisible(check_gl_string(c("HLA-A*01:01", "HLA-B*07:02")))
   # Character vector with an embedded NA (valid; downstream handles NAs)
@@ -200,7 +200,7 @@ test_that("check_fields rejects vectors of length > 1", {
 # Tests for check_molecular_gl_string
 # ===========================================================================
 
-test_that("check_molecular_gl_string accepts valid molecular GL strings", {
+test_that("check_molecular_gl_string accepts valid molecular GL Strings", {
   expect_invisible(check_molecular_gl_string("HLA-A*01:01+HLA-A*02:01"))
   expect_invisible(check_molecular_gl_string("HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"))
   expect_invisible(check_molecular_gl_string(c(
@@ -215,7 +215,7 @@ test_that("check_molecular_gl_string accepts valid molecular GL strings", {
   expect_invisible(check_molecular_gl_string(NA))
 })
 
-test_that("check_molecular_gl_string rejects serologic GL strings", {
+test_that("check_molecular_gl_string rejects serologic GL Strings", {
   expect_error(
     check_molecular_gl_string("HLA-A1+HLA-A2"),
     "must use molecular"
@@ -224,7 +224,7 @@ test_that("check_molecular_gl_string rejects serologic GL strings", {
     check_molecular_gl_string("HLA-DR52"),
     "must use molecular"
   )
-  # Mixed molecular + serologic inside one GL string is also rejected
+  # Mixed molecular + serologic inside one GL String is also rejected
   expect_error(
     check_molecular_gl_string("HLA-A*01:01+HLA-A*02:01^HLA-DR52"),
     "HLA-DR52"

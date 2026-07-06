@@ -13,9 +13,9 @@ HLA_mismatch_base(
 )
 }
 \arguments{
-\item{GL_string_recip}{A GL string representing the recipient's HLA genotype.}
+\item{GL_string_recip}{A GL String representing the recipient's HLA genotype.}
 
-\item{GL_string_donor}{A GL string representing the donor's HLA genotype.}
+\item{GL_string_donor}{A GL String representing the donor's HLA genotype.}
 
 \item{loci}{A character vector specifying the loci to be considered for
 mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)
@@ -34,11 +34,11 @@ alleles are treated as single occurrences without duplication.}
 A character vector, where each element is a string summarizing the
 mismatches for the specified loci. The strings are formatted as
 comma-separated locus mismatch entries if multiple loci are supplied, or
-simple GL strings if a single locus is supplied.
+simple GL Strings if a single locus is supplied.
 }
 \description{
 A function to return a string of mismatches between recipient
-and donor HLA genotypes represented as GL strings. The function finds
+and donor HLA genotypes represented as GL Strings. The function finds
 mismatches based on the direction of comparison specified in the inputs
 and also handles homozygosity. As the name implies, this function is the base
 for all other mismatch (and matching) functions. This function is not meant to be

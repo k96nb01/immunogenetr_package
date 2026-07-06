@@ -1,7 +1,7 @@
 #' @title GLstring_regex
 #'
 #' @description This function will format an HLA allele (e.g. "HLA-A*02:01") to
-#' a regex pattern for searching within a GL string. Note that in order for this
+#' a regex pattern for searching within a GL String. Note that in order for this
 #' function to work properly, the full HLA allele name, including prefixes, is
 #' required. Allele values of "A*02:01" will need to be updated to "HLA-A*02:01",
 #' and "A2" will need to be updated to "HLA-A2". The `HLA_prefix_add` function
@@ -18,7 +18,7 @@
 #' GLstring_regex("HLA-A*02:01")
 #'
 #' # The result is the same allele with extra formatting to escape special characters found
-#' # in a GL string, as well as the ability to accurately search for an allele in a GL string.
+#' # in a GL String, as well as the ability to accurately search for an allele in a GL String.
 #' # For example, we would not want the allele "HLA-A*02:14" to match to "HLA-A*02:149:01",
 #' # which would happen if we simply escaped the special characters:
 #'
@@ -29,7 +29,7 @@
 #'
 #' str_view("HLA-A*02:149:01", GLstring_regex("HLA-A*02:14"), match = NA)
 #'
-#' # Using a longer GL string with multiple alleles and loci:
+#' # Using a longer GL String with multiple alleles and loci:
 #'
 #' GL_string <- "HLA-A*02:01:01+HLA-A*68:01^HLA-B*07:01+HLA-B*15:01"
 #'
@@ -37,7 +37,7 @@
 #'
 #' str_view(GL_string, GLstring_regex("HLA-A*68:01"), match = NA)
 #'
-#' # Note that alleles supplied with fewer fields than in the GL string will also match:
+#' # Note that alleles supplied with fewer fields than in the GL String will also match:
 #'
 #' str_view(GL_string, GLstring_regex("HLA-A*02:01"), match = NA)
 #'
@@ -58,8 +58,8 @@ GLstring_regex <- function(data) {
   if (any(!str_detect(data, "HLA-"))) {
     cli_abort("All alleles must have the full {.val HLA-} prefix for {.fn GLstring_regex} to work properly. Use {.fn HLA_prefix_add} to add the prefix first.")
   }
-  # Format the HLA alleles for searching within a GL string.
+  # Format the HLA alleles for searching within a GL String.
   table <- tibble(alleles = data) %>%
-    mutate(alleles_regex = str_c(str_escape(alleles), "(?=(\\?|\\^|\\||\\+|\\~|/|:|$))")) # The regex includes all the delimiters in a GL string, a colon, which separates fields, and the end of a string.
+    mutate(alleles_regex = str_c(str_escape(alleles), "(?=(\\?|\\^|\\||\\+|\\~|/|:|$))")) # The regex includes all the delimiters in a GL String, a colon, which separates fields, and the end of a string.
   return(table$alleles_regex)
 }

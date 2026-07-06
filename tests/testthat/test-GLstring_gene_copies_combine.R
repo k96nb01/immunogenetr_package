@@ -54,7 +54,7 @@ test_that("GLstring_gene_copies_combine works with multiple loci", {
   expect_true(all(c("HLA_A", "HLA_B") %in% colnames(result)))
   expect_equal(nrow(result), 2)
 
-  # Check correct GL string combination for multiple loci
+  # Check correct GL String combination for multiple loci
   expect_match(result$HLA_A[1], "HLA-A\\*01:01\\+HLA-A\\*01:02")
   expect_match(result$HLA_A[2], "HLA-A\\*02:01\\+HLA-A\\*02:02")
   expect_match(result$HLA_B[1], "HLA-B\\*07:01\\+HLA-B\\*07:02")

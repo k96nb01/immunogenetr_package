@@ -10,10 +10,10 @@ read_HML(HML_file)
 \item{HML_file}{The path to an HML file.}
 }
 \value{
-A tibble with the sample name and the GL string.
+A tibble with the sample name and the GL String.
 }
 \description{
-Reads the GL strings of HML files and returns a tibble with
+Reads the GL Strings of HML files and returns a tibble with
 the full genotype for each sample.
 }
 \examples{

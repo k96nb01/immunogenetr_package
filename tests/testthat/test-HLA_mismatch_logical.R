@@ -41,7 +41,7 @@ test_that("HLA_mismatch_logical rejects NULL inputs", {
   expect_error(HLA_mismatch_logical(gl, gl, NULL, "HvG"), "loci")
 })
 
-test_that("HLA_mismatch_logical rejects non-character GL strings", {
+test_that("HLA_mismatch_logical rejects non-character GL Strings", {
   gl <- "HLA-A*01:01+HLA-A*02:01"
   expect_error(HLA_mismatch_logical(123, gl, "HLA-A", "HvG"), "must be a character")
 })
@@ -73,7 +73,7 @@ test_that("HLA_mismatch_logical agrees with mismatch_table_2016 consensus (homoz
   D <- "HLA-A*31:03"
   N <- "HLA-A*68:11N"
 
-  # Build GL strings from the 2016 table's symbolic allele pairs.
+  # Build GL Strings from the 2016 table's symbolic allele pairs.
   mismatch_table_2016_logical <- mismatch_table_2016 %>%
     # Assign the example alleles based on symbolic codes.
     mutate(recipient_1 = case_when(
@@ -95,7 +95,7 @@ test_that("HLA_mismatch_logical agrees with mismatch_table_2016 consensus (homoz
       str_detect(Donor, "D$") ~ D,
       str_detect(Donor, "N$") ~ N
     )) %>%
-    # Turn the two alleles into a GL string.
+    # Turn the two alleles into a GL String.
     mutate(
       GL_string_recip = str_c(recipient_1, recipient_2, sep = "+"),
       GL_string_donor = str_c(donor_1, donor_2, sep = "+")

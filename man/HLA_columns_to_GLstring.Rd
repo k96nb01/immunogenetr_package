@@ -38,11 +38,11 @@ uses the serologic locus name; `"mol"` uses the molecular locus name. No
 cross-nomenclature allele translation is performed.}
 }
 \value{
-A list of GL strings in the order of the original data frame.
+A list of GL Strings in the order of the original data frame.
 }
 \description{
 A function to take HLA typing data spread across different columns,
-as is often found in wild-caught data, and transform it to a GL string. If column names
+as is often found in wild-caught data, and transform it to a GL String. If column names
 have anything besides the locus name and a number (e.g. "mA1Cd" instead of just "A1"),
 the function will have trouble determining the locus from the column name. The `prefix_to_remove`
 and `suffix_to_remove` arguments can be used to clean up the column names. See the example for
@@ -54,7 +54,7 @@ how these arguments are used.
 print(HLA_typing_LIS)
 
 # The `HLA_columns_to_GLString` function can be used to coerce typing spread across
-# multiple columns into a GL string:
+# multiple columns into a GL String:
 library(dplyr)
 HLA_typing_LIS \%>\%
   mutate(

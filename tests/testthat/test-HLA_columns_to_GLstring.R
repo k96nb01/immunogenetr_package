@@ -1,7 +1,7 @@
 library(testthat)
 library(dplyr)
 
-test_that("HLA_columns_to_GLstring correctly converts HLA columns into a GL string", {
+test_that("HLA_columns_to_GLstring correctly converts HLA columns into a GL String", {
   typing_table <- data.frame(
     patient = c("patient1", "patient2", "patient3"),
     mA1cd = c("A*01:01", "A*02:01", "A*03:01"),

@@ -13,11 +13,11 @@ HLA_match_summary_HCT(
 )
 }
 \arguments{
-\item{GL_string_recip}{A GL string representing the recipient's HLA genotype,
+\item{GL_string_recip}{A GL String representing the recipient's HLA genotype,
 and minimally containing the HLA-A, B, C and DRB1 loci (for Xof8 matching)
 or the HLA-A, B, C, DRB1 and DQB1 loci (for Xof10 matching).}
 
-\item{GL_string_donor}{A GL string representing the donor's HLA genotype,
+\item{GL_string_donor}{A GL String representing the donor's HLA genotype,
 and minimally containing the HLA-A, B, C and DRB1 loci (for Xof8 matching)
 or the HLA-A, B, C, DRB1 and DQB1 loci (for Xof10 matching).}
 
@@ -43,7 +43,7 @@ mismatches are counted twice. Bidirectional matching is the default, but can
 be overridden with the "direction" argument.
 }
 \examples{
-# Example recipient and donor GL strings
+# Example recipient and donor GL Strings
 file <- HLA_typing_1[, -1]
 GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
 

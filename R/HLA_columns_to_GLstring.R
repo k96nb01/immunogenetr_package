@@ -1,7 +1,7 @@
 #' @title HLA_columns_to_GLstring
 #'
 #' @description A function to take HLA typing data spread across different columns,
-#' as is often found in wild-caught data, and transform it to a GL string. If column names
+#' as is often found in wild-caught data, and transform it to a GL String. If column names
 #' have anything besides the locus name and a number (e.g. "mA1Cd" instead of just "A1"),
 #' the function will have trouble determining the locus from the column name. The `prefix_to_remove`
 #' and `suffix_to_remove` arguments can be used to clean up the column names. See the example for
@@ -27,15 +27,15 @@
 #' uses the serologic locus name; `"mol"` uses the molecular locus name. No
 #' cross-nomenclature allele translation is performed.
 #'
-#' @return A list of GL strings in the order of the original data frame.
+#' @return A list of GL Strings in the order of the original data frame.
 #'
 #' @examples
 #' # The HLA_typing_LIS dataset contains a table as might be found in a clinical laboratory
 #' # information system:
 #' print(HLA_typing_LIS)
 #'
-#' # The `HLA_columns_to_GLString` function can be used to coerce typing spread across
-#' # multiple columns into a GL string:
+#' # The `HLA_columns_to_GLstring` function can be used to coerce typing spread across
+#' # multiple columns into a GL String:
 #' library(dplyr)
 #' HLA_typing_LIS %>%
 #'   mutate(
@@ -70,7 +70,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   }
 
   # -------------------------------------------------------------------------
-  # Iteration 6 rewrite: build the GL strings with a single vectorised pass
+  # Iteration 6 rewrite: build the GL Strings with a single vectorised pass
   # over a flattened allele matrix instead of the previous pivot_longer ->
   # 12-stage mutate pipeline -> two summarise/str_flatten joins. Every
   # column-level decision (locus name, serologic map, "always molecular"
