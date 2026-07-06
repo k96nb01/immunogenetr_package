@@ -7,7 +7,7 @@
 HLA_prefix_add(data, prefix = "HLA-")
 }
 \arguments{
-\item{data}{A string with a single HLA allele, a GL string of HLA alleles,
+\item{data}{A string with a single HLA allele, a GL String of HLA alleles,
 or a character vector containing either of the previous.}
 
 \item{prefix}{A character string to be added as a prefix to the alleles.
@@ -18,7 +18,7 @@ A vector with the specified prefix added to the values.
 }
 \description{
 This function adds a specified prefix to the beginning of
-each HLA type, and works on a single allele or all alleles in a GL string.
+each HLA type, and works on a single allele or all alleles in a GL String.
 Useful for adding HLA or gene prefixes.
 }
 \examples{

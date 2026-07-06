@@ -2,9 +2,9 @@
 #'
 #' @description This function removes HLA and optionally locus prefixes from a string of HLA typing:
 #' "HLA-A2" changes to "A2" or "2". By default, HLA and locus prefixes are removed. This function
-#' also works on each allele in a GL string.
+#' also works on each allele in a GL String.
 #'
-#' @param data A string with a single HLA allele, a GL string of HLA alleles,
+#' @param data A string with a single HLA allele, a GL String of HLA alleles,
 #' or a character vector containing either of the previous.
 #' @param keep_locus A logical value indicating whether to retain any locus values.
 #' The default value is FALSE.
@@ -33,7 +33,7 @@ HLA_prefix_remove <- function(data, keep_locus = FALSE) {
   check_logical_flag(keep_locus, "keep_locus")
 
   # -------------------------------------------------------------------------
-  # Iteration 6 rewrite: operate on the GL string directly with regex
+  # Iteration 6 rewrite: operate on the GL String directly with regex
   # substitutions instead of the previous expand->mutate->reassemble pipeline.
   #
   # The old version called GLstring_expand_longer() (a 7-deep
@@ -42,7 +42,7 @@ HLA_prefix_remove <- function(data, keep_locus = FALSE) {
   # a leading locus from each allele. Profiling showed this was the single
   # biggest cost in HLA_columns_to_GLstring on realistic inputs.
   #
-  # The GL string operators ^, |, +, ~, /, ? each separate allele tokens.
+  # The GL String operators ^, |, +, ~, /, ? each separate allele tokens.
   # None of them can appear inside an allele name, so matching "a prefix
   # at an allele boundary" is equivalent to matching "start of string
   # OR immediately after a GL operator" — which is what the gsub() passes
@@ -56,12 +56,12 @@ HLA_prefix_remove <- function(data, keep_locus = FALSE) {
 
   if (!keep_locus) {
     # Pass 2a — strip the leading alphabetic locus prefix from the first
-    # allele in the GL string. sub() is single-match so only the head is
+    # allele in the GL String. sub() is single-match so only the head is
     # touched. "[[:alpha:]]+" handles both single-letter loci (A, B, C)
     # and multi-letter ones (DRB1, DQA1, Cw, Bw).
     result <- sub("^[[:alpha:]]+", "", result)
     # Pass 2b — strip the same alphabetic locus prefix from every other
-    # allele in the GL string. The allele boundary is any GL operator; we
+    # allele in the GL String. The allele boundary is any GL operator; we
     # capture it in group 1 and restore it via "\\1" so the operator is
     # retained. "\\^" inside the character class is a literal caret (not a
     # negation marker, because it is not the first character of the class).
@@ -71,7 +71,7 @@ HLA_prefix_remove <- function(data, keep_locus = FALSE) {
     # sub() so only the first allele's prefix is consumed.
     result <- sub("^[[:digit:]]*\\*", "", result)
     # Pass 3b — strip the same "digits*" locus prefix from every other
-    # allele in the GL string, using the GL-operator boundary pattern.
+    # allele in the GL String, using the GL-operator boundary pattern.
     result <- gsub("([\\^|+~/?])[[:digit:]]*\\*", "\\1", result)
   }
 

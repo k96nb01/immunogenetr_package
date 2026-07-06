@@ -125,7 +125,7 @@ test_that("HLA_mismatch_base rejects NULL inputs", {
   expect_error(HLA_mismatch_base(gl, gl, NULL, "HvG"), "loci")
 })
 
-test_that("HLA_mismatch_base rejects non-character GL strings", {
+test_that("HLA_mismatch_base rejects non-character GL Strings", {
   gl <- "HLA-A*01:01+HLA-A*02:01"
   expect_error(HLA_mismatch_base(123, gl, "HLA-A", "HvG"), "must be a character")
   expect_error(HLA_mismatch_base(gl, 123, "HLA-A", "HvG"), "must be a character")
@@ -136,7 +136,7 @@ test_that("HLA_mismatch_base rejects invalid direction", {
   expect_error(HLA_mismatch_base(gl, gl, "HLA-A", "invalid"))
 })
 
-test_that("HLA_mismatch_base rejects ambiguous GL strings", {
+test_that("HLA_mismatch_base rejects ambiguous GL Strings", {
   gl_ambig <- "HLA-A*01:01/HLA-A*01:02+HLA-A*02:01"
   gl_normal <- "HLA-A*01:01+HLA-A*02:01"
   expect_error(HLA_mismatch_base(gl_ambig, gl_normal, "HLA-A", "HvG"), "ambiguous")
@@ -164,5 +164,27 @@ test_that("HLA_mismatch_base returns NA for perfect match at single locus", {
   gl <- "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"
   result <- HLA_mismatch_base(gl, gl, "HLA-A", "HvG")
   expect_true(is.na(result))
+})
+
+test_that("locus is parsed per-allele: a serologic allele before an asterisk allele does not error (issue #40)", {
+  # Regression for issue #40. The locus of a "+"-joined group is taken from its
+  # FIRST allele, so a serologic allele preceding a molecular (asterisk) one in
+  # the same group no longer makes the parse overshoot to a bogus locus
+  # ("HLA-Cw7+HLA-Cw") that read as a missing locus.
+  recip <- "HLA-Cw10+HLA-Cw6"
+
+  # Asterisk-bearing allele SECOND (the order reported in the issue): used to error.
+  donor_star_2nd <- "HLA-Cw7+HLA-Cw*17"
+  expect_equal(
+    HLA_mismatch_base(recip, donor_star_2nd, "HLA-Cw", direction = "HvG", homozygous_count = 1),
+    "HLA-Cw7+HLA-Cw*17"
+  )
+
+  # Asterisk-bearing allele FIRST: already worked; must keep working.
+  donor_star_1st <- "HLA-Cw*17+HLA-Cw7"
+  expect_equal(
+    HLA_mismatch_base(recip, donor_star_1st, "HLA-Cw", direction = "HvG", homozygous_count = 1),
+    "HLA-Cw*17+HLA-Cw7"
+  )
 })
 

@@ -4,6 +4,7 @@
 
 ## Test environments
 - local Windows 11 (R 4.6.0)
+- win-builder R-devel
 - GitHub Actions: macOS-latest (release), windows-latest (release), ubuntu-latest (devel, release, oldrel-1)
 - R-hub: gcc16, donttest, nosuggests
 

@@ -26,8 +26,8 @@ test_that("GLstring_regex handles vector input", {
   expect_true(all(grepl("\\(\\?=", result)))
 })
 
-test_that("GLstring_regex produces patterns that match correctly in GL strings", {
-  # Set up a GL string with multiple alleles.
+test_that("GLstring_regex produces patterns that match correctly in GL Strings", {
+  # Set up a GL String with multiple alleles.
   gl <- "HLA-A*02:01:01+HLA-A*68:01^HLA-B*07:01+HLA-B*15:01"
 
   # Two-field allele should match the four-field allele (fewer fields match more).
@@ -53,8 +53,8 @@ test_that("GLstring_regex prevents partial field matching", {
   expect_true(str_detect("HLA-A*02:14", pattern))
 })
 
-test_that("GLstring_regex matches alleles at GL string boundaries", {
-  # Allele at the end of a GL string (followed by $).
+test_that("GLstring_regex matches alleles at GL String boundaries", {
+  # Allele at the end of a GL String (followed by $).
   gl <- "HLA-A*01:01+HLA-A*02:01"
   pattern <- GLstring_regex("HLA-A*02:01")
   expect_true(str_detect(gl, pattern))
@@ -77,7 +77,7 @@ test_that("GLstring_regex matches alleles at GL string boundaries", {
 })
 
 test_that("GLstring_regex handles high-resolution and rare loci", {
-  # Four-field allele should match itself in a GL string context.
+  # Four-field allele should match itself in a GL String context.
   result_4f <- GLstring_regex("HLA-A*02:01:01:01")
   expect_true(str_detect("HLA-A*02:01:01:01+HLA-A*03:01", result_4f))
 

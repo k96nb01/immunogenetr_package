@@ -17,11 +17,11 @@ data frame. Default is "sample".}
 }
 \value{
 A data frame with the specified columns combined into a single column
-for each locus, in GL string format.
+for each locus, in GL String format.
 }
 \description{
 A function for combining two columns of typing from the same
-locus into a single column in the appropriate GL string format.
+locus into a single column in the appropriate GL String format.
 }
 \examples{
 library(dplyr)

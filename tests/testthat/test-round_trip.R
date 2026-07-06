@@ -11,7 +11,7 @@ library(testthat)
 # since expand_longer(NA) -> ambiguity_table_to_GLstring was not NA-identical
 # with the first-draft rewrite.
 
-# A compact but representative pool of GL strings pulled from the package's
+# A compact but representative pool of GL Strings pulled from the package's
 # shipped data. We use the first five HLA_typing_1 rows (9 loci each, DRB3/4/5
 # included) plus a few synthetic edge cases (ambiguity operators, single
 # locus, single allele) to keep the suite fast while covering the full GL

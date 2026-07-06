@@ -6,7 +6,7 @@ library(tibble)
 library(purrr)
 library(tidyr)
 
-test_that("read_HML correctly extracts GL strings from HML_1.hml", {
+test_that("read_HML correctly extracts GL Strings from HML_1.hml", {
   # Load the first test HML file bundled with the package.
   HML_1 <- system.file("extdata", "HML_1.hml", package = "immunogenetr")
 
@@ -20,7 +20,7 @@ test_that("read_HML correctly extracts GL strings from HML_1.hml", {
     expect_true("GL_string" %in% colnames(result))
     # Should extract rows.
     expect_gt(nrow(result), 0)
-    # All GL strings should contain "HLA-" prefix.
+    # All GL Strings should contain "HLA-" prefix.
     expect_true(all(str_detect(result$GL_string, "HLA-")))
     # HML_1 has 5 samples.
     expect_equal(nrow(result), 5)
@@ -31,7 +31,7 @@ test_that("read_HML correctly extracts GL strings from HML_1.hml", {
   }
 })
 
-test_that("read_HML correctly extracts GL strings from hml_2.hml", {
+test_that("read_HML correctly extracts GL Strings from hml_2.hml", {
   # Load the second test HML file with a slightly different format.
   HML_2 <- system.file("extdata", "hml_2.hml", package = "immunogenetr")
 
@@ -44,23 +44,23 @@ test_that("read_HML correctly extracts GL strings from hml_2.hml", {
     expect_gt(nrow(result), 0)
     # hml_2 also has 5 samples.
     expect_equal(nrow(result), 5)
-    # All GL strings should contain "HLA-".
+    # All GL Strings should contain "HLA-".
     expect_true(all(str_detect(result$GL_string, "HLA-")))
   } else {
     skip("hml_2.hml test file does not exist.")
   }
 })
 
-test_that("read_HML produces valid GL strings with locus separators", {
-  # Verify that the output GL strings have proper "^" locus separators.
+test_that("read_HML produces valid GL Strings with locus separators", {
+  # Verify that the output GL Strings have proper "^" locus separators.
   HML_1 <- system.file("extdata", "HML_1.hml", package = "immunogenetr")
 
   if (file.exists(HML_1)) {
     result <- read_HML(HML_1)
 
-    # Each GL string should contain "^" separating loci.
+    # Each GL String should contain "^" separating loci.
     expect_true(all(str_detect(result$GL_string, "\\^")))
-    # Each GL string should contain "+" separating gene copies.
+    # Each GL String should contain "+" separating gene copies.
     expect_true(all(str_detect(result$GL_string, "\\+")))
   } else {
     skip("HML_1.hml test file does not exist.")
@@ -68,7 +68,7 @@ test_that("read_HML produces valid GL strings with locus separators", {
 })
 
 test_that("read_HML results are consistent between both HML files", {
-  # Both HML files represent the same 5 samples; GL strings should align.
+  # Both HML files represent the same 5 samples; GL Strings should align.
   HML_1 <- system.file("extdata", "HML_1.hml", package = "immunogenetr")
   HML_2 <- system.file("extdata", "hml_2.hml", package = "immunogenetr")
 
@@ -127,7 +127,7 @@ test_that("read_HML handles HML files without XML namespace", {
   expect_true(all(c("sampleID", "GL_string") %in% colnames(result)))
   # Should find 1 sample.
   expect_equal(nrow(result), 1)
-  # GL string should contain both loci joined by "^".
+  # GL String should contain both loci joined by "^".
   expect_true(str_detect(result$GL_string, "HLA-A"))
   expect_true(str_detect(result$GL_string, "HLA-B"))
   expect_true(str_detect(result$GL_string, "\\^"))

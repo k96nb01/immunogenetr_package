@@ -1,14 +1,14 @@
 #' @title HLA_mismatch_base
 #'
 #' @description A function to return a string of mismatches between recipient
-#' and donor HLA genotypes represented as GL strings. The function finds
+#' and donor HLA genotypes represented as GL Strings. The function finds
 #' mismatches based on the direction of comparison specified in the inputs
 #' and also handles homozygosity. As the name implies, this function is the base
 #' for all other mismatch (and matching) functions. This function is not meant to be
 #' called directly; it is better to use one of the derivative functions.
 #'
-#' @param GL_string_recip A GL string representing the recipient's HLA genotype.
-#' @param GL_string_donor A GL string representing the donor's HLA genotype.
+#' @param GL_string_recip A GL String representing the recipient's HLA genotype.
+#' @param GL_string_donor A GL String representing the donor's HLA genotype.
 #' @param loci A character vector specifying the loci to be considered for
 #' mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)
 #' are considered once locus for this function, and should be called in this argument
@@ -23,7 +23,7 @@
 #' @return A character vector, where each element is a string summarizing the
 #' mismatches for the specified loci. The strings are formatted as
 #' comma-separated locus mismatch entries if multiple loci are supplied, or
-#' simple GL strings if a single locus is supplied.
+#' simple GL Strings if a single locus is supplied.
 
 #'
 #' @examples
@@ -50,7 +50,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
   check_homozygous_count(homozygous_count)
 
   direction <- match.arg(direction, c("HvG", "GvH"))
-  # Ensure input vectors are of the same length - each input should be a single GL string.
+  # Ensure input vectors are of the same length - each input should be a single GL String.
   if (length(GL_string_recip) != length(GL_string_donor)) {
     cli_abort("{.arg GL_string_recip} and {.arg GL_string_donor} must be of equal length.")
   }
@@ -58,7 +58,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
   # Check for ambiguity
   if (any(grepl("[|/]", GL_string_recip, perl = TRUE) |
           grepl("[|/]", GL_string_donor, perl = TRUE))) {
-    cli_abort("The matching/mismatching functions do not support ambiguous GL strings containing {.val |} or {.val /}. Process your GL strings to result in unambiguous genotypes before using these functions.")
+    cli_abort("The matching/mismatching functions do not support ambiguous GL Strings containing {.val |} or {.val /}. Process your GL Strings to result in unambiguous genotypes before using these functions.")
   }
 
   # Maps the serologic naming of the DRB locus to molecular so that only one name is used
@@ -91,9 +91,9 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
   drb345_prefixes <- c("HLA-DRB3", "HLA-DRB4", "HLA-DRB5",
                        "HLA-DR51", "HLA-DR52", "HLA-DR53")
 
-  # Function to preprocess GL strings: handle null alleles and homozygosity
+  # Function to preprocess GL Strings: handle null alleles and homozygosity
   preprocess_GL_string <- function(GL_string, homozygous_count) {
-    # Split GL string into alleles
+    # Split GL String into alleles
     alleles <- strsplit(GL_string, "+", fixed = TRUE)[[1L]]
 
     # Replace any null allele (ending with uppercase "N" expression suffix) with a
@@ -115,7 +115,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
       alleles <- alleles[1L]
     }
 
-    # Return processed alleles as a single GL string. Base-R paste replaces
+    # Return processed alleles as a single GL String. Base-R paste replaces
     # str_flatten, which internally calls stri_split_boundaries and was the
     # largest self-time cost in the original profile.
     paste(alleles[!is.na(alleles)], collapse = "+")
@@ -145,37 +145,47 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     processed[!is.na(processed)]
   }
 
-  # Helper to extract the locus name from a GL string allele entry.
+  # Helper to extract the locus name from a GL String allele entry.
   # Returns canonical names directly ("HLA-DRB3/4/5" for both molecular and
   # serologic DRB entries), so callers don't need to run unify_locus on the
   # result — that call used to dominate the per-pair profile.
   extract_locus_name <- function(allele_str) {
     n <- length(allele_str)
     if (n == 0L) return(character(0L))
+    # Each entry is a "+"-joined group of alleles that all share one locus, so
+    # the locus of the group is the locus of its FIRST allele. Parse that single
+    # allele rather than slicing the whole joined string: the old "everything
+    # before the first '*'" slice overshot when a serologic allele preceded a
+    # molecular one in the same group (e.g. "HLA-Cw7+HLA-Cw*17" yielded the bogus
+    # locus "HLA-Cw7+HLA-Cw"), which then read as a missing locus. (issue #40)
+    plus_pos <- regexpr("+", allele_str, fixed = TRUE)
+    first_allele <- allele_str
+    has_plus <- plus_pos > 0L
+    first_allele[has_plus] <- substr(allele_str[has_plus], 1L, plus_pos[has_plus] - 1L)
     # Single substr(1, 8) classifies DRB3/4/5 in either nomenclature.
-    is_drb345 <- substr(allele_str, 1L, 8L) %in% drb345_prefixes
-    has_star  <- grepl("*", allele_str, fixed = TRUE)
+    is_drb345 <- substr(first_allele, 1L, 8L) %in% drb345_prefixes
+    has_star  <- grepl("*", first_allele, fixed = TRUE)
     out <- character(n)
     out[is_drb345] <- "HLA-DRB3/4/5"
     # Remaining molecular entries: everything before the '*'. regexpr + substr
     # avoids the regex engine's backtracking machinery on this hot path.
     mol_ix <- has_star & !is_drb345
     if (any(mol_ix)) {
-      star_pos <- regexpr("*", allele_str[mol_ix], fixed = TRUE)
-      out[mol_ix] <- substr(allele_str[mol_ix], 1L, star_pos - 1L)
+      star_pos <- regexpr("*", first_allele[mol_ix], fixed = TRUE)
+      out[mol_ix] <- substr(first_allele[mol_ix], 1L, star_pos - 1L)
     }
     # Remaining serologic entries: leading "HLA-<letters>" prefix. This is
     # a rarely-hit path (only non-DR serologic input), so a simple sub() is fine.
     ser_ix <- !has_star & !is_drb345
     if (any(ser_ix)) {
-      out[ser_ix] <- sub("^(HLA-[A-Za-z]+).*$", "\\1", allele_str[ser_ix], perl = TRUE)
+      out[ser_ix] <- sub("^(HLA-[A-Za-z]+).*$", "\\1", first_allele[ser_ix], perl = TRUE)
     }
     out
   }
 
   # Function to process each pair of recipient/donor alleles
   process_pair <- function(recip_str, donor_str) {
-    # Split GL strings by "^" to separate loci
+    # Split GL Strings by "^" to separate loci
     recip_alleles_list <- strsplit(recip_str, "^", fixed = TRUE)[[1L]]
     donor_alleles_list <- strsplit(donor_str, "^", fixed = TRUE)[[1L]]
 
@@ -196,7 +206,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     missing_loci <- setdiff(union(missing_from_recip, missing_from_donor), "HLA-DRB3/4/5")
 
     if (length(missing_loci) > 0L) {
-      cli_abort("The recipient and/or donor GL strings are missing these loci: {.val {missing_loci}}.")
+      cli_abort("The recipient and/or donor GL Strings are missing these loci: {.val {missing_loci}}.")
     }
 
     # Mismatch results calculation
@@ -276,7 +286,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     }
   }
 
-  # Return final result by applying the GL strings to the process_pair function defined above.
+  # Return final result by applying the GL Strings to the process_pair function defined above.
   vapply(
     seq_along(GL_string_recip),
     function(i) process_pair(GL_string_recip[[i]], GL_string_donor[[i]]),

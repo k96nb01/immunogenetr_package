@@ -4,8 +4,8 @@
 #' recipient and a donor across specified loci. Supports mismatch calculations
 #' for host-vs-graft (HvG), graft-vs-host (GvH), or bidirectional.
 #'
-#' @param GL_string_recip A GL string representing the recipient's HLA genotype.
-#' @param GL_string_donor A GL string representing the donor's HLA genotype.
+#' @param GL_string_recip A GL String representing the recipient's HLA genotype.
+#' @param GL_string_donor A GL String representing the donor's HLA genotype.
 #' @param loci A character vector specifying the loci to be considered for
 #' mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)
 #' are considered once locus for this function, and should be called in this argument
@@ -16,10 +16,10 @@
 #' mismatching in solid organ transplantation).
 #' @param homozygous_count An integer specifying how to count homozygous mismatches.
 #' Defaults to 2, where homozygous mismatches are treated as two mismatches,
-#' regardless if one or two alleles are supplied in the GL string (in cases
+#' regardless if one or two alleles are supplied in the GL String (in cases
 #' where one allele is supplied, it is duplicated by the function). If
 #' specified as 1, homozygous mismatches are only counted once, regardless of
-#' whether one or two alleles are supplied in the GL string (in cases where
+#' whether one or two alleles are supplied in the GL String (in cases where
 #' two alleles are supplied, the second identical allele is deleted).
 #'
 #' @return An integer value or a character string:
@@ -57,7 +57,7 @@ HLA_mismatch_number <- function(GL_string_recip, GL_string_donor, loci, directio
   # Validate inputs at the user-facing layer. The internal matrix helper
   # (`hla_mismatch_count_matrix`) intentionally skips these checks so it can
   # be called hot from HLA_match_number / HLA_match_summary_HCT without the
-  # same GL strings being re-validated on every invocation.
+  # same GL Strings being re-validated on every invocation.
   check_gl_string(GL_string_recip, "GL_string_recip")
   check_gl_string(GL_string_donor, "GL_string_donor")
   check_loci(loci)

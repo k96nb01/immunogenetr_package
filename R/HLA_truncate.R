@@ -5,14 +5,14 @@
 #' of fields specified and optionally retains any WHO-recognized suffixes
 #' (L, S, C, A, Q, or N) or G and P group designations (G or P). This function
 #' will work on individual alleles (e.g. "HLA-A*02:01:01:01") or on all alleles
-#' in a GL string (e.g. "HLA-A*02:01:01:01+HLA-A*68:01:01^HLA-DRB1*01:01:01+HLA-DRB1*03:01:01").
+#' in a GL String (e.g. "HLA-A*02:01:01:01+HLA-A*68:01:01^HLA-DRB1*01:01:01+HLA-DRB1*03:01:01").
 #'
 #' Note: depending on arguments used, this function can output HLA alleles that do not
 #' exist in the IPD-IMGT/HLA database. For example, truncating the allele "DRB4*01:03:01:02N"
 #' to 2 fields would result in "DRB4*01:03N," which does not exist in the IPD-IMGT/HLA database.
 #' Users should take care in setting the parameters for this function.
 #'
-#' @param data A string containing an HLA allele or a GL string.
+#' @param data A string containing an HLA allele or a GL String.
 #' @param fields An integer specifying the number of fields to retain in the
 #' truncated values. Default is 2.
 #' @param keep_suffix A logical value indicating whether to retain any
@@ -20,7 +20,7 @@
 #' @param keep_G_P_group A logical value indicating whether to retain any
 #' G or P group designations. Default is FALSE.
 #' @param remove_duplicates A logical value indicating whether to remove duplicated
-#' values from a GL string after truncation. Default is FALSE.
+#' values from a GL String after truncation. Default is FALSE.
 #'
 #' @return A string with the HLA typing truncated according to
 #' the specified number of fields and optional suffix retention.
@@ -193,7 +193,7 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = 
   # columns.
   # -------------------------------------------------------------------------
 
-  # Expand the GL string into the ambiguity-table layout. This is cheap
+  # Expand the GL String into the ambiguity-table layout. This is cheap
   # after iter-6: a single stri_split cascade, no tidyr unchop.
   table <- GLstring_expand_longer(data)
 
@@ -205,7 +205,7 @@ HLA_truncate <- function(data, fields = 2, keep_suffix = TRUE, keep_G_P_group = 
     keep_G_P_group = keep_G_P_group
   )
 
-  # Reassemble the GL string. ambiguity_table_to_GLstring is now the v2
+  # Reassemble the GL String. ambiguity_table_to_GLstring is now the v2
   # sort-and-paste implementation from earlier in this iteration.
   ambiguity_table_to_GLstring(table, remove_duplicates = remove_duplicates)
 }

@@ -6,8 +6,8 @@
 #' or bidirectional. Bidirectional matching is the default, but can be overridden
 #' using the "direction" argument.
 #'
-#' @param GL_string_recip A GL string representing the recipient's HLA genotype.
-#' @param GL_string_donor A GL string representing the donor's HLA genotype.
+#' @param GL_string_recip A GL String representing the recipient's HLA genotype.
+#' @param GL_string_donor A GL String representing the donor's HLA genotype.
 #' @param loci A character vector specifying the loci to be considered for
 #' mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)
 #' are considered once locus for this function, and should be called in this argument

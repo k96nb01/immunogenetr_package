@@ -26,14 +26,14 @@ test_that("GLstring_genotype_ambiguity correctly retains the first genotype ambi
 })
 
 test_that("GLstring_genotype_ambiguity errors when genes have not been separated", {
-  # Create a data frame with a full GL string that still contains "^" (gene separator),
+  # Create a data frame with a full GL String that still contains "^" (gene separator),
   # indicating genes haven't been split with GLstring_genes() first.
   unseparated <- data.frame(
     GL_string = "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01",
     stringsAsFactors = FALSE
   )
 
-  # Should error because "^" is still present in the GL string
+  # Should error because "^" is still present in the GL String
 
   expect_error(
     GLstring_genotype_ambiguity(unseparated, columns = "GL_string"),
@@ -61,7 +61,7 @@ test_that("GLstring_genotype_ambiguity keeps ambiguities when keep_ambiguities =
 })
 
 test_that("GLstring_genotype_ambiguity returns NA for ambiguity column when no ambiguity exists", {
-  # Data with no genotype ambiguity (no "|" in the GL string)
+  # Data with no genotype ambiguity (no "|" in the GL String)
   no_ambiguity <- data.frame(
     HLA_A = "A*01:01+A*68:01",
     stringsAsFactors = FALSE

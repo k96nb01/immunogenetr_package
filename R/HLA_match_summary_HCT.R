@@ -6,10 +6,10 @@
 #' mismatches are counted twice. Bidirectional matching is the default, but can
 #' be overridden with the "direction" argument.
 #'
-#' @param GL_string_recip A GL string representing the recipient's HLA genotype,
+#' @param GL_string_recip A GL String representing the recipient's HLA genotype,
 #' and minimally containing the HLA-A, B, C and DRB1 loci (for Xof8 matching)
 #' or the HLA-A, B, C, DRB1 and DQB1 loci (for Xof10 matching).
-#' @param GL_string_donor A GL string representing the donor's HLA genotype,
+#' @param GL_string_donor A GL String representing the donor's HLA genotype,
 #' and minimally containing the HLA-A, B, C and DRB1 loci (for Xof8 matching)
 #' or the HLA-A, B, C, DRB1 and DQB1 loci (for Xof10 matching).
 #' @param direction "GvH", "HvG" or "bidirectional". Default is "bidirectional".
@@ -24,7 +24,7 @@
 #' @return An integer value of the match grade summary.
 #'
 #' @examples
-#' # Example recipient and donor GL strings
+#' # Example recipient and donor GL Strings
 #' file <- HLA_typing_1[, -1]
 #' GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
 #'

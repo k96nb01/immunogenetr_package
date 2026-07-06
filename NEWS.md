@@ -1,6 +1,18 @@
+# immunogenetr 1.4.0
+
+* Fixed `HLA_columns_to_GLstring` producing malformed GL Strings for molecular values held in serologic-named columns. A genuinely molecular value in a `Cw` column now emits a clean molecular locus name (`*07:01` -> `HLA-C*07:01`) instead of the invalid `HLA-Cw*07:01`, and a bare leading `*` is once again treated as serologic (`*17` -> `HLA-Cw17`), restoring the pre-1.3.0 behavior while keeping low-resolution molecular alleles such as `A*01` molecular. All spellings of a locus (e.g. `C`/`Cw`, `DR`/`DRB1`) are now grouped as a single locus so a locus is never split across `^`. (#40)
+
+* Fixed `HLA_mismatch_number`, `HLA_mismatch_logical`, `HLA_mismatch_alleles`, and `HLA_mismatched_alleles` erroring with a "missing locus" message when a locus group mixed serologic and molecular alleles (e.g. `HLA-Cw7+HLA-Cw*17`). `HLA_mismatch_base` now derives each locus from the first allele of its group rather than slicing the rejoined group string at the first `*`. (#40)
+
+* Added a `nomenclature` argument to `HLA_columns_to_GLstring` to declare the output nomenclature — `"mol"` (molecular) or `"ser"` (serologic) — either as a single value applied to every selected locus or as a named vector keyed per locus (the key may be given in either spelling). When absent, the function auto-detects per cell as before. Relabeling is structural only; no cross-nomenclature allele translation is performed. (#40)
+
+* Corrected the serologic name for HLA-DPB1 from `HLA-DP` to the formalized `HLA-DPB` in `HLA_columns_to_GLstring`. `Bw` is now treated as an epitope and never forced to molecular. (#40)
+
+* Standardized the capitalization of "GL String" throughout the package documentation, help pages, README, and vignette.
+
 # immunogenetr 1.3.0
 
-* Rewrote `HLA_prefix_remove` to skip the GL-string expand-and-reassemble round-trip. The previous implementation expanded each GL string into an ambiguity tibble, ran `str_replace` on it, and reassembled — which was the dominant cost in any pipeline that called `HLA_prefix_remove` per cell. Now four direct regex passes on the GL-string character vector. ~100× faster end-to-end, up to ~420× less memory allocated on 100,000-input workloads. Because many other functions in the package (including `HLA_columns_to_GLstring`) call `HLA_prefix_remove` internally, every downstream caller picks up the speedup for free.
+* Rewrote `HLA_prefix_remove` to skip the GL String expand-and-reassemble round-trip. The previous implementation expanded each GL String into an ambiguity tibble, ran `str_replace` on it, and reassembled — which was the dominant cost in any pipeline that called `HLA_prefix_remove` per cell. Now four direct regex passes on the GL String character vector. ~100× faster end-to-end, up to ~420× less memory allocated on 100,000-input workloads. Because many other functions in the package (including `HLA_columns_to_GLstring`) call `HLA_prefix_remove` internally, every downstream caller picks up the speedup for free.
 
 * Rewrote `HLA_columns_to_GLstring` to compute column-level decisions (locus mapping from column name, serologic-name lookup, "always molecular" flag for DQA1/DPA1/DPB1) once per column instead of once per cell, and replaced the two trailing `summarise(str_flatten(...))` passes with vectorised `split` + `paste`. End-to-end ~68× faster at 1000 rows (7.4 s -> 109 ms) and ~200× faster at 10,000 rows (~272 s -> ~1.3 s).
 
@@ -22,11 +34,11 @@
 
 * Rewrote `GLstring_genes_expanded` to replace the `pivot_wider(values_fn = list) -> unnest` pipeline with per-row `split` and `bind_rows`. ~5× faster on 100 single-row calls, ~16× less memory. As a side effect, the function now handles multi-row input gracefully; the previous implementation errored on `unnest` when different rows had different allele counts per locus. Single-row semantics — including the intentional recycling of length-1 cells flagged as expected behavior in the test file — are preserved.
 
-* Added `check_molecular_gl_string()` internal validation helper for callers that want to enforce molecular-only GL string inputs (used at API boundaries). Opt-in; not wired into existing functions to preserve compatibility with serologic-input callers.
+* Added `check_molecular_gl_string()` internal validation helper for callers that want to enforce molecular-only GL String inputs (used at API boundaries). Opt-in; not wired into existing functions to preserve compatibility with serologic-input callers.
 
 * Fixed a latent correctness bug in the "missing loci" check in `HLA_mismatch_base` introduced during earlier optimization work. The check silently required a locus to be missing from both recipient and donor before erroring, instead of the original semantics of missing from either side. Restored the original behavior.
 
-* Added a round-trip property test suite (`tests/testthat/test-round_trip.R`) asserting that `ambiguity_table_to_GLstring(GLstring_expand_longer(x)) == x` for a representative pool of GL strings, and that `HLA_prefix_add` / `HLA_prefix_remove` form an inverse pair on raw allele input. Added explicit NA-propagation regression tests for `ambiguity_table_to_GLstring` and `GLstring_genes` covering bugs caught during the rewrite. Added tests for `check_molecular_gl_string`.
+* Added a round-trip property test suite (`tests/testthat/test-round_trip.R`) asserting that `ambiguity_table_to_GLstring(GLstring_expand_longer(x)) == x` for a representative pool of GL Strings, and that `HLA_prefix_add` / `HLA_prefix_remove` form an inverse pair on raw allele input. Added explicit NA-propagation regression tests for `ambiguity_table_to_GLstring` and `GLstring_genes` covering bugs caught during the rewrite. Added tests for `check_molecular_gl_string`.
 
 * Added `stringi` (>= 1.7.0) as a direct `Imports` dependency. It was previously a transitive dependency via `stringr`; this release uses it directly for `stri_split_fixed`, `stri_startswith_fixed`, `stri_endswith_fixed`, and `stri_extract_first_regex` in the rewritten functions.
 
@@ -70,7 +82,7 @@
 
 * Fixed null allele detection regex in `HLA_mismatch_base` to support locus names longer than 4 characters (e.g. `HLA-DRB345`). The lookbehind now allows up to 10 alphanumeric characters after `HLA-`.
 
-* Added a "Getting Started" vignette covering all major workflows: tabular-to-GL-string conversion, locus splitting, mismatch/match calculation, allele name utilities, and HML file reading.
+* Added a "Getting Started" vignette covering all major workflows: tabular-to-GL String conversion, locus splitting, mismatch/match calculation, allele name utilities, and HML file reading.
 
 * Added a package-level help page (`?immunogenetr`) organizing all exported functions and datasets by category.
 
@@ -90,11 +102,11 @@
 
 # immunogenetr 0.3.0
 
-* Updated `ambiguity_table_to_GLstring` to remove duplicate entries from an ambiguity table as it is being processed to a GL string. Added this functionality to `HLA_truncate` so that truncated GL strings could optionally remove duplicates. Added `GLstring_to_ambiguity_table` as an alias for `GL_string_expand_longer`. 
+* Updated `ambiguity_table_to_GLstring` to remove duplicate entries from an ambiguity table as it is being processed to a GL String. Added this functionality to `HLA_truncate` so that truncated GL Strings could optionally remove duplicates. Added `GLstring_to_ambiguity_table` as an alias for `GL_string_expand_longer`. 
 
 # immunogenetr 0.2.0
 
-* Updated `HLA_prefix_add` and `HLA_prefix_remove` to work on all alleles in a GL string. Also added the option of keeping locus designations in `HLA_prefix_remove`.
+* Updated `HLA_prefix_add` and `HLA_prefix_remove` to work on all alleles in a GL String. Also added the option of keeping locus designations in `HLA_prefix_remove`.
 
 # immunogenetr 0.1.0
 

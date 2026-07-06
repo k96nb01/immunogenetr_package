@@ -1,14 +1,14 @@
 #' @title HLA_mismatch_alleles
 #'
 #' @description A function to return a string of mismatches between recipient
-#' and donor HLA genotypes represented as GL strings. The function finds
+#' and donor HLA genotypes represented as GL Strings. The function finds
 #' mismatches based on the direction of comparison specified in the inputs
 #' and also handles homozygosity.
 #'
 #' `HLA_mismatch_alleles` and `HLA_mismatched_alleles` are synonyms.
 #'
-#' @param GL_string_recip A GL strings representing the recipient's HLA genotypes.
-#' @param GL_string_donor A GL strings representing the donor's HLA genotypes.
+#' @param GL_string_recip A GL Strings representing the recipient's HLA genotypes.
+#' @param GL_string_donor A GL Strings representing the donor's HLA genotypes.
 #' @param loci A character vector specifying the loci to be considered for
 #' mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)
 #' are considered once locus for this function, and should be called in this argument
@@ -26,7 +26,7 @@
 #' @return A character vector, where each element is a string summarizing the
 #' mismatches for the specified loci. The strings are formatted as
 #' comma-separated locus mismatch entries if multiple loci were supplied, or as
-#' simple GL strings if a single locus was supplied.
+#' simple GL Strings if a single locus was supplied.
 
 #'
 #' @examples

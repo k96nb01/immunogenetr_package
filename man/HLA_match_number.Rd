@@ -12,9 +12,9 @@ HLA_match_number(
 )
 }
 \arguments{
-\item{GL_string_recip}{A GL string representing the recipient's HLA genotype.}
+\item{GL_string_recip}{A GL String representing the recipient's HLA genotype.}
 
-\item{GL_string_donor}{A GL string representing the donor's HLA genotype.}
+\item{GL_string_donor}{A GL String representing the donor's HLA genotype.}
 
 \item{loci}{A character vector specifying the loci to be considered for
 mismatch calculation. HLA-DRB3/4/5 (and their serologic equivalents DR51/52/53)

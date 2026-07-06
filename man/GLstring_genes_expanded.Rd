@@ -7,10 +7,10 @@
 GLstring_genes_expanded(data, gl_string)
 }
 \arguments{
-\item{data}{A data frame containing GL strings for HLA data.}
+\item{data}{A data frame containing GL Strings for HLA data.}
 
 \item{gl_string}{The name of the column in the data frame that contains
-GL strings.}
+GL Strings.}
 }
 \value{
 A data frame with expanded columns, where each row has a single
@@ -18,7 +18,7 @@ allele for a specific locus.
 }
 \description{
 This function processes a specified column in a data frame
-that contains GL strings. It separates the GL strings, identifies the HLA
+that contains GL Strings. It separates the GL Strings, identifies the HLA
 loci, and transforms the data into a wider format with loci as column names.
 It also creates multiple rows to separate each locus in the allele.
 }

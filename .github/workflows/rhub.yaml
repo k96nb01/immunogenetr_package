@@ -15,7 +15,12 @@ on:
       config:
         description: 'A comma separated list of R-hub platforms to use.'
         type: string
-        default: 'linux,windows,macos'
+        # immunogenetr default: the three platforms that add signal beyond
+        # win-builder + the R-CMD-check matrix. gcc16 = strict compiler,
+        # donttest = runs \donttest examples, nosuggests = check without
+        # Suggests (expect the known vignette ERROR; disclosed in
+        # cran-comments.md). Just click "Run workflow" to use these.
+        default: 'gcc16,donttest,nosuggests'
       name:
         description: 'Run name. You can leave this empty now.'
         type: string

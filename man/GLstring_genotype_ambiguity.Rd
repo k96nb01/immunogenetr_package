@@ -9,7 +9,7 @@ GLstring_genotype_ambiguity(data, columns, keep_ambiguities = FALSE)
 \arguments{
 \item{data}{A data frame}
 
-\item{columns}{The names of the columns in the data frame that contain GL strings}
+\item{columns}{The names of the columns in the data frame that contain GL Strings}
 
 \item{keep_ambiguities}{A logical value indicating whether to retain the
 remaining ambiguities in separate columns with "_genotype_ambiguity" appended
@@ -21,12 +21,12 @@ original columns. If \code{keep_ambiguities} is TRUE, the remaining
 ambiguities are placed in separate columns.
 }
 \description{
-This function processes GL strings in the specified columns of
+This function processes GL Strings in the specified columns of
 a data frame to retain only the first genotype ambiguity, optionally
 retaining the remaining ambiguities in a separate column with "_ambiguity"
 appended. The function ensures that genes have been separated from the GL
 strings prior to execution; otherwise, an error will be thrown if a "^" is
-detected in the GL strings.
+detected in the GL Strings.
 }
 \examples{
 HLA_type <- data.frame(

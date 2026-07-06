@@ -1,13 +1,13 @@
 #' @title GLstring_genes_expanded
 #'
 #' @description This function processes a specified column in a data frame
-#' that contains GL strings. It separates the GL strings, identifies the HLA
+#' that contains GL Strings. It separates the GL Strings, identifies the HLA
 #' loci, and transforms the data into a wider format with loci as column names.
 #' It also creates multiple rows to separate each locus in the allele.
 #'
-#' @param data A data frame containing GL strings for HLA data.
+#' @param data A data frame containing GL Strings for HLA data.
 #' @param gl_string The name of the column in the data frame that contains
-#' GL strings.
+#' GL Strings.
 #'
 #' @return A data frame with expanded columns, where each row has a single
 #' allele for a specific locus.
@@ -50,7 +50,7 @@ GLstring_genes_expanded <- function(data, gl_string) {
   # -------------------------------------------------------------------------
 
   # First pass — get the wide per-locus layout (one column per unique
-  # locus across the input, each cell a GL-string fragment for that row).
+  # locus across the input, each cell a GL String fragment for that row).
   wide <- GLstring_genes(data, all_of(gl_string))
 
   # Per-row expansion. For each row:

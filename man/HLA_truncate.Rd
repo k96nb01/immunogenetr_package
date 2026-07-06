@@ -13,7 +13,7 @@ HLA_truncate(
 )
 }
 \arguments{
-\item{data}{A string containing an HLA allele or a GL string.}
+\item{data}{A string containing an HLA allele or a GL String.}
 
 \item{fields}{An integer specifying the number of fields to retain in the
 truncated values. Default is 2.}
@@ -25,7 +25,7 @@ WHO-recognized suffixes. Default is TRUE.}
 G or P group designations. Default is FALSE.}
 
 \item{remove_duplicates}{A logical value indicating whether to remove duplicated
-values from a GL string after truncation. Default is FALSE.}
+values from a GL String after truncation. Default is FALSE.}
 }
 \value{
 A string with the HLA typing truncated according to
@@ -37,7 +37,7 @@ This function truncates HLA typing values in molecular nomenclature
 of fields specified and optionally retains any WHO-recognized suffixes
 (L, S, C, A, Q, or N) or G and P group designations (G or P). This function
 will work on individual alleles (e.g. "HLA-A*02:01:01:01") or on all alleles
-in a GL string (e.g. "HLA-A*02:01:01:01+HLA-A*68:01:01^HLA-DRB1*01:01:01+HLA-DRB1*03:01:01").
+in a GL String (e.g. "HLA-A*02:01:01:01+HLA-A*68:01:01^HLA-DRB1*01:01:01+HLA-DRB1*03:01:01").
 
 Note: depending on arguments used, this function can output HLA alleles that do not
 exist in the IPD-IMGT/HLA database. For example, truncating the allele "DRB4*01:03:01:02N"

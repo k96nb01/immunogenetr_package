@@ -1,17 +1,17 @@
 #' @keywords internal
 "_PACKAGE"
 
-#' @section GL string functions:
+#' @section GL String functions:
 #' Functions for working with genotype list (GL) strings:
 #' \itemize{
-#'   \item \code{\link{HLA_columns_to_GLstring}}: Convert tabular HLA data to GL strings
-#'   \item \code{\link{GLstring_genes}}: Split a GL string into locus columns
-#'   \item \code{\link{GLstring_genes_expanded}}: Split a GL string into one allele per row
-#'   \item \code{\link{GLstring_expand_longer}}: Expand a GL string into an ambiguity table
-#'   \item \code{\link{ambiguity_table_to_GLstring}}: Collapse an ambiguity table back to a GL string
-#'   \item \code{\link{GLstring_genotype_ambiguity}}: Extract genotype ambiguity from GL strings
-#'   \item \code{\link{GLstring_gene_copies_combine}}: Combine gene copies in a GL string
-#'   \item \code{\link{GLstring_regex}}: Create regex patterns for accurate GL string searching
+#'   \item \code{\link{HLA_columns_to_GLstring}}: Convert tabular HLA data to GL Strings
+#'   \item \code{\link{GLstring_genes}}: Split a GL String into locus columns
+#'   \item \code{\link{GLstring_genes_expanded}}: Split a GL String into one allele per row
+#'   \item \code{\link{GLstring_expand_longer}}: Expand a GL String into an ambiguity table
+#'   \item \code{\link{ambiguity_table_to_GLstring}}: Collapse an ambiguity table back to a GL String
+#'   \item \code{\link{GLstring_genotype_ambiguity}}: Extract genotype ambiguity from GL Strings
+#'   \item \code{\link{GLstring_gene_copies_combine}}: Combine gene copies in a GL String
+#'   \item \code{\link{GLstring_regex}}: Create regex patterns for accurate GL String searching
 #' }
 #'
 #' @section Matching and mismatching:
@@ -37,7 +37,7 @@
 #'
 #' @section File I/O:
 #' \itemize{
-#'   \item \code{\link{read_HML}}: Read GL strings from HML (HLA Markup Language) files
+#'   \item \code{\link{read_HML}}: Read GL Strings from HML (HLA Markup Language) files
 #' }
 #'
 #' @section Datasets:

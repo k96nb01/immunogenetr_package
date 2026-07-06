@@ -3,7 +3,7 @@ library(dplyr)
 library(tidyr)
 library(stringr)
 
-test_that("GLstring_genes_expanded correctly expands GL strings into separate loci", {
+test_that("GLstring_genes_expanded correctly expands GL Strings into separate loci", {
   table <- data.frame(
     GL_string = "HLA-A*29:02+HLA-A*30:02^HLA-C*06:02+HLA-C*07:01^HLA-B*08:01+HLA-B*13:02^HLA-DRB4*01:03^HLA-DRB1*04:01+HLA-DRB1*07:01",
     stringsAsFactors = FALSE

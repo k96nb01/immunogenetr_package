@@ -1,10 +1,10 @@
 #' @title HLA_prefix_add
 #'
 #' @description This function adds a specified prefix to the beginning of
-#' each HLA type, and works on a single allele or all alleles in a GL string.
+#' each HLA type, and works on a single allele or all alleles in a GL String.
 #' Useful for adding HLA or gene prefixes.
 #'
-#' @param data A string with a single HLA allele, a GL string of HLA alleles,
+#' @param data A string with a single HLA allele, a GL String of HLA alleles,
 #' or a character vector containing either of the previous.
 #' @param prefix A character string to be added as a prefix to the alleles.
 #' Default is "HLA-".
@@ -35,11 +35,11 @@ HLA_prefix_add <- function(data, prefix = "HLA-") {
   # Validate input
   check_gl_string(data, "data")
 
-  # Expand the allele of GL string
+  # Expand the allele of GL String
   data %>%
     GLstring_expand_longer() %>%
     # Add string to beginning of typing
     mutate(value = str_replace(value, "^", prefix)) %>%
-    # Collapse the GL string
+    # Collapse the GL String
     ambiguity_table_to_GLstring()
 }
