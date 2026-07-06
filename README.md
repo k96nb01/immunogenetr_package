@@ -7,8 +7,10 @@
 
 [![codecov](https://codecov.io/gh/k96nb01/immunogenetr_package/graph/badge.svg?token=16D4U43VET)](https://app.codecov.io/gh/k96nb01/immunogenetr_package)
 [![R-CMD-check](https://github.com/k96nb01/immunogenetr_package/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/k96nb01/immunogenetr_package/actions/workflows/R-CMD-check.yaml)
-[![CRAN status](https://www.r-pkg.org/badges/version/immunogenetr)](https://CRAN.R-project.org/package=immunogenetr)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/immunogenetr)](https://CRAN.R-project.org/package=immunogenetr)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/immunogenetr)](https://CRAN.R-project.org/package=immunogenetr)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/immunogenetr)](https://CRAN.R-project.org/package=immunogenetr)
 <!-- badges: end -->
 
 immunogenetr is a comprehensive toolkit for clinical HLA informatics. It
@@ -100,7 +102,7 @@ kable_hla(HLA_typing_1_GLstring)
 | 10 | `HLA-A*02:05+HLA-A*11:01^HLA-C*07:18+HLA-C*16:02^HLA-B*51:01+HLA-B*58:01^HLA-DRB3*03:01^HLA-DRB5*01:01^HLA-DRB1*13:02+HLA-DRB1*15:01^HLA-DQA1*01:02+HLA-DQA1*01:03^HLA-DQB1*06:01+HLA-DQB1*06:09^HLA-DPA1*01:03+HLA-DPA1*01:03^HLA-DPB1*02:01+HLA-DPB1*104:01` |
 
 The “HLA_typing_1_GLstring” data frame now contains a row with a GL
-string for each individual, containing their full HLA genotype in a
+String for each individual, containing their full HLA genotype in a
 single string. Let’s select one individual to act as a recipient, and
 one to act as a donor.
 
