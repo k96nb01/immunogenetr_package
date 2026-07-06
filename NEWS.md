@@ -1,4 +1,4 @@
-# immunogenetr (development version)
+# immunogenetr 1.4.0
 
 * Fixed `HLA_columns_to_GLstring` producing malformed GL Strings for molecular values held in serologic-named columns. A genuinely molecular value in a `Cw` column now emits a clean molecular locus name (`*07:01` -> `HLA-C*07:01`) instead of the invalid `HLA-Cw*07:01`, and a bare leading `*` is once again treated as serologic (`*17` -> `HLA-Cw17`), restoring the pre-1.3.0 behavior while keeping low-resolution molecular alleles such as `A*01` molecular. All spellings of a locus (e.g. `C`/`Cw`, `DR`/`DRB1`) are now grouped as a single locus so a locus is never split across `^`. (#40)
 
@@ -12,7 +12,7 @@
 
 # immunogenetr 1.3.0
 
-* Rewrote `HLA_prefix_remove` to skip the GL-string expand-and-reassemble round-trip. The previous implementation expanded each GL String into an ambiguity tibble, ran `str_replace` on it, and reassembled — which was the dominant cost in any pipeline that called `HLA_prefix_remove` per cell. Now four direct regex passes on the GL-string character vector. ~100× faster end-to-end, up to ~420× less memory allocated on 100,000-input workloads. Because many other functions in the package (including `HLA_columns_to_GLstring`) call `HLA_prefix_remove` internally, every downstream caller picks up the speedup for free.
+* Rewrote `HLA_prefix_remove` to skip the GL String expand-and-reassemble round-trip. The previous implementation expanded each GL String into an ambiguity tibble, ran `str_replace` on it, and reassembled — which was the dominant cost in any pipeline that called `HLA_prefix_remove` per cell. Now four direct regex passes on the GL String character vector. ~100× faster end-to-end, up to ~420× less memory allocated on 100,000-input workloads. Because many other functions in the package (including `HLA_columns_to_GLstring`) call `HLA_prefix_remove` internally, every downstream caller picks up the speedup for free.
 
 * Rewrote `HLA_columns_to_GLstring` to compute column-level decisions (locus mapping from column name, serologic-name lookup, "always molecular" flag for DQA1/DPA1/DPB1) once per column instead of once per cell, and replaced the two trailing `summarise(str_flatten(...))` passes with vectorised `split` + `paste`. End-to-end ~68× faster at 1000 rows (7.4 s -> 109 ms) and ~200× faster at 10,000 rows (~272 s -> ~1.3 s).
 
@@ -82,7 +82,7 @@
 
 * Fixed null allele detection regex in `HLA_mismatch_base` to support locus names longer than 4 characters (e.g. `HLA-DRB345`). The lookbehind now allows up to 10 alphanumeric characters after `HLA-`.
 
-* Added a "Getting Started" vignette covering all major workflows: tabular-to-GL-string conversion, locus splitting, mismatch/match calculation, allele name utilities, and HML file reading.
+* Added a "Getting Started" vignette covering all major workflows: tabular-to-GL String conversion, locus splitting, mismatch/match calculation, allele name utilities, and HML file reading.
 
 * Added a package-level help page (`?immunogenetr`) organizing all exported functions and datasets by category.
 
