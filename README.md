@@ -12,18 +12,18 @@
 <!-- badges: end -->
 
 immunogenetr is a comprehensive toolkit for clinical HLA informatics. It
-is built on tidyverse principles and makes use of genotype list string
-(GL string, <https://glstring.org/>) for storing and using HLA genotype
+is built on tidyverse principles and makes use of Genotype List String
+(GL String, <https://glstring.org/>) for storing and using HLA genotype
 data.
 
 Specific functionalities of this library include:
 
-- **Coercion of HLA data** in tabular format to and from GL string.
+- **Coercion of HLA data** in tabular format to and from GL String.
 - **Calculation of matching and mismatching** in all directions, with
   multiple output formats.
-- **Automatic formatting of HLA data** for searching within a GL string.
+- **Automatic formatting of HLA data** for searching within a GL String.
 - **Truncation of molecular HLA data** to a specific number of fields.
-- **Reading HLA genotypes in HML files** and extracting the GL string.
+- **Reading HLA genotypes in HML files** and extracting the GL String.
 
 ## Table of Contents
 
@@ -70,9 +70,9 @@ kable_hla(HLA_typing_1)
 | 9 | `A*03:01` | `A*30:01` | `C*07:02` | `C*12:03` | `B*07:02` | `B*38:01` | `DRB3*01:01` | `DRB5*01:01` | `DRB1*03:01` | `DRB1*15:01` | `DQA1*01:02` | `DQA1*05:01` | `DQB1*02:01` | `DQB1*06:02` | `DPA1*01:03` | `DPA1*01:03` | `DPB1*04:01` | `DPB1*04:01` |
 | 10 | `A*02:05` | `A*11:01` | `C*07:18` | `C*16:02` | `B*51:01` | `B*58:01` | `DRB3*03:01` | `DRB5*01:01` | `DRB1*13:02` | `DRB1*15:01` | `DQA1*01:02` | `DQA1*01:03` | `DQB1*06:01` | `DQB1*06:09` | `DPA1*01:03` | `DPA1*01:03` | `DPB1*02:01` | `DPB1*104:01` |
 
-immunogenetr uses genotype list strings (GL strings) for most functions,
+immunogenetr uses Genotype List Strings (GL Strings) for most functions,
 including the matching and mismatching functions. To easily convert the
-genotypes found in “HLA_typing_1” to GL strings we can use the
+genotypes found in “HLA_typing_1” to GL Strings we can use the
 `HLA_columns_to_GLstring` function:
 
 ``` r

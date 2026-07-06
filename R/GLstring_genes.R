@@ -50,7 +50,7 @@ GLstring_genes <- function(data, gl_string) {
   gl_vec  <- data[[col2mod]]
 
   # Split each row's GL String at "^" — one C call for the whole vector.
-  # Each list element is the per-row set of locus-GL-strings.
+  # Each list element is the per-row set of per-locus GL Strings.
   split_list <- stri_split_fixed(gl_vec, "^")
   n_per_row  <- lengths(split_list)
 
@@ -88,7 +88,7 @@ GLstring_genes <- function(data, gl_string) {
   })
   names(locus_cols) <- loci_levels
 
-  # Preserve every non-GL-string column from the input (e.g. a "patient"
+  # Preserve every non-GL String column from the input (e.g. a "patient"
   # identifier), then append the locus columns. The v1 pipeline implicitly
   # did this via separate_longer_delim's expansion and pivot_wider's
   # id_cols inference.

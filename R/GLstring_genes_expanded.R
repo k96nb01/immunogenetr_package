@@ -50,7 +50,7 @@ GLstring_genes_expanded <- function(data, gl_string) {
   # -------------------------------------------------------------------------
 
   # First pass — get the wide per-locus layout (one column per unique
-  # locus across the input, each cell a GL-string fragment for that row).
+  # locus across the input, each cell a GL String fragment for that row).
   wide <- GLstring_genes(data, all_of(gl_string))
 
   # Per-row expansion. For each row:
