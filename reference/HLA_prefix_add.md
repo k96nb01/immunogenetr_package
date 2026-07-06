@@ -1,7 +1,7 @@
 # HLA_prefix_add
 
 This function adds a specified prefix to the beginning of each HLA type,
-and works on a single allele or all alleles in a GL string. Useful for
+and works on a single allele or all alleles in a GL String. Useful for
 adding HLA or gene prefixes.
 
 ## Usage
@@ -14,7 +14,7 @@ HLA_prefix_add(data, prefix = "HLA-")
 
 - data:
 
-  A string with a single HLA allele, a GL string of HLA alleles, or a
+  A string with a single HLA allele, a GL String of HLA alleles, or a
   character vector containing either of the previous.
 
 - prefix:

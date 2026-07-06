@@ -22,13 +22,13 @@ HLA_match_summary_HCT(
 
 - GL_string_recip:
 
-  A GL string representing the recipient's HLA genotype, and minimally
+  A GL String representing the recipient's HLA genotype, and minimally
   containing the HLA-A, B, C and DRB1 loci (for Xof8 matching) or the
   HLA-A, B, C, DRB1 and DQB1 loci (for Xof10 matching).
 
 - GL_string_donor:
 
-  A GL string representing the donor's HLA genotype, and minimally
+  A GL String representing the donor's HLA genotype, and minimally
   containing the HLA-A, B, C and DRB1 loci (for Xof8 matching) or the
   HLA-A, B, C, DRB1 and DQB1 loci (for Xof10 matching).
 
@@ -57,7 +57,7 @@ An integer value of the match grade summary.
 ## Examples
 
 ``` r
-# Example recipient and donor GL strings
+# Example recipient and donor GL Strings
 file <- HLA_typing_1[, -1]
 GL_string <- HLA_columns_to_GLstring(file, HLA_typing_columns = everything())
 

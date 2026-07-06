@@ -1,12 +1,12 @@
 # GLstring_to_ambiguity_table
 
-A function that expands a GL string into a longer, more detailed format
+A function that expands a GL String into a longer, more detailed format
 (also known as an ambiguity table) by separating the string into its
 components resulting from its hierarchical set of operators, including
 gene locations, loci, genotypes, haplotypes, and alleles. The function
-processes each level of the GL string and assigns identifiers for each
+processes each level of the GL String and assigns identifiers for each
 hierarchical component. The resulting table can be assembled back into a
-GL string using the function \`ambiguity_table_to_GLstring\`. This
+GL String using the function \`ambiguity_table_to_GLstring\`. This
 function is an alias of \`GLstring_expand_longer\`.
 
 ## Usage
@@ -19,11 +19,11 @@ GLstring_to_ambiguity_table(GL_string)
 
 - GL_string:
 
-  A GL string that encodes HLA alleles and their potential ambiguities
+  A GL String that encodes HLA alleles and their potential ambiguities
 
 ## Value
 
-A tibble that contains the expanded GL string with separate columns for
+A tibble that contains the expanded GL String with separate columns for
 possible gene locations, loci, genotype ambiguities, genotypes,
 haplotypes, and alleles, each with associated identifiers
 

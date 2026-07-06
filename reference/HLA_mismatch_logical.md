@@ -14,11 +14,11 @@ HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci, direction)
 
 - GL_string_recip:
 
-  A GL strings representing the recipient's HLA genotypes.
+  A GL Strings representing the recipient's HLA genotypes.
 
 - GL_string_donor:
 
-  A GL strings representing the donor's HLA genotypes.
+  A GL Strings representing the donor's HLA genotypes.
 
 - loci:
 

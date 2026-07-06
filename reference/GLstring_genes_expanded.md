@@ -1,7 +1,7 @@
 # GLstring_genes_expanded
 
 This function processes a specified column in a data frame that contains
-GL strings. It separates the GL strings, identifies the HLA loci, and
+GL Strings. It separates the GL Strings, identifies the HLA loci, and
 transforms the data into a wider format with loci as column names. It
 also creates multiple rows to separate each locus in the allele.
 
@@ -15,11 +15,11 @@ GLstring_genes_expanded(data, gl_string)
 
 - data:
 
-  A data frame containing GL strings for HLA data.
+  A data frame containing GL Strings for HLA data.
 
 - gl_string:
 
-  The name of the column in the data frame that contains GL strings.
+  The name of the column in the data frame that contains GL Strings.
 
 ## Value
 

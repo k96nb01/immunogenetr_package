@@ -5,7 +5,7 @@ example from 4 fields to 2 fields). The truncation is based on the
 number of fields specified and optionally retains any WHO-recognized
 suffixes (L, S, C, A, Q, or N) or G and P group designations (G or P).
 This function will work on individual alleles (e.g.
-"HLA-A\*02:01:01:01") or on all alleles in a GL string (e.g.
+"HLA-A\*02:01:01:01") or on all alleles in a GL String (e.g.
 "HLA-A\*02:01:01:01+HLA-A\*68:01:01^HLA-DRB1\*01:01:01+HLA-DRB1\*03:01:01").
 
 Note: depending on arguments used, this function can output HLA alleles
@@ -30,7 +30,7 @@ HLA_truncate(
 
 - data:
 
-  A string containing an HLA allele or a GL string.
+  A string containing an HLA allele or a GL String.
 
 - fields:
 
@@ -50,7 +50,7 @@ HLA_truncate(
 - remove_duplicates:
 
   A logical value indicating whether to remove duplicated values from a
-  GL string after truncation. Default is FALSE.
+  GL String after truncation. Default is FALSE.
 
 ## Value
 

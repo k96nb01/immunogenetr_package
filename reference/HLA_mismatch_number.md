@@ -20,11 +20,11 @@ HLA_mismatch_number(
 
 - GL_string_recip:
 
-  A GL string representing the recipient's HLA genotype.
+  A GL String representing the recipient's HLA genotype.
 
 - GL_string_donor:
 
-  A GL string representing the donor's HLA genotype.
+  A GL String representing the donor's HLA genotype.
 
 - loci:
 
@@ -44,10 +44,10 @@ HLA_mismatch_number(
 
   An integer specifying how to count homozygous mismatches. Defaults to
   2, where homozygous mismatches are treated as two mismatches,
-  regardless if one or two alleles are supplied in the GL string (in
+  regardless if one or two alleles are supplied in the GL String (in
   cases where one allele is supplied, it is duplicated by the function).
   If specified as 1, homozygous mismatches are only counted once,
-  regardless of whether one or two alleles are supplied in the GL string
+  regardless of whether one or two alleles are supplied in the GL String
   (in cases where two alleles are supplied, the second identical allele
   is deleted).
 

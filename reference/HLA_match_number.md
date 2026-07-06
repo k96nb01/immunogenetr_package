@@ -21,11 +21,11 @@ HLA_match_number(
 
 - GL_string_recip:
 
-  A GL string representing the recipient's HLA genotype.
+  A GL String representing the recipient's HLA genotype.
 
 - GL_string_donor:
 
-  A GL string representing the donor's HLA genotype.
+  A GL String representing the donor's HLA genotype.
 
 - loci:
 

@@ -3,7 +3,7 @@
 This function removes HLA and optionally locus prefixes from a string of
 HLA typing: "HLA-A2" changes to "A2" or "2". By default, HLA and locus
 prefixes are removed. This function also works on each allele in a GL
-string.
+String.
 
 ## Usage
 
@@ -15,7 +15,7 @@ HLA_prefix_remove(data, keep_locus = FALSE)
 
 - data:
 
-  A string with a single HLA allele, a GL string of HLA alleles, or a
+  A string with a single HLA allele, a GL String of HLA alleles, or a
   character vector containing either of the previous.
 
 - keep_locus:

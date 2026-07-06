@@ -1,7 +1,7 @@
 # HLA_mismatch_base
 
 A function to return a string of mismatches between recipient and donor
-HLA genotypes represented as GL strings. The function finds mismatches
+HLA genotypes represented as GL Strings. The function finds mismatches
 based on the direction of comparison specified in the inputs and also
 handles homozygosity. As the name implies, this function is the base for
 all other mismatch (and matching) functions. This function is not meant
@@ -24,11 +24,11 @@ HLA_mismatch_base(
 
 - GL_string_recip:
 
-  A GL string representing the recipient's HLA genotype.
+  A GL String representing the recipient's HLA genotype.
 
 - GL_string_donor:
 
-  A GL string representing the donor's HLA genotype.
+  A GL String representing the donor's HLA genotype.
 
 - loci:
 
@@ -54,7 +54,7 @@ HLA_mismatch_base(
 A character vector, where each element is a string summarizing the
 mismatches for the specified loci. The strings are formatted as
 comma-separated locus mismatch entries if multiple loci are supplied, or
-simple GL strings if a single locus is supplied.
+simple GL Strings if a single locus is supplied.
 
 ## Examples
 

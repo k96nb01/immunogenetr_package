@@ -1,6 +1,6 @@
 # read_HML
 
-Reads the GL strings of HML files and returns a tibble with the full
+Reads the GL Strings of HML files and returns a tibble with the full
 genotype for each sample.
 
 ## Usage
@@ -17,7 +17,7 @@ read_HML(HML_file)
 
 ## Value
 
-A tibble with the sample name and the GL string.
+A tibble with the sample name and the GL String.
 
 ## Examples
 

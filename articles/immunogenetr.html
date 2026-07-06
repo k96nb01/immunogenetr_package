@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">immunogenetr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,13 +64,13 @@
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
 <p>immunogenetr is a comprehensive toolkit for clinical HLA informatics,
-built on tidyverse principles. It uses the genotype list string (GL
-string, <a href="https://glstring.org/" class="external-link uri">https://glstring.org/</a>) as its core data structure for
+built on tidyverse principles. It uses the Genotype List String (GL
+String, <a href="https://glstring.org/" class="external-link uri">https://glstring.org/</a>) as its core data structure for
 storing and computing HLA genotype data.</p>
 <p>This vignette walks through the main workflows:</p>
 <ol style="list-style-type: decimal">
-<li>Converting tabular HLA data to GL strings</li>
-<li>Splitting GL strings back into individual loci</li>
+<li>Converting tabular HLA data to GL Strings</li>
+<li>Splitting GL Strings back into individual loci</li>
 <li>Calculating mismatches between recipient and donor</li>
 <li>Summarizing HLA matching for transplantation</li>
 <li>Working with HLA allele names (truncation, prefixes, regex)</li>
@@ -85,7 +85,7 @@ storing and computing HLA genotype data.</p>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="converting-tabular-hla-data-to-gl-strings">Converting tabular HLA data to GL strings<a class="anchor" aria-label="anchor" href="#converting-tabular-hla-data-to-gl-strings"></a>
+<h2 id="converting-tabular-hla-data-to-gl-strings">Converting tabular HLA data to GL Strings<a class="anchor" aria-label="anchor" href="#converting-tabular-hla-data-to-gl-strings"></a>
 </h2>
 <p>Clinical HLA data is typically stored in a tabular format, with each
 allele in its own column. immunogenetr includes the
@@ -182,20 +182,20 @@ allele in its own column. immunogenetr includes the
 </tbody>
 </table>
 <p>The <code><a href="../reference/HLA_columns_to_GLstring.html">HLA_columns_to_GLstring()</a></code> function converts these
-columns into a single GL string per individual. When used inside
+columns into a single GL String per individual. When used inside
 <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>, pass <code>.</code> as the first argument to
 reference the working data frame:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">HLA_typing_GL</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_1</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="co"># Convert all typing columns (A1 through DPB1_2) into a GL string.</span></span>
+<span>  <span class="co"># Convert all typing columns (A1 through DPB1_2) into a GL String.</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    GL_string <span class="op">=</span> <span class="fu"><a href="../reference/HLA_columns_to_GLstring.html">HLA_columns_to_GLstring</a></span><span class="op">(</span><span class="va">.</span>, HLA_typing_columns <span class="op">=</span> <span class="va">A1</span><span class="op">:</span><span class="va">DPB1_2</span><span class="op">)</span>,</span>
 <span>    .after <span class="op">=</span> <span class="va">patient</span></span>
 <span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="co"># Keep only patient ID and the new GL string column.</span></span>
+<span>  <span class="co"># Keep only patient ID and the new GL String column.</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">patient</span>, <span class="va">GL_string</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># View the GL strings.</span></span>
+<span><span class="co"># View the GL Strings.</span></span>
 <span><span class="op">(</span><span class="va">HLA_typing_GL</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr>
@@ -245,19 +245,19 @@ reference the working data frame:</p>
   </tr>
 </tbody>
 </table>
-<p>Each GL string encodes the full genotype: alleles within a gene copy
+<p>Each GL String encodes the full genotype: alleles within a gene copy
 are separated by <code>/</code> (ambiguity), gene copies by
 <code>+</code>, and loci by <code>^</code>.</p>
 </div>
 <div class="section level2">
-<h2 id="splitting-gl-strings-into-loci">Splitting GL strings into loci<a class="anchor" aria-label="anchor" href="#splitting-gl-strings-into-loci"></a>
+<h2 id="splitting-gl-strings-into-loci">Splitting GL Strings into loci<a class="anchor" aria-label="anchor" href="#splitting-gl-strings-into-loci"></a>
 </h2>
 <p>To go the other direction, <code><a href="../reference/GLstring_genes.html">GLstring_genes()</a></code> splits a GL
-string back into separate columns by locus:</p>
+String back into separate columns by locus:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Take the first patient's GL string and split it into locus columns.</span></span>
+<code class="sourceCode R"><span><span class="co"># Take the first patient's GL String and split it into locus columns.</span></span>
 <span><span class="co"># Note: GLstring_genes and GLstring_genes_expanded use pivot_longer on all</span></span>
-<span><span class="co"># columns, so only pass the GL string column (no other data types).</span></span>
+<span><span class="co"># columns, so only pass the GL String column (no other data types).</span></span>
 <span><span class="va">single_patient</span> <span class="op">&lt;-</span> <span class="va">HLA_typing_GL</span><span class="op">[</span><span class="fl">1</span>, <span class="st">"GL_string"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
 <span><span class="fu"><a href="../reference/GLstring_genes.html">GLstring_genes</a></span><span class="op">(</span><span class="va">single_patient</span>, <span class="st">"GL_string"</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -330,7 +330,7 @@ string back into separate columns by locus:</p>
 <h2 id="calculating-hla-mismatches">Calculating HLA mismatches<a class="anchor" aria-label="anchor" href="#calculating-hla-mismatches"></a>
 </h2>
 <p>The mismatch functions are the core of immunogenetr. They all take a
-recipient GL string, a donor GL string, one or more loci, and a
+recipient GL String, a donor GL String, one or more loci, and a
 direction.</p>
 <p>Let’s set up a recipient/donor pair:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
@@ -494,7 +494,7 @@ number of fields:</p>
 <span><span class="fu"><a href="../reference/HLA_truncate.html">HLA_truncate</a></span><span class="op">(</span><span class="st">"HLA-A*02:01:01:01"</span>, fields <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; [1] "HLA-A*02:01"</span></span></code></pre>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Works on full GL strings too.</span></span>
+<code class="sourceCode R"><span><span class="co"># Works on full GL Strings too.</span></span>
 <span><span class="fu"><a href="../reference/HLA_truncate.html">HLA_truncate</a></span><span class="op">(</span><span class="st">"HLA-A*02:01:01:01+HLA-A*03:01:01:02^HLA-B*07:02:01:01+HLA-B*44:02:01:01"</span>,</span>
 <span>  fields <span class="op">=</span> <span class="fl">2</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -523,7 +523,7 @@ manage the <code>HLA-</code> and locus prefixes:</p>
 <pre><code><span><span class="co">#&gt; [1] "HLA-A*02:01"</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="regex-for-gl-string-searching">Regex for GL string searching<a class="anchor" aria-label="anchor" href="#regex-for-gl-string-searching"></a>
+<h3 id="regex-for-gl-string-searching">Regex for GL String searching<a class="anchor" aria-label="anchor" href="#regex-for-gl-string-searching"></a>
 </h3>
 <p><code><a href="../reference/GLstring_regex.html">GLstring_regex()</a></code> creates regex patterns that accurately
 search within GL strings, preventing partial matches across field
@@ -564,7 +564,7 @@ WHO-standard (<code>HLA-A*</code>) and tidyverse-friendly
 <div class="section level2">
 <h2 id="reading-hml-files">Reading HML files<a class="anchor" aria-label="anchor" href="#reading-hml-files"></a>
 </h2>
-<p>The <code><a href="../reference/read_HML.html">read_HML()</a></code> function extracts GL strings from HML
+<p>The <code><a href="../reference/read_HML.html">read_HML()</a></code> function extracts GL Strings from HML
 (HLA Markup Language) files, which are a standard format for reporting
 HLA typing results from next-generation sequencing:</p>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">

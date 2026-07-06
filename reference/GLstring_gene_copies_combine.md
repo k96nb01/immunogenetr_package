@@ -1,7 +1,7 @@
 # GLstring_gene_copies_combine
 
 A function for combining two columns of typing from the same locus into
-a single column in the appropriate GL string format.
+a single column in the appropriate GL String format.
 
 ## Usage
 
@@ -28,7 +28,7 @@ GLstring_gene_copies_combine(.data, columns, sample_column = "sample")
 ## Value
 
 A data frame with the specified columns combined into a single column
-for each locus, in GL string format.
+for each locus, in GL String format.
 
 ## Examples
 

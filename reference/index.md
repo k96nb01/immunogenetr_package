@@ -49,6 +49,9 @@
   : Synthetic HLA typing data for 10 individuals for the HLA-A, B, C,
   DRB1, DRB3, DRB4, DRB5, DQB1, DQA1, DPB1 and DPA1 loci. Data formatted
   to resemble a HistoTrac table.
+- [`HLA_typing_synthetic_LIS`](https://immunogenetr.org/reference/HLA_typing_synthetic_LIS.md)
+  : Synthetic clinical-laboratory HLA typing table (HistoTrac "Patient"
+  layout).
 - [`HLA_validate()`](https://immunogenetr.org/reference/HLA_validate.md)
   : HLA_validate
 - [`Haplotype_frequencies`](https://immunogenetr.org/reference/Haplotype_frequencies.md)

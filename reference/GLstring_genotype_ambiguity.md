@@ -1,11 +1,11 @@
 # GLstring_genotype_ambiguity
 
-This function processes GL strings in the specified columns of a data
+This function processes GL Strings in the specified columns of a data
 frame to retain only the first genotype ambiguity, optionally retaining
 the remaining ambiguities in a separate column with "\_ambiguity"
 appended. The function ensures that genes have been separated from the
 GL strings prior to execution; otherwise, an error will be thrown if a
-"^" is detected in the GL strings.
+"^" is detected in the GL Strings.
 
 ## Usage
 
@@ -21,7 +21,7 @@ GLstring_genotype_ambiguity(data, columns, keep_ambiguities = FALSE)
 
 - columns:
 
-  The names of the columns in the data frame that contain GL strings
+  The names of the columns in the data frame that contain GL Strings
 
 - keep_ambiguities:
 
