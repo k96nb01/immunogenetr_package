@@ -1,3 +1,5 @@
+# immunogenetr (development version)
+
 # immunogenetr 1.4.0
 
 * Fixed `HLA_columns_to_GLstring` producing malformed GL Strings for molecular values held in serologic-named columns. A genuinely molecular value in a `Cw` column now emits a clean molecular locus name (`*07:01` -> `HLA-C*07:01`) instead of the invalid `HLA-Cw*07:01`, and a bare leading `*` is once again treated as serologic (`*17` -> `HLA-Cw17`), restoring the pre-1.3.0 behavior while keeping low-resolution molecular alleles such as `A*01` molecular. All spellings of a locus (e.g. `C`/`Cw`, `DR`/`DRB1`) are now grouped as a single locus so a locus is never split across `^`. (#40)
