@@ -34,21 +34,17 @@ Make sure you're working from the current state of `master`. In the **RStudio Gi
 
 The Git pane should briefly show a progress dialog, then return to a clean state with no pending changes.
 
-### 1.3 Create or refresh the development branch
+### 1.3 Create the development branch
 
-Never work directly on `master`. Use a `dev` branch, which persists across release cycles.
+Never work directly on `master`. Each release cycle uses a **fresh `dev` branch created from the current `master` tip**. The previous cycle's `dev` was deleted at its squash-merge (§5.1), so at the start of every cycle you create `dev` anew — there is no long-lived `dev` to sync or reset.
 
-**If `dev` doesn't exist yet (first cycle):** From the R Console:
+Create it from the R Console:
 
 ```r
 usethis::pr_init("dev")
 ```
 
-This creates a fresh `dev` branch from `master`, checks it out locally, sets up upstream tracking, and prepares the branch for development.
-
-**If `dev` exists from a previous cycle:** In the RStudio Git pane, click the branch dropdown and switch to `dev`, then click **Pull** to sync any commits from the remote. You're ready to continue.
-
-You don't need to "reset" `dev` to `master` after a squash merge. The previous release's content is on `master` (in the single squashed commit from §5.1) AND on `dev` (in the original individual commits) — both represent the same code. New work simply goes on top of `dev`'s existing history. When the next release PR is opened, GitHub will diff `dev` against `master` and show only the *new* changes; the previously-squashed commits don't reappear in the PR diff. The PR's commit list will be informational only.
+This creates `dev` from `master`, checks it out locally, and sets up upstream tracking. Because it branches from `master` — which holds exactly the last accepted release (plus any hotfix) — `dev` starts with zero drift by construction. There is no "reset after squash merge" step to remember: the squash lives in `master`, and the new `dev` inherits it directly.
 
 Confirm you're on `dev`: the branch dropdown in the RStudio Git pane should read `dev`.
 
@@ -413,7 +409,7 @@ With Phase 4 complete and CI green, this phase moves the release from `dev` onto
 1. Go to the pull request on GitHub.
 2. Click the **Squash and merge** dropdown → "Squash and merge". Squash keeps `master`'s history one-commit-per-release; the individual development commits are preserved in the PR record.
 3. Click **Confirm squash and merge**.
-4. **Do NOT delete the remote `dev` branch** — it is reused for the next release cycle (per §1.3 and §6.2).
+4. **Delete the remote `dev` branch.** After the merge, GitHub shows a **Delete branch** button — click it. `dev` is not reused; it is recreated fresh from `master` at the start of the next cycle (§1.3). Deleting it here means no commits can land on `dev` while the release is under CRAN review, and the next cycle's `dev` is guaranteed to start from exactly the accepted `master` — no drift by construction.
 
 ### 5.2 Sync local master
 
@@ -422,7 +418,13 @@ Update your local repository so §5.3 works from the post-merge state. In the **
 1. Click the branch dropdown and switch to `master`.
 2. Click the **Pull** button.
 
-The pull brings down the squashed release commit you just merged. Don't delete local `dev` either — same reason as in §5.1.
+The pull brings down the squashed release commit you just merged. Now delete your **local** `dev` so it matches the deleted remote. From the R Console or a terminal:
+
+```
+git branch -D dev
+```
+
+Use `-D` (capital): after a squash merge git doesn't see `dev`'s commits as merged (the squash is a new commit), so the safe `-d` would refuse. The content is preserved in `master`'s squash commit, so `-D` is not destructive here.
 
 ### 5.3 Submit to CRAN
 
@@ -448,7 +450,7 @@ After confirmation, expect a sequence of automated emails over the next 24–72 
 - **Human review** — a CRAN reviewer eyeballs the submission for policy compliance. Most submissions pass without comment.
 - **Acceptance** — `"package immunogenetr <version> has been published on CRAN"`. The package goes live on CRAN's package index within a few hours of this email.
 
-If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Fix the issue, run `usethis::use_version("patch")` to bump to the next patch (e.g., 1.3.0 → 1.3.1), update `cran-comments.md`, and resubmit (returning to §5.3).
+If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Because `dev` was deleted at the merge (§5.1), recreate a working branch from the now-current `master` per §1.3 (`usethis::pr_init("dev")`), fix the issue there, run `usethis::use_version("patch")` to bump to the next patch (e.g., 1.4.0 → 1.4.1), update `cran-comments.md`, then take it through Phase 3 (PR → CI → squash-merge, deleting the branch again) and resubmit from `master` (§5.3). Working on a fresh branch off the submitted `master` keeps the fix minimal and the history clean.
 
 ---
 
@@ -466,9 +468,9 @@ This creates a Git tag and a corresponding GitHub release, using information fro
 
 ### 6.2 Begin the next release cycle
 
-To start work on the next release, return to Phase 1. The `dev` branch is reused across cycles — fast-forward (or, after a squash merge, reset) it to the new `master` tip per §1.3, reload the package per §1.4, and bump to a new dev version per §1.5. Any open issues or features you want to address fit into Phase 2 from there.
+To start work on the next release, return to Phase 1. The old `dev` was deleted at the squash-merge (§5.1), so create a **new** `dev` from the current `master` tip per §1.3, reload the package per §1.4, and bump to a new dev version per §1.5. Any open issues or features you want to address fit into Phase 2 from there.
 
-This is the "loop close" of the SOP: every accepted release ends with the next one beginning on a refreshed `dev`.
+This is the "loop close" of the SOP: every accepted release ends with the next one beginning on a fresh `dev` branched from the accepted `master`.
 
 ---
 
@@ -555,7 +557,7 @@ gh pr create --base master --head pkgdown-setup \
   --body "Initial pkgdown setup; site deploys to immunogenetr.org on merge."
 ```
 
-Once CI is green, merge to `master`. The `pkgdown.yaml` workflow now runs on every push to `master` and publishes to `gh-pages`. Confirm the first run completes successfully under the Actions tab. After the merge you can delete the `pkgdown-setup` branch — unlike `dev`, it is not reused.
+Once CI is green, merge to `master`. The `pkgdown.yaml` workflow now runs on every push to `master` and publishes to `gh-pages`. Confirm the first run completes successfully under the Actions tab. After the merge you can delete the `pkgdown-setup` branch — like every release branch, it is single-use.
 
 If your release-cycle `dev` branch already has unmerged work on it (so it has diverged from `master`), bring the pkgdown changes into it after this PR lands so `dev` stays current:
 
@@ -666,7 +668,7 @@ Once §A.1–A.8 are done, the site is fully self-maintaining for normal develop
 | Interactive coverage report | `covr::report()` |
 | Preview a vignette | `pkgdown::build_article("immunogenetr")` |
 | Knit README | `devtools::build_readme()` |
-| Create `dev` branch (first cycle) | `usethis::pr_init("dev")` |
+| Create `dev` branch (each cycle, from `master`) | `usethis::pr_init("dev")` |
 | Push branch + open PR creation page | `usethis::pr_push()` |
 | Open current PR in browser | `usethis::pr_view()` |
 | Switch back to a PR branch | `usethis::pr_resume()` |
