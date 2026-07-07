@@ -2,6 +2,8 @@
 
 ## immunogenetr 1.4.0
 
+CRAN release: 2026-07-06
+
 - Fixed `HLA_columns_to_GLstring` producing malformed GL Strings for
   molecular values held in serologic-named columns. A genuinely
   molecular value in a `Cw` column now emits a clean molecular locus
