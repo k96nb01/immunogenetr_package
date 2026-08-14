@@ -3,7 +3,8 @@
 **Date:** 2026-07-31
 **Package:** immunogenetr (dev branch, version 1.4.0.9000, clean tree in sync with origin/dev)
 **Issue:** https://github.com/k96nb01/immunogenetr_package/issues/43
-**Status:** Diagnosis complete. **Decisions made 2026-08-14 (see §6a); implementation underway.**
+**Status:** Implemented, reviewed by NB, committed and pushed to `dev` 2026-08-14. **See §10 for
+the resume state — the next step is the SOP §3.2 AI verification pass, then the PR.**
 
 ---
 
@@ -243,10 +244,29 @@ GLstring_expand_longer(GL) |>
 
 ## 10. When work resumes
 
-1. Nick decides Option A or Option B (§6).
-2. Implement in `R/GLstring_regex.R`; update the three literal-pattern assertions in
-   `tests/testthat/test-GLstring_regex.R` and add the seven rows from §3 as behavioral tests.
-3. Add the replacement-hazard test and documentation from §4.
-4. Decide and implement the G/P half (§5).
-5. Add `GLstring_drop_non_expressed()` with tests covering the three structural cases in §7.
-6. Update `?GLstring_regex`, the vignette, and NEWS per §8.
+> **▶ Resume here.** Everything in this file plus §6a is **implemented, NB-reviewed, and
+> pushed to `dev`** (2026-08-14, commits `f7f6cf1` notes, `5ce1e23` package changes,
+> `3d27455` SOP/.Rcheck cleanup; version still 1.4.0.9000). 602 tests pass;
+> `devtools::check()` gave 0 errors / 0 warnings plus one spurious `''NULL''` NOTE that is an
+> artifact of running check via Rscript on Windows — re-confirm 0/0/0 from RStudio.
+>
+> Scope grew beyond §6a during implementation, all NB-approved:
+> - **Optional `HLA-` prefix** (NB request): the query is canonicalized by stripping any
+>   `HLA-`, the pattern re-adds it as optional, and a **left boundary** (start-of-string or GL
+>   delimiter, via lookbehind) replaces the old mandatory-prefix rule as the protection
+>   against matching inside longer locus names (`A*008:01` must not match in `MICA*008:01`).
+>   Locus-less queries (`02:01`) still error. Tests cover MICA/MICB/KIR.
+> - `GLstring_regex(NA)` now fails with a clean `cli_abort` instead of a raw base error.
+> - SOP: new §3.2 "AI verification pass"; `immunogenetr.Rcheck` untracked and gitignored.
+>
+> **Next steps, in order:**
+> 1. **Run the SOP §3.2 AI verification pass** over `git diff master...dev`. This is
+>    *required*, not optional: a first pass ran mid-development (no functional findings), but
+>    the optional-prefix work, MICA/KIR tests, NA polish, and SOP/housekeeping commits all
+>    landed *after* it and have had no independent cold read.
+> 2. Fix any findings (NB reviews before every commit), then open the PR into `master` per
+>    SOP Phase 3 and let CI go green. The release would be 1.5.0 (new exported function).
+> 3. Parked questions, none blocking: should a G/P query also match its bare base allele in a
+>    GL String (kept strict: the target must carry the G/P letter)? Should the hypothetical
+>    `HLA-MICA*...` form matching a MICA query be pinned or excluded (currently unpinned)?
+>    Should old-literature MICA STR names (`A5.1`-style) get explicit test coverage?
