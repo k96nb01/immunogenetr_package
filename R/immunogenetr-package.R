@@ -12,6 +12,7 @@
 #'   \item \code{\link{GLstring_genotype_ambiguity}}: Extract genotype ambiguity from GL Strings
 #'   \item \code{\link{GLstring_gene_copies_combine}}: Combine gene copies in a GL String
 #'   \item \code{\link{GLstring_regex}}: Create regex patterns for accurate GL String searching
+#'   \item \code{\link{GLstring_drop_non_expressed}}: Remove non-expressed alleles from a GL String
 #' }
 #'
 #' @section Matching and mismatching:

@@ -53,7 +53,7 @@ how these arguments are used.
 # information system:
 print(HLA_typing_LIS)
 
-# The `HLA_columns_to_GLString` function can be used to coerce typing spread across
+# The `HLA_columns_to_GLstring` function can be used to coerce typing spread across
 # multiple columns into a GL String:
 library(dplyr)
 HLA_typing_LIS \%>\%
