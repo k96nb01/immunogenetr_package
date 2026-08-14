@@ -42,7 +42,8 @@ The full path for one release. Each step links to its section below — read the
 **[Phase 3 — PR](#phase-3-committing-pushing-and-opening-the-pr)**
 
 - Commit (§3.1)
-- `usethis::pr_push()` (§3.2)
+- AI verification pass (§3.2)
+- `usethis::pr_push()` (§3.3)
 - Wait for CI (R-CMD-check + coverage) green
 
 **[Phase 4 — CRAN prep](#phase-4-preparing-a-cran-release)**
@@ -233,7 +234,22 @@ In the **RStudio Git pane**:
 4. Write a brief, descriptive commit message in the top text field.
 5. Click **Commit** in the dialog. The dialog can stay open for additional commits in the same session.
 
-### 3.2 Push and open the PR
+### 3.2 AI verification pass (before every PR)
+
+When development is done with an AI agent (Claude Code or similar), the agent must launch an **independent review subagent** over the full set of changes before the PR is opened — a fresh context that reads the changes cold, without the assumptions accumulated while writing them. Run it after the final commit on `dev` and before `usethis::pr_push()` (§3.3); fix any findings, commit, and re-run until the pass comes back clean.
+
+The review prompt should direct the subagent to:
+
+- run `git diff master...dev` and `git status` itself and read the surrounding code, not trust the author-agent's description of the change;
+- verify behavioral claims by **executing code**, not by reading it — and via `devtools::load_all()`, since a plain R session tests the *installed* release rather than the working tree;
+- check that any code splitting or matching GL Strings handles the **full delimiter set** (`^`, `|`, `+`, `~`, `/`, `?`) — partial delimiter handling is the most common silent breakage in this codebase;
+- check nomenclature-touching changes against **both serologic and molecular forms** (including `Cw`, `Bw4`/`Bw6`, and the DQA/DPA/DPB serologic names), plus expression suffixes and G/P group names where relevant;
+- exercise exported functions with a **single value, a vector, and `NA`** — vectorization and NA propagation regressions pass single-value tests;
+- confirm the public surface is consistent: roxygen docs regenerated (`devtools::document()`), a `NEWS.md` entry that matches what the code actually does, new exports listed in the package overview (`R/immunogenetr-package.R`), and tests covering the changed behavior;
+- confirm **no references to private repositories, institutional systems, or PHI** anywhere in the diff — this is a public repo, and that includes `Notes/`;
+- report findings as file:line + issue + severity, or "no findings".
+
+### 3.3 Push and open the PR
 
 `usethis::pr_push()` does both steps in one call. From the R Console, while on `dev`:
 
