@@ -17,7 +17,9 @@ truncating allele designations. Default is FALSE.}
 }
 \value{
 A GL String representing the combined gene locations, loci, genotype
-ambiguities, genotypes, and haplotypes.
+ambiguities, genotypes, and haplotypes. A zero-row table returns
+`character(0)`, so filtered pipelines (e.g. `GLstring_expand_longer` followed
+by a `dplyr::filter` that removes every row) compose without special-casing.
 }
 \description{
 A function that converts a data table of HLA allele ambiguities

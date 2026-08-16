@@ -8,7 +8,9 @@
 #' how these arguments are used.
 #'
 #' @param data A data frame with each row including an HLA typing result, with
-#' individual columns containing a single allele.
+#' individual columns containing a single allele. One allele per cell is the
+#' function's contract: a cell holding a GL String is reduced to its first
+#' allele (see `take_first_allele`).
 #' @param HLA_typing_columns A list of columns containing the HLA alleles. Tidyselect is supported.
 #' @param prefix_to_remove An optional string of characters to remove from the
 #' locus names. The goal is to get the column names to the locus and a number. For example,
@@ -26,6 +28,11 @@
 #' equivalent). Relabeling is structural only: `"ser"` strips any asterisk and
 #' uses the serologic locus name; `"mol"` uses the molecular locus name. No
 #' cross-nomenclature allele translation is performed.
+#' @param take_first_allele A logical value, passed through to `HLA_validate`
+#' when each cell is cleaned. If TRUE (the default), a cell containing GL
+#' String delimiters ("^", "|", "+", "~", "/" or "?") is silently reduced to
+#' its first allele. If FALSE, such cells raise an error instead, for callers
+#' that want malformed multi-allele cells caught rather than truncated.
 #'
 #' @return A list of GL Strings in the order of the original data frame.
 #'
@@ -56,7 +63,7 @@
 #' @importFrom cli cli_abort
 #' @importFrom stringi stri_startswith_fixed stri_endswith_fixed
 
-HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", nomenclature = NULL) {
+HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", nomenclature = NULL, take_first_allele = TRUE) {
   # Validate the data frame input up-front.
   check_data_frame(data, "data")
 
@@ -242,7 +249,9 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 
   # Clean each cell via HLA_validate, then strip the "HLA-"/locus prefix so the
   # output re-applies locus names consistently. Both are already vectorised.
-  validated    <- HLA_validate(raw)
+  # take_first_allele = FALSE makes a multi-allele cell error here rather than
+  # be reduced to its first allele.
+  validated    <- HLA_validate(raw, take_first_allele = take_first_allele)
   allele_clean <- HLA_prefix_remove(validated)
 
   # Allele-derived DRB3/4/5 hint, preferred over the column-name locus when

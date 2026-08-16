@@ -25,6 +25,7 @@ mismatching in solid organ transplantation).}
 A logical value (`TRUE` or `FALSE`):
 - `TRUE` if there are mismatches between recipient and donor HLA alleles.
 - `FALSE` if there are no mismatches.
+- `NA` if either GL String of a pair is NA (missing typing).
 }
 \description{
 Determines if there are any mismatches between recipient and

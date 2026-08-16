@@ -8,6 +8,16 @@
 
 * The text matched by a `GLstring_regex` pattern is now the full allele name as it appears in the GL String, rather than the search string. `str_extract` therefore reports the allele that was actually found (`HLA-A*02:01` extracts `HLA-A*02:01:01:01`, not `HLA-A*02:01`), and `str_replace` replaces the whole allele — previously a lower-resolution pattern replaced only the leading fields, corrupting the GL String with dangling fields (`XXX:01`). `str_detect` results are unchanged apart from the suffix fixes above. (#43)
 
+* Fixed the matching/mismatching family (`HLA_mismatch_base`, `HLA_mismatch_number`, `HLA_mismatch_logical`, `HLA_match_number`, `HLA_match_summary_HCT`) aborting with a misleading "missing these loci" error when a GL String vector contained an NA. A pair with missing typing on either side now returns NA for that pair while the rest of the cohort is processed normally.
+
+* The matching/mismatching functions now reject GL Strings containing the `~` (haplotype) or `?` (possible gene location) delimiters, which were previously accepted and silently mis-tokenized — a `?`-joined pair of DRB3/4/5 alleles, for example, was read as a single allele, producing wrong match counts. Ambiguous GL Strings containing `|` or `/` were already rejected; the error message now covers all four.
+
+* Fixed null alleles written with a lowercase suffix (`HLA-A*01:01n`) taking a different path through the mismatch calculation than their uppercase equivalents. Both spellings are now treated identically; lowercase suffixes are produced by `HLA_validate` and preserved by `HLA_truncate`, so they occur in real cleaned data.
+
+* Added a `take_first_allele` argument to `HLA_validate` and `HLA_columns_to_GLstring`. Both functions expect one allele per value; a value containing GL String delimiters has always been silently reduced to its first allele, and the default (`TRUE`) preserves that behavior exactly. Setting `take_first_allele = FALSE` treats such values as malformed input and raises an error naming the offending value, for callers who want a GL String landing in a typing column caught rather than truncated. One-allele-per-value is now stated in both functions' documentation.
+
+* `ambiguity_table_to_GLstring` now returns `character(0)` for a zero-row table instead of erroring, so pipelines that expand a GL String, filter rows, and reassemble compose without special-casing an empty result.
+
 # immunogenetr 1.4.0
 
 * Fixed `HLA_columns_to_GLstring` producing malformed GL Strings for molecular values held in serologic-named columns. A genuinely molecular value in a `Cw` column now emits a clean molecular locus name (`*07:01` -> `HLA-C*07:01`) instead of the invalid `HLA-Cw*07:01`, and a bare leading `*` is once again treated as serologic (`*17` -> `HLA-Cw17`), restoring the pre-1.3.0 behavior while keeping low-resolution molecular alleles such as `A*01` molecular. All spellings of a locus (e.g. `C`/`Cw`, `DR`/`DRB1`) are now grouped as a single locus so a locus is never split across `^`. (#40)

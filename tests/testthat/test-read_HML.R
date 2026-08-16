@@ -144,3 +144,65 @@ test_that("read_HML validates input", {
   # Numeric input should error.
   expect_error(read_HML(123))
 })
+
+test_that("read_HML extracts exact GL String content from hml_2.hml", {
+  # Pins the exact output for one known sample (verified against the file's own
+  # <glstring> nodes) so a rewrite of the XML traversal or locus-combining logic
+  # cannot silently reorder loci or alter allele content.
+  HML_2 <- system.file("extdata", "hml_2.hml", package = "immunogenetr")
+
+  if (file.exists(HML_2)) {
+    result <- read_HML(HML_2)
+
+    # Sample IDs come out in document order.
+    expect_equal(
+      result$sampleID,
+      c("22-03848", "22-03849", "22-03850", "22-03851", "22-03852")
+    )
+    # Sample 22-03848: each source <glstring> node in document order, joined
+    # with "^". Includes a genotype ambiguity ("|") at HLA-DPA1 that must pass
+    # through unaltered.
+    expect_equal(
+      result$GL_string[result$sampleID == "22-03848"],
+      "HLA-A*33:03:01+HLA-A*34:02:01^HLA-B*14:01:01+HLA-B*44:03:02^HLA-C*07:06:01+HLA-C*08:02:01^HLA-DPA1*01:03:01+HLA-DPA1*03:05:01Q|HLA-DPA1*01:87Q+HLA-DPA1*03:01:01^HLA-DPB1*104:01:01+HLA-DPB1*584:01:02^HLA-DQA1*01:02:01+HLA-DQA1*04:01:02^HLA-DQB1*03:19:01+HLA-DQB1*06:09:01^HLA-DRB1*08:04:01+HLA-DRB1*13:02:01^HLA-DRB3*03:01:01+HLA-DRB3*03:01:01^HLA-E*01:01:01+HLA-E*01:03:01^HLA-F*01:01:02+HLA-F*01:02:01^HLA-G*01:01:09+HLA-G*01:04:01^HLA-H*02:08:01+HLA-H*02:11:01^MICA*004:01+MICA*008:04^MICB*002:01+MICB*005:02"
+    )
+  } else {
+    skip("hml_2.hml test file does not exist.")
+  }
+})
+
+test_that("read_HML extracts exact sample IDs from HML_1.hml", {
+  # Pins the sample IDs (in document order) so ID extraction from the "id"
+  # attribute can't silently change.
+  HML_1 <- system.file("extdata", "HML_1.hml", package = "immunogenetr")
+
+  if (file.exists(HML_1)) {
+    result <- read_HML(HML_1)
+    expect_equal(
+      result$sampleID,
+      c(
+        "22-03848-HLA-031722-AB-AlloSeq-EP", "22-03849-HLA-031722-AB-AlloSeq-EP",
+        "22-03850-HLA-031722-AB-AlloSeq-EP", "22-03851-HLA-031722-AB-AlloSeq-EP",
+        "22-03852-HLA-031722-AB-AlloSeq-EP"
+      )
+    )
+  } else {
+    skip("HML_1.hml test file does not exist.")
+  }
+})
+
+test_that("read_HML combines same-locus glstring nodes with '+'", {
+  # HML_duplicate_locus.hml puts each HLA-A allele in its own <glstring> node,
+  # as some HML implementations do; the duplicate-locus logic must join
+  # same-locus nodes with "+" into one gene-copy pair, while a node carrying a
+  # "/" allele ambiguity passes through intact. Pins the combined output exactly.
+  dup_file <- test_path("HML_duplicate_locus.hml")
+
+  result <- read_HML(dup_file)
+
+  expect_equal(result$sampleID, "DUP-LOCUS-001")
+  expect_equal(
+    result$GL_string,
+    "HLA-A*01:01:01:01+HLA-A*02:01:01:01^HLA-B*07:02:01:01/HLA-B*07:02:01:03+HLA-B*08:01:01:01"
+  )
+})

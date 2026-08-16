@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<hml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schemas.nmdp.org/spec/hml/1.0.1  http://schemas.nmdp.org/spec/hml/1.0.1/hml-1.0.1.xsd" version="1.0.1" project-name="Immunogenetr_samples" xmlns="http://schemas.nmdp.org/spec/hml/1.0.1">
+  <hmlid root="2.16.840.1.113883.19.3.999.5" />
+  <reporting-center reporting-center-id="UPABRO" />
+  <sample id="DUP-LOCUS-001" center-code="UPABRO">
+    <collection-method>unknown</collection-method>
+    <typing gene-family="HLA" date="2024-09-20">
+      <allele-assignment date="2024-09-20" allele-db="IMGT/HLA" allele-version="3.55.0">
+        <glstring>HLA-A*01:01:01:01</glstring>
+      </allele-assignment>
+    </typing>
+    <typing gene-family="HLA" date="2024-09-20">
+      <allele-assignment date="2024-09-20" allele-db="IMGT/HLA" allele-version="3.55.0">
+        <glstring>HLA-A*02:01:01:01</glstring>
+      </allele-assignment>
+    </typing>
+    <typing gene-family="HLA" date="2024-09-20">
+      <allele-assignment date="2024-09-20" allele-db="IMGT/HLA" allele-version="3.55.0">
+        <glstring>HLA-B*07:02:01:01/HLA-B*07:02:01:03+HLA-B*08:01:01:01</glstring>
+      </allele-assignment>
+    </typing>
+  </sample>
+</hml>

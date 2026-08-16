@@ -102,3 +102,15 @@ test_that("GLstring_drop_non_expressed validates the suffixes argument", {
   expect_error(GLstring_drop_non_expressed("HLA-A*01:01N", suffixes = 1))
   expect_error(GLstring_drop_non_expressed("HLA-A*01:01N", suffixes = c("N", NA)))
 })
+
+test_that("GLstring_drop_non_expressed passes degenerate inputs through", {
+  # An all-NA character vector takes the early-return path and must come back
+  # as NA for every entry, preserving length.
+  expect_equal(
+    GLstring_drop_non_expressed(c(NA_character_, NA_character_)),
+    c(NA_character_, NA_character_)
+  )
+  # An empty string carries no expression suffix, so it round-trips unchanged
+  # (it is not promoted to NA).
+  expect_equal(GLstring_drop_non_expressed(""), "")
+})

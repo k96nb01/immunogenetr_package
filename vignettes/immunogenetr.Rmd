@@ -258,7 +258,8 @@ stringr::str_detect("HLA-A*02:149:01", GLstring_regex("HLA-A*02:14"))
 Expression suffixes and G/P groups are handled on a simple rule: a search
 without a suffix matches the allele regardless of expression status or group
 membership, while a search carrying a suffix matches only alleles with that
-same letter, at the same or higher resolution:
+same letter, at the same or higher resolution. A G or P group search matches
+the group name only, not its member alleles:
 
 ```{r}
 # An unsuffixed search finds the null allele.

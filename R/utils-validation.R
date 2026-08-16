@@ -29,8 +29,11 @@ check_gl_string <- function(x, arg_name = "data", call = caller_env()) {
   invisible(x)
 }
 
-# Validate that a data argument is a non-empty data frame.
-check_data_frame <- function(x, arg_name = "data", call = caller_env()) {
+# Validate that a data argument is a data frame, by default a non-empty one.
+# allow_empty = TRUE admits a zero-row data frame, for functions whose output
+# has a natural zero-length representation (e.g. ambiguity_table_to_GLstring
+# returning character(0)).
+check_data_frame <- function(x, arg_name = "data", call = caller_env(), allow_empty = FALSE) {
   # NULL check
   if (is.null(x)) {
     cli_abort("{.arg {arg_name}} must be a data frame, not {.cls NULL}.", call = call)
@@ -40,7 +43,7 @@ check_data_frame <- function(x, arg_name = "data", call = caller_env()) {
     cli_abort("{.arg {arg_name}} must be a data frame, not {.cls {class(x)}}.", call = call)
   }
   # Row check
-  if (nrow(x) == 0) {
+  if (!allow_empty && nrow(x) == 0) {
     cli_abort("{.arg {arg_name}} must have at least one row.", call = call)
   }
   invisible(x)

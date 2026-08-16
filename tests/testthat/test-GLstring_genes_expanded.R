@@ -44,3 +44,71 @@ test_that("GLstring_genes_expanded handles missing values correctly", {
 
   expect_true(any(is.na(result)))
 })
+
+test_that("GLstring_genes_expanded handles multi-row input with differing per-row allele counts", {
+  # The v2 rewrite's headline capability: rows with different allele counts per
+  # locus are expanded independently and row-bound. Row 1 contributes 2 rows per
+  # locus; row 2 has a single HLA-A allele that recycles against its two HLA-B
+  # alleles. Pins the exact output so a future rewrite can't change row order
+  # or per-row expansion semantics.
+  table <- data.frame(
+    GL_string = c(
+      "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01",
+      "HLA-A*03:01^HLA-B*15:01+HLA-B*44:02"
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  result <- GLstring_genes_expanded(table, "GL_string")
+
+  expect_equal(
+    result,
+    tibble::tibble(
+      A = c("HLA-A*01:01", "HLA-A*02:01", "HLA-A*03:01", "HLA-A*03:01"),
+      B = c("HLA-B*07:02", "HLA-B*08:01", "HLA-B*15:01", "HLA-B*44:02")
+    )
+  )
+})
+
+test_that("GLstring_genes_expanded recycles a length-1 locus to the row's max allele count", {
+  # Pins the intentional recycling rule: a locus with one allele in a row is
+  # duplicated into every expanded row for that input row (matches the v1
+  # unnest behavior the package treats as intended).
+  table <- data.frame(
+    GL_string = "HLA-A*24:02+HLA-A*29:02^HLA-B*44:03",
+    stringsAsFactors = FALSE
+  )
+
+  result <- GLstring_genes_expanded(table, "GL_string")
+
+  expect_equal(
+    result,
+    tibble::tibble(
+      A = c("HLA-A*24:02", "HLA-A*29:02"),
+      B = c("HLA-B*44:03", "HLA-B*44:03")
+    )
+  )
+})
+
+test_that("GLstring_genes_expanded fills NA for a locus absent from a row", {
+  # A locus present in one row but missing from another must yield NA (not a
+  # recycled value or dropped rows) in the rows that lack it. Pins the exact
+  # NA fill from bind_rows.
+  table <- data.frame(
+    GL_string = c(
+      "HLA-A*01:01+HLA-A*02:01^HLA-B*07:02+HLA-B*08:01",
+      "HLA-A*03:01+HLA-A*11:01"
+    ),
+    stringsAsFactors = FALSE
+  )
+
+  result <- GLstring_genes_expanded(table, "GL_string")
+
+  expect_equal(
+    result,
+    tibble::tibble(
+      A = c("HLA-A*01:01", "HLA-A*02:01", "HLA-A*03:01", "HLA-A*11:01"),
+      B = c("HLA-B*07:02", "HLA-B*08:01", NA, NA)
+    )
+  )
+})

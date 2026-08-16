@@ -14,7 +14,9 @@
 #' truncating allele designations. Default is FALSE.
 #'
 #' @return A GL String representing the combined gene locations, loci, genotype
-#' ambiguities, genotypes, and haplotypes.
+#' ambiguities, genotypes, and haplotypes. A zero-row table returns
+#' `character(0)`, so filtered pipelines (e.g. `GLstring_expand_longer` followed
+#' by a `dplyr::filter` that removes every row) compose without special-casing.
 #'
 #' @examples
 #' # Example data frame input
@@ -66,8 +68,10 @@
 #' @export
 
 ambiguity_table_to_GLstring <- function(data, remove_duplicates = FALSE) {
-  # Validate inputs — identical error shape to v1.
-  check_data_frame(data, "data")
+  # Validate inputs — identical error shape to v1, except that a zero-row
+  # table is admitted: collapse_level below handles n == 0 explicitly and the
+  # function returns character(0), the natural output for zero entries.
+  check_data_frame(data, "data", allow_empty = TRUE)
   check_logical_flag(remove_duplicates, "remove_duplicates")
 
   # -------------------------------------------------------------------------

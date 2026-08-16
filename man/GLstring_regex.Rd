@@ -34,7 +34,12 @@ The pattern matches whole alleles only, on these rules:
 * An allele supplied with a WHO expression suffix (N, Q, L, S, C or A) or a
   G/P group letter matches only alleles carrying that same letter, at the
   same or higher resolution: "HLA-A*01:01N" matches "HLA-A*01:01:03N" but
-  not "HLA-A*01:01:03" or "HLA-A*01:01:03Q".
+  not "HLA-A*01:01:03" or "HLA-A*01:01:03Q". Note that a G or P group query
+  matches only the group name as written in the GL String; it does not
+  expand to the group's member alleles ("HLA-A*01:01:01G" will not match
+  "HLA-A*01:01:01" or "HLA-A*01:32"), since group membership is defined by
+  the IPD-IMGT/HLA database rather than by the allele name. To find any
+  member of a group, search the base allele name instead.
 
 The matched text is always the full allele name as it appears in the GL
 String, so `stringr::str_extract` returns the allele that was found (not the
