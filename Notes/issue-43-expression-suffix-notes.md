@@ -277,5 +277,6 @@ GLstring_expand_longer(GL) |>
 >      Mizuki et al. PNAS 1997): **no test coverage needed** — not valid GL String content.
 >    - Verification-pass nit (2026-08-16): a locus-only query whose name ends digit+letter
 >      (e.g. `GLstring_regex("KIR2DL5A")`) parses as a suffixed query and cannot match
->      `KIR2DL5A*0010101`. No regression vs 1.4.0 (also FALSE there); locus-only strings
->      are not a documented input. Recorded, no action.
+>      `KIR2DL5A*0010101` (1.4.0 errored on the missing HLA- prefix; dev's prefix-optional
+>      pattern silently never matches). Locus-only strings are not a documented input.
+>      Recorded, no action.
