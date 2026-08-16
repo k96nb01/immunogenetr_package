@@ -266,7 +266,16 @@ GLstring_expand_longer(GL) |>
 >    landed *after* it and have had no independent cold read.
 > 2. Fix any findings (NB reviews before every commit), then open the PR into `master` per
 >    SOP Phase 3 and let CI go green. The release would be 1.5.0 (new exported function).
-> 3. Parked questions, none blocking: should a G/P query also match its bare base allele in a
->    GL String (kept strict: the target must carry the G/P letter)? Should the hypothetical
->    `HLA-MICA*...` form matching a MICA query be pinned or excluded (currently unpinned)?
->    Should old-literature MICA STR names (`A5.1`-style) get explicit test coverage?
+> 3. Parked questions — **all resolved by NB, 2026-08-16, no code action**:
+>    - G/P query matching its bare base allele: **kept strict** (the target must carry the
+>      G/P letter). Group membership is defined by the IPD-IMGT/HLA database, not derivable
+>      from the name, so any regex-level loosening would be wrong. Now documented in the
+>      `GLstring_regex` roxygen and the vignette.
+>    - Hypothetical `HLA-MICA*...` form: **left unpinned** — not proper nomenclature, not
+>      worth developing around.
+>    - Old-literature MICA STR names (`A5.1`-style, the exon-5 GCT repeat alleles of
+>      Mizuki et al. PNAS 1997): **no test coverage needed** — not valid GL String content.
+>    - Verification-pass nit (2026-08-16): a locus-only query whose name ends digit+letter
+>      (e.g. `GLstring_regex("KIR2DL5A")`) parses as a suffixed query and cannot match
+>      `KIR2DL5A*0010101`. No regression vs 1.4.0 (also FALSE there); locus-only strings
+>      are not a documented input. Recorded, no action.
