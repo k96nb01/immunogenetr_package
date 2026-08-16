@@ -1,6 +1,6 @@
 # Changelog
 
-## immunogenetr (development version)
+## immunogenetr 1.5.0
 
 - Fixed `GLstring_regex` producing patterns that could not match alleles
   carrying a WHO expression suffix (N, Q, L, S, C, A) or a G/P group
