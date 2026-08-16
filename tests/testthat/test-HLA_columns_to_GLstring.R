@@ -33,6 +33,10 @@ test_that("HLA_columns_to_GLstring correctly converts HLA columns into a GL Stri
   result_LIS <- c("HLA-A*24:02+HLA-A*02:01^HLA-B*40:02+HLA-B*40:01^HLA-C*03:04^HLA-DRB1*10:01+HLA-DRB1*15:01^HLA-DRB5*01:01^HLA-DQA1*01:05+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:02^HLA-DPA1*01:03^HLA-DPB1*02:01+HLA-DPB1*04:01", "HLA-A*03:01+HLA-A*74:01^HLA-B*53:01+HLA-B*57:03^HLA-C*04:01+HLA-C*07:01^HLA-DRB1*11:01+HLA-DRB1*16:02^HLA-DRB3*02:02^HLA-DRB5*02:21^HLA-DQA1*01:02+HLA-DQA1*05:05^HLA-DQB1*03:19+HLA-DQB1*05:02^HLA-DPA1*02:01+HLA-DPA1*02:02^HLA-DPB1*01:01", "HLA-A*11:01+HLA-A*32:01^HLA-B*52:01^HLA-C*12:02^HLA-DRB1*15:02^HLA-DRB5*01:02^HLA-DQA1*01:03^HLA-DQB1*06:01^HLA-DPA1*01:03+HLA-DPA1*02:07^HLA-DPB1*02:01+HLA-DPB1*04:01", "HLA-A*03:01+HLA-A*30:02^HLA-B*14:02^HLA-C*08:02^HLA-DRB1*01:02+HLA-DRB1*13:02^HLA-DRB3*03:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:09^HLA-DPA1*02:01^HLA-DPB1*05:01+HLA-DPB1*17:01", "HLA-A*01:01+HLA-A*24:02^HLA-B*07:02^HLA-C*07:02^HLA-DRB1*01:01+HLA-DRB1*15:01^HLA-DRB5*01:01^HLA-DQA1*01:01+HLA-DQA1*01:02^HLA-DQB1*05:01+HLA-DQB1*06:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*04:01+HLA-DPB1*11:01", "HLA-A*02:01+HLA-A*30:02^HLA-B*39:11+HLA-B*41:01^HLA-C*07:02+HLA-C*17:01^HLA-DRB1*03:01+HLA-DRB1*04:05^HLA-DRB3*02:02^HLA-DRB4*01:03^HLA-DQA1*05:01+HLA-DQA1*03:03^HLA-DQB1*02:01+HLA-DQB1*02:02^HLA-DPA1*01:03^HLA-DPB1*02:01+HLA-DPB1*04:01", "HLA-A*02:17+HLA-A*32:01^HLA-B*40:02^HLA-C*02:02+HLA-C*03:05^HLA-DRB1*04:11+HLA-DRB1*13:01^HLA-DRB3*02:02^HLA-DRB4*01:03^HLA-DQA1*03:01+HLA-DQA1*01:03^HLA-DQB1*03:02+HLA-DQB1*06:03^HLA-DPA1*01:03^HLA-DPB1*04:02", "HLA-A*11:01+HLA-A*23:01^HLA-B*15:17+HLA-B*44:03^HLA-C*07:01+HLA-C*16:01^HLA-DRB1*07:01^HLA-DRB4*01:01+HLA-DRB4*01:03^HLA-DQA1*02:01^HLA-DQB1*02:02^HLA-DPA1*01:03+HLA-DPA1*02:01^HLA-DPB1*04:01+HLA-DPB1*11:01", "HLA-A*03:01+HLA-A*68:02^HLA-B*08:01+HLA-B*15:03^HLA-C*02:10+HLA-C*03:04^HLA-DRB1*13:04+HLA-DRB1*07:01^HLA-DRB3*02:02^HLA-DRB4*01:03^HLA-DQA1*02:01+HLA-DQA1*05:05^HLA-DQB1*02:02+HLA-DQB1*03:19^HLA-DPA1*01:03+HLA-DPA1*02:02^HLA-DPB1*01:01+HLA-DPB1*02:01", "HLA-A*01:01+HLA-A*02:01^HLA-B*08:01+HLA-B*07:02^HLA-C*07:01+HLA-C*05:01^HLA-DRB1*03:01+HLA-DRB1*04:01^HLA-DRB3*01:01^HLA-DRB4*01:03^HLA-DQA1*05:01+HLA-DQA1*03:03^HLA-DQB1*02:01+HLA-DQB1*03:01^HLA-DPA1*01:03^HLA-DPB1*04:01+HLA-DPB1*06:01")
   expect_equal(test_LIS, result_LIS)
 
+  # Haplotype_frequencies contains cells holding a "/" allele ambiguity (e.g.
+  # "DRB4*01:03:01:01/DRB4*01:03:01:03"). Under the default
+  # take_first_allele = TRUE the first allele is retained, as pinned in
+  # result_freq below.
   test_freq <- HLA_columns_to_GLstring(Haplotype_frequencies, c("HLA-A":"HLA-DPB1"))
   result_freq <- c("HLA-A*24:02:01:01^HLA-C*03:04:01:01^HLA-B*40:01:02^HLA-DRB1*08:01:01^HLA-DQA1*04:01:01^HLA-DQB1*04:02:01^HLA-DPA1*01:03:01:04^HLA-DPB1*04:01:01:01", "HLA-A*03:01:01:05^HLA-C*06:02:01:01^HLA-B*47:01:01:03^HLA-DRB4*01:01:01:01^HLA-DRB1*07:01:01:01^HLA-DQA1*02:01:01:01^HLA-DQB1*02:02:01:01^HLA-DPA1*01:03:01:03^HLA-DPB1*06:01:01", "HLA-A*02:01:01:01^HLA-C*05:01:01:02^HLA-B*44:02:01:01^HLA-DRB3*01:01:02:01^HLA-DRB1*03:01:01:01^HLA-DQA1*05:01:01:02^HLA-DQB1*02:01:01^HLA-DPA1*01:03:01:01^HLA-DPB1*02:01:02", "HLA-A*32:01:01^HLA-C*02:02:02:01^HLA-B*40:02:01^HLA-DRB3*02:02:01:02^HLA-DRB1*11:01:01:01^HLA-DQA1*05:05:01:01^HLA-DQB1*03:01:01:03^HLA-DPA1*01:03:01:01^HLA-DPB1*02:01:02", "HLA-A*02:01:01:01^HLA-C*05:01:01:02^HLA-B*44:02:01:01^HLA-DRB5*01:01:01^HLA-DRB1*15:01:01:01^HLA-DQA1*01:02:01:01^HLA-DQB1*06:02:01^HLA-DPA1*01:03:01:02^HLA-DPB1*04:01:01:01", "HLA-A*02:01:01:01^HLA-C*05:01:01:02^HLA-B*44:02:01:01^HLA-DRB4*01:03:01:01^HLA-DRB1*04:01:01:01^HLA-DQA1*03:03:01:01^HLA-DQB1*03:01:01:01^HLA-DPA1*01:03:01:05^HLA-DPB1*04:02:01:02", "HLA-A*02:06:01:01^HLA-C*08:01:01^HLA-B*40:06:01:01^HLA-DRB4*01:03:02^HLA-DRB1*09:01:02^HLA-DQA1*03:02^HLA-DQB1*03:03:02:02^HLA-DPA1*02:01:01:02^HLA-DPB1*09:01:01", "HLA-A*24:02:01:01^HLA-C*07:02:01:01^HLA-B*39:05:01^HLA-DRB5*02:02^HLA-DRB1*16:02:01:02^HLA-DQA1*05:05:01:05^HLA-DQB1*03:01:01:01^HLA-DPA1*01:03:01:05^HLA-DPB1*04:02:01:02", "HLA-A*02:01:01:01^HLA-C*02:02:02:01^HLA-B*40:02:01^HLA-DRB3*02:02:01:02^HLA-DRB1*13:01:01:01^HLA-DQA1*01:03:01:02^HLA-DQB1*06:03:01^HLA-DPA1*01:03:01:01^HLA-DPB1*02:01:02", "HLA-A*24:02:01:01^HLA-C*07:04:01:01^HLA-B*44:02:01:03^HLA-DRB3*02:02:01:02^HLA-DRB1*11:01:01:01^HLA-DQA1*05:05:01:01^HLA-DQB1*03:01:01:03^HLA-DPA1*01:03:01:01^HLA-DPB1*02:01:02")
   expect_equal(test_freq, result_freq)
@@ -173,5 +177,52 @@ test_that("HLA_columns_to_GLstring treats low-resolution molecular input as mole
   expect_equal(
     HLA_columns_to_GLstring(sero, HLA_typing_columns = c(A1, A2)),
     "HLA-A1+HLA-A2"
+  )
+})
+
+test_that("HLA_columns_to_GLstring errors when the tidyselect matches zero columns", {
+  # A selection that resolves to no columns must fail loudly instead of
+  # returning an empty or degenerate GL String.
+  df <- data.frame(A1 = "01:01", A2 = "02:01", stringsAsFactors = FALSE)
+  expect_error(
+    HLA_columns_to_GLstring(df, HLA_typing_columns = starts_with("zzz")),
+    "did not select any columns"
+  )
+})
+
+test_that("HLA_columns_to_GLstring rejects invalid nomenclature values", {
+  # Both forms of the nomenclature argument must reject values other than
+  # "mol"/"ser" rather than silently falling back to auto-detection.
+  df <- data.frame(A1 = "01:01", A2 = "02:01", stringsAsFactors = FALSE)
+  # Scalar form is validated by match.arg.
+  expect_error(
+    HLA_columns_to_GLstring(df, HLA_typing_columns = c(A1, A2), nomenclature = "bogus"),
+    "should be one of"
+  )
+  # Named-vector form has its own validation message.
+  expect_error(
+    HLA_columns_to_GLstring(df, HLA_typing_columns = c(A1, A2), nomenclature = c("HLA-A" = "bogus")),
+    "values must be"
+  )
+})
+
+test_that("take_first_allele = FALSE rejects multi-allele cells", {
+  # One allele per cell is the function's contract; the strict mode catches a
+  # GL String landing in a typing column instead of truncating it to its
+  # first allele. Haplotype_frequencies carries real "/"-ambiguity cells, so
+  # it doubles as the malformed-input fixture.
+  expect_error(
+    HLA_columns_to_GLstring(Haplotype_frequencies, c("HLA-A":"HLA-DPB1"), take_first_allele = FALSE),
+    "GL String delimiters"
+  )
+  df <- data.frame(A1 = "01:01+02:01", A2 = "02:01", stringsAsFactors = FALSE)
+  expect_error(
+    HLA_columns_to_GLstring(df, HLA_typing_columns = c(A1, A2), take_first_allele = FALSE),
+    "GL String delimiters"
+  )
+  # The same frame passes under the default, reduced to the first allele.
+  expect_equal(
+    HLA_columns_to_GLstring(df, HLA_typing_columns = c(A1, A2)),
+    "HLA-A*01:01+HLA-A*02:01"
   )
 })

@@ -179,10 +179,21 @@ hla_mismatch_count_matrix <- function(GL_string_recip, GL_string_donor, loci,
   # locally against R 4.5.3). na.rm = TRUE mirrors the historical behavior
   # of HLA_mismatch_number, where a single-side NA still contributes the
   # non-NA side to the bidirectional count.
-  switch(direction,
+  out <- switch(direction,
     HvG           = mat_HvG,
     SOT           = mat_HvG,
     GvH           = mat_GvH,
     bidirectional = pmax(mat_HvG, mat_GvH, na.rm = TRUE)
   )
+
+  # Pairs with missing typing on either side are NA at every locus. The mask
+  # must come from the inputs, not the base output: in single-locus mode the
+  # base returns NA_character_ both for "no data" and for "no mismatches", and
+  # count_val maps the latter to 0 — without the mask, a pair with missing
+  # typing would silently read as fully matched.
+  na_pairs <- is.na(GL_string_recip) | is.na(GL_string_donor)
+  if (any(na_pairs)) {
+    out[, na_pairs] <- NA_integer_
+  }
+  out
 }

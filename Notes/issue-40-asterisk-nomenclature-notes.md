@@ -242,7 +242,7 @@ A separate, opt-in function for exploratory work:
 
 ## 8. TODO / where to pick up
 
-> **▶ Resume here (next session).** Issue #40 is **functionally complete** — both halves fixed, committed, pushed to `dev` (commits `8d9b502`, `1a3d647`); verified end-to-end against the real `hla_donor_assessment` report (rendered clean on the dev build; crashed on 1.3.0). Realistic dev data `HLA_typing_synthetic_LIS` added and pushed (`6bdc88d`). Working tree clean. Remaining work is **optional/follow-on**, in rough priority order:
+> **▶ Resume here (next session).** Issue #40 is **functionally complete** — both halves fixed, committed, pushed to `dev` (commits `8d9b502`, `1a3d647`); verified end-to-end against a real downstream clinical report (rendered clean on the dev build; crashed on 1.3.0). Realistic dev data `HLA_typing_synthetic_LIS` added and pushed (`6bdc88d`). Working tree clean. Remaining work is **optional/follow-on**, in rough priority order:
 > 1. **Issue #33 — serologic patterns.** The next substantive build. Now unblocked: realistic data exists (`HLA_typing_synthetic_LIS`) and the approach is decided — **encode the per-locus serologic grammar (patterns), NOT a reference table or era translation** (see [issue-33 notes §5.4 + §7](issue-33-serologic-nomenclature-notes.md)). First step: write down the per-locus pattern grammar.
 > 2. **Companion interactive helper** (§6) — pattern-based validator (flags values that don't conform to any locus's serologic grammar). Builds on #1; **no era-translation tables** (decision changed 2026-06-20).
 > 3. **`nomenclature` arg position** — currently last (back-compat). Decide whether to move it earlier before any release/version bump.

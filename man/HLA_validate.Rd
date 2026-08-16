@@ -4,10 +4,15 @@
 \alias{HLA_validate}
 \title{HLA_validate}
 \usage{
-HLA_validate(data)
+HLA_validate(data, take_first_allele = TRUE)
 }
 \arguments{
 \item{data}{A string containing an HLA allele.}
+
+\item{take_first_allele}{A logical value. If TRUE (the default), a value
+containing GL String delimiters is silently reduced to its first allele.
+If FALSE, such values raise an error instead, for callers that want
+malformed multi-allele input caught rather than truncated.}
 }
 \value{
 A string with a valid HLA allele or NA if no valid allele was present.
@@ -19,6 +24,13 @@ WHO-recognized suffixes (L, S, C, A, Q, N) or G or P group designations will be 
 For example "novel" at the end of the allele will be removed, while "n" at the end of the
 allele will be retained. Other values, such as "blank" or "-" will be converted to NA values.
 This function is helpful for cleaning up the typing of an entire table of HLA values.
+
+Each value is expected to hold a single allele. If a value contains GL String
+delimiters ("^", "|", "+", "~", "/" or "?"), only the first allele is retained
+(the historical behavior, controlled by `take_first_allele`); set
+`take_first_allele = FALSE` to treat such values as malformed input and get
+an error instead. Use the GL String functions (e.g. `GLstring_expand_longer`)
+to work with multi-allele values.
 }
 \examples{
 HLA_validate("HLA-A2")

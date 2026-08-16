@@ -14,11 +14,36 @@ A string with the HLA allele formatted as a regex pattern.
 }
 \description{
 This function will format an HLA allele (e.g. "HLA-A*02:01") to
-a regex pattern for searching within a GL String. Note that in order for this
-function to work properly, the full HLA allele name, including prefixes, is
-required. Allele values of "A*02:01" will need to be updated to "HLA-A*02:01",
-and "A2" will need to be updated to "HLA-A2". The `HLA_prefix_add` function
-is useful in these situations.
+a regex pattern for searching within a GL String. The allele must carry its
+locus designation, but the "HLA-" prefix is optional in both the allele and
+the GL String being searched: "A*02:01" and "HLA-A*02:01" produce equivalent
+patterns, and either matches the allele whether the GL String writes it with
+or without the prefix (as wild-caught GL Strings often omit it). A bare field
+value with no locus ("02:01") is rejected, since the locus cannot be inferred;
+the `HLA_prefix_add` function is useful for repairing such values.
+
+The pattern matches whole alleles only, on these rules:
+
+* An allele supplied with fewer fields will match a higher-resolution allele
+  in the GL String ("HLA-A*02:01" matches "HLA-A*02:01:01:01"), but partial
+  fields never match ("HLA-A*02:14" will not match "HLA-A*02:149").
+* An allele without an expression suffix matches regardless of expression
+  status: "HLA-A*24:09" matches "HLA-A*24:09N". It likewise matches G and P
+  group names, which include the allele in their name ("HLA-A*01:01:01"
+  matches "HLA-A*01:01:01G").
+* An allele supplied with a WHO expression suffix (N, Q, L, S, C or A) or a
+  G/P group letter matches only alleles carrying that same letter, at the
+  same or higher resolution: "HLA-A*01:01N" matches "HLA-A*01:01:03N" but
+  not "HLA-A*01:01:03" or "HLA-A*01:01:03Q". Note that a G or P group query
+  matches only the group name as written in the GL String; it does not
+  expand to the group's member alleles ("HLA-A*01:01:01G" will not match
+  "HLA-A*01:01:01" or "HLA-A*01:32"), since group membership is defined by
+  the IPD-IMGT/HLA database rather than by the allele name. To find any
+  member of a group, search the base allele name instead.
+
+The matched text is always the full allele name as it appears in the GL
+String, so `stringr::str_extract` returns the allele that was found (not the
+search string), and `stringr::str_replace` replaces the whole allele.
 }
 \examples{
 
@@ -46,8 +71,26 @@ GL_string <- "HLA-A*02:01:01+HLA-A*68:01^HLA-B*07:01+HLA-B*15:01"
 
 str_view(GL_string, GLstring_regex("HLA-A*68:01"), match = NA)
 
-# Note that alleles supplied with fewer fields than in the GL String will also match:
+# Note that alleles supplied with fewer fields than in the GL String will also match,
+# and that the match is the full allele as written in the GL String:
 
 str_view(GL_string, GLstring_regex("HLA-A*02:01"), match = NA)
+
+# An allele without an expression suffix matches its expression variants:
+
+str_view("HLA-A*24:09N+HLA-A*02:01", GLstring_regex("HLA-A*24:09"), match = NA)
+
+# An allele with an expression suffix matches only alleles carrying that suffix,
+# at the same or higher resolution:
+
+str_view("HLA-A*01:01:03N+HLA-A*02:01", GLstring_regex("HLA-A*01:01N"), match = NA)
+str_view("HLA-A*01:01:03Q+HLA-A*02:01", GLstring_regex("HLA-A*01:01N"), match = NA)
+
+# The "HLA-" prefix is optional in both the allele and the GL String, so a
+# canonical allele finds its match in a wild-caught GL String without prefixes,
+# and vice versa:
+
+str_view("A*02:01:01+A*68:01", GLstring_regex("HLA-A*02:01"), match = NA)
+str_view("HLA-A*02:01:01+HLA-A*68:01", GLstring_regex("A*02:01"), match = NA)
 
 }

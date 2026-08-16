@@ -23,7 +23,11 @@
 #' @return A character vector, where each element is a string summarizing the
 #' mismatches for the specified loci. The strings are formatted as
 #' comma-separated locus mismatch entries if multiple loci are supplied, or
-#' simple GL Strings if a single locus is supplied.
+#' simple GL Strings if a single locus is supplied. A pair in which either
+#' GL String is NA returns NA for that pair rather than erroring, so cohorts
+#' with missing typing can be processed in one call. Note that in
+#' single-locus mode NA is also the no-mismatch result; the derivative
+#' functions distinguish the two cases from their inputs.
 
 #'
 #' @examples
@@ -55,10 +59,13 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     cli_abort("{.arg GL_string_recip} and {.arg GL_string_donor} must be of equal length.")
   }
 
-  # Check for ambiguity
-  if (any(grepl("[|/]", GL_string_recip, perl = TRUE) |
-          grepl("[|/]", GL_string_donor, perl = TRUE))) {
-    cli_abort("The matching/mismatching functions do not support ambiguous GL Strings containing {.val |} or {.val /}. Process your GL Strings to result in unambiguous genotypes before using these functions.")
+  # Check for ambiguity and other unsupported delimiters. Anything beyond
+  # "^" (locus) and "+" (gene copy) would be silently mis-tokenized below —
+  # e.g. a "?"-joined pair of DRB3/4/5 alleles would read as one allele —
+  # so all four are rejected up front rather than producing wrong counts.
+  if (any(grepl("[|/~?]", GL_string_recip, perl = TRUE) |
+          grepl("[|/~?]", GL_string_donor, perl = TRUE))) {
+    cli_abort("The matching/mismatching functions only support unambiguous genotype GL Strings: the delimiters {.val |}, {.val /}, {.val ~}, and {.val ?} are not supported. Process your GL Strings to result in unambiguous genotypes before using these functions.")
   }
 
   # Maps the serologic naming of the DRB locus to molecular so that only one name is used
@@ -84,7 +91,7 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
   # after it, up to the trailing N, with "XXN". A lookbehind won't work here
   # because R on Linux links against PCRE1, which rejects variable-width
   # lookbehinds (PCRE2 on macOS/Windows accepts them).
-  null_allele_re <- "^(HLA-[A-Za-z0-9]+\\*).+N$"
+  null_allele_re <- "^(HLA-[A-Za-z0-9]+\\*).+[Nn]$"
   # Fixed-string set for DRB3/4/5 classification (molecular or serologic).
   # All six tokens are 8 characters long, so `substr(x, 1, 8) %in% set`
   # gives a constant-cost lookup that avoids the regex engine entirely.
@@ -96,13 +103,16 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     # Split GL String into alleles
     alleles <- strsplit(GL_string, "+", fixed = TRUE)[[1L]]
 
-    # Replace any null allele (ending with uppercase "N" expression suffix) with a
+    # Replace any null allele (ending with the "N" expression suffix) with a
     # placeholder "XXN". The WHO nomenclature defines "N" as the null expression suffix,
     # appearing after the colon-separated allele fields (e.g. "HLA-A*01:01N").
+    # Lowercase "n" is accepted too — HLA_validate and HLA_truncate preserve it —
+    # and normalized to the uppercase placeholder, so both spellings take the same
+    # path as the case-insensitive mismatch-exclusion filter further down.
     # The lookbehind matches the locus prefix up to the asterisk, allowing locus names
     # of any length (e.g. HLA-A, HLA-DRB1, HLA-DRB345). Short-circuit with endsWith()
     # so we only invoke the regex engine on alleles that can possibly match.
-    n_idx <- which(endsWith(alleles, "N"))
+    n_idx <- which(endsWith(alleles, "N") | endsWith(alleles, "n"))
     if (length(n_idx) > 0L) {
       alleles[n_idx] <- sub(null_allele_re, "\\1XXN", alleles[n_idx], perl = TRUE)
     }
@@ -286,10 +296,19 @@ HLA_mismatch_base <- function(GL_string_recip, GL_string_donor, loci, direction,
     }
   }
 
-  # Return final result by applying the GL Strings to the process_pair function defined above.
+  # Return final result by applying the GL Strings to the process_pair function
+  # defined above. A pair with missing typing on either side yields NA rather
+  # than reaching process_pair, whose missing-locus check would otherwise abort
+  # the whole call with a misleading "missing these loci" error.
   vapply(
     seq_along(GL_string_recip),
-    function(i) process_pair(GL_string_recip[[i]], GL_string_donor[[i]]),
+    function(i) {
+      if (is.na(GL_string_recip[[i]]) || is.na(GL_string_donor[[i]])) {
+        NA_character_
+      } else {
+        process_pair(GL_string_recip[[i]], GL_string_donor[[i]])
+      }
+    },
     character(1L)
   )
 }

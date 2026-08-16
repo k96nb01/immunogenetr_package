@@ -9,12 +9,15 @@ HLA_columns_to_GLstring(
   HLA_typing_columns,
   prefix_to_remove = "",
   suffix_to_remove = "",
-  nomenclature = NULL
+  nomenclature = NULL,
+  take_first_allele = TRUE
 )
 }
 \arguments{
 \item{data}{A data frame with each row including an HLA typing result, with
-individual columns containing a single allele.}
+individual columns containing a single allele. One allele per cell is the
+function's contract: a cell holding a GL String is reduced to its first
+allele (see `take_first_allele`).}
 
 \item{HLA_typing_columns}{A list of columns containing the HLA alleles. Tidyselect is supported.}
 
@@ -36,6 +39,12 @@ molecular or serologic spelling of a locus (`"HLA-C"` and `"HLA-Cw"` are
 equivalent). Relabeling is structural only: `"ser"` strips any asterisk and
 uses the serologic locus name; `"mol"` uses the molecular locus name. No
 cross-nomenclature allele translation is performed.}
+
+\item{take_first_allele}{A logical value, passed through to `HLA_validate`
+when each cell is cleaned. If TRUE (the default), a cell containing GL
+String delimiters ("^", "|", "+", "~", "/" or "?") is silently reduced to
+its first allele. If FALSE, such cells raise an error instead, for callers
+that want malformed multi-allele cells caught rather than truncated.}
 }
 \value{
 A list of GL Strings in the order of the original data frame.
@@ -53,7 +62,7 @@ how these arguments are used.
 # information system:
 print(HLA_typing_LIS)
 
-# The `HLA_columns_to_GLString` function can be used to coerce typing spread across
+# The `HLA_columns_to_GLstring` function can be used to coerce typing spread across
 # multiple columns into a GL String:
 library(dplyr)
 HLA_typing_LIS \%>\%

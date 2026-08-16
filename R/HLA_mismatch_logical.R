@@ -18,6 +18,7 @@
 #' @return A logical value (`TRUE` or `FALSE`):
 #' - `TRUE` if there are mismatches between recipient and donor HLA alleles.
 #' - `FALSE` if there are no mismatches.
+#' - `NA` if either GL String of a pair is NA (missing typing).
 #'
 #' @examples
 #'
@@ -51,12 +52,17 @@ HLA_mismatch_logical <- function(GL_string_recip, GL_string_donor, loci, directi
   if (length(loci) == 1L) {
     if (need_HvG) HvG <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "HvG"))
     if (need_GvH) GvH <- !is.na(HLA_mismatch_base(GL_string_recip, GL_string_donor, loci, "GvH"))
-    return(switch(direction,
+    out <- switch(direction,
       HvG           = HvG,
       SOT           = HvG,
       GvH           = GvH,
       bidirectional = HvG | GvH
-    ))
+    )
+    # Pairs with missing typing on either side are NA, not FALSE. The base
+    # returns NA_character_ both for "no data" and for "no mismatch" in
+    # single-locus mode, so the distinction has to come from the inputs.
+    out[is.na(GL_string_recip) | is.na(GL_string_donor)] <- NA
+    return(out)
   }
 
   # Multi-locus path. HLA_mismatch_base returns a character vector where each

@@ -245,3 +245,9 @@ test_that("check_molecular_gl_string inherits base gl_string checks", {
   expect_error(check_molecular_gl_string(123), "must be a character vector, not.*numeric")
   expect_error(check_molecular_gl_string(character(0)), "must have length >= 1")
 })
+
+test_that("check_molecular_gl_string accepts an empty string", {
+  # "" yields no tokens after splitting, so there is nothing serologic to
+  # reject; callers that pass through empty entries rely on this not erroring.
+  expect_invisible(check_molecular_gl_string(""))
+})

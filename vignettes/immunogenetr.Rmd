@@ -255,6 +255,54 @@ stringr::str_detect(gl, pattern)
 stringr::str_detect("HLA-A*02:149:01", GLstring_regex("HLA-A*02:14"))
 ```
 
+Expression suffixes and G/P groups are handled on a simple rule: a search
+without a suffix matches the allele regardless of expression status or group
+membership, while a search carrying a suffix matches only alleles with that
+same letter, at the same or higher resolution. A G or P group search matches
+the group name only, not its member alleles:
+
+```{r}
+# An unsuffixed search finds the null allele.
+stringr::str_detect("HLA-A*24:09N+HLA-A*02:01", GLstring_regex("HLA-A*24:09"))
+
+# A null search finds the null allele at higher resolution, but never an
+# expressed allele.
+stringr::str_detect("HLA-A*01:01:03N", GLstring_regex("HLA-A*01:01N"))
+stringr::str_detect("HLA-A*01:01:03", GLstring_regex("HLA-A*01:01N"))
+```
+
+The matched text is always the full allele as it appears in the GL String, so
+`stringr::str_extract()` reports what was actually found:
+
+```{r}
+stringr::str_extract(gl, GLstring_regex("HLA-A*02:01"))
+```
+
+The `HLA-` prefix is optional in both the allele and the GL String — wild-caught
+GL Strings often omit it — so an allele in either convention matches a GL String
+in either convention:
+
+```{r}
+stringr::str_detect("A*02:01:01+A*68:01", GLstring_regex("HLA-A*02:01"))
+stringr::str_extract(gl, GLstring_regex("A*02:01"))
+```
+
+### Removing non-expressed alleles
+
+Because an unsuffixed search matches expression variants, workflows that should
+ignore non-expressed alleles can remove them first with
+`GLstring_drop_non_expressed()`. The default removes N, S and C alleles, which
+produce no cell-surface protein; the `suffixes` argument adjusts that judgement:
+
+```{r}
+# The null allele is removed; a gene copy or locus with nothing left collapses
+# cleanly.
+GLstring_drop_non_expressed("HLA-A*01:01N+HLA-A*02:01^HLA-B*07:02/HLA-B*07:02N+HLA-B*08:01")
+
+# Remove only null alleles.
+GLstring_drop_non_expressed("HLA-A*01:01N+HLA-A*23:38S", suffixes = "N")
+```
+
 ## Column name repair
 
 When working in the tidyverse, column names with dashes and asterisks are

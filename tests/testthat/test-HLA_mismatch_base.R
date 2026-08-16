@@ -142,6 +142,56 @@ test_that("HLA_mismatch_base rejects ambiguous GL Strings", {
   expect_error(HLA_mismatch_base(gl_ambig, gl_normal, "HLA-A", "HvG"), "ambiguous")
 })
 
+test_that("HLA_mismatch_base rejects the ~ and ? delimiters", {
+  # These delimiters were previously accepted and silently mis-tokenized:
+  # a "?"-joined pair of DRB3/4/5 alleles read as a single allele, producing
+  # wrong match counts, and a "~" haplotype produced a misleading
+  # "missing loci" error.
+  gl_normal <- "HLA-A*01:01+HLA-A*02:01"
+  gl_tilde <- "HLA-A*01:01~HLA-B*08:01"
+  gl_question <- "HLA-DRB3*01:01?HLA-DRB4*01:03"
+  expect_error(HLA_mismatch_base(gl_tilde, gl_normal, "HLA-A", "HvG"), "not supported")
+  expect_error(HLA_mismatch_base(gl_normal, gl_question, "HLA-A", "HvG"), "not supported")
+})
+
+test_that("a pair with an NA GL String returns NA instead of aborting", {
+  # Real cohorts contain missing typing; one NA pair must not kill the whole
+  # call with a misleading "missing loci" error, and the remaining pairs must
+  # still be computed.
+  recip <- c("HLA-A*01:01+HLA-A*02:01", NA, "HLA-A*03:01+HLA-A*24:02")
+  donor <- c("HLA-A*01:01+HLA-A*03:01", "HLA-A*01:01+HLA-A*02:01", NA)
+  expect_equal(
+    HLA_mismatch_base(recip, donor, "HLA-A", "HvG"),
+    c("HLA-A*03:01", NA, NA)
+  )
+
+  recip_multi <- c("HLA-A*02:01+HLA-A*03:01^HLA-B*07:02+HLA-B*08:01", NA)
+  donor_multi <- c("HLA-A*01:01+HLA-A*03:01^HLA-B*07:02+HLA-B*44:02", "HLA-A*01:01^HLA-B*07:02")
+  expect_equal(
+    HLA_mismatch_base(recip_multi, donor_multi, c("HLA-A", "HLA-B"), "HvG"),
+    c("HLA-A=HLA-A*01:01, HLA-B=HLA-B*44:02", NA)
+  )
+
+  # Bare NA on both sides is valid "no data" input per check_gl_string.
+  expect_equal(HLA_mismatch_base(NA, NA, "HLA-A", "HvG"), NA_character_)
+})
+
+test_that("lowercase null suffixes take the same path as uppercase", {
+  # HLA_validate and HLA_truncate preserve a lowercase "n", so it occurs in
+  # real cleaned data. Before the fix the XXN placeholder rewrite only fired
+  # on uppercase "N", so two differently-named nulls failed to pair up and the
+  # homozygous repeat doubled the expressed mismatch.
+  upper_HvG <- HLA_mismatch_base("HLA-A*01:01N+HLA-A*02:01", "HLA-A*24:09N+HLA-A*03:01", "HLA-A", "HvG")
+  lower_HvG <- HLA_mismatch_base("HLA-A*01:01n+HLA-A*02:01", "HLA-A*24:09n+HLA-A*03:01", "HLA-A", "HvG")
+  expect_equal(upper_HvG, "HLA-A*03:01")
+  expect_equal(lower_HvG, upper_HvG)
+
+  upper_GvH <- HLA_mismatch_base("HLA-A*01:01N+HLA-A*02:01", "HLA-A*24:09N+HLA-A*03:01", "HLA-A", "GvH")
+  lower_GvH <- HLA_mismatch_base("HLA-A*01:01n+HLA-A*02:01", "HLA-A*24:09n+HLA-A*03:01", "HLA-A", "GvH")
+  expect_equal(upper_GvH, "HLA-A*02:01")
+  expect_equal(lower_GvH, upper_GvH)
+})
+
 test_that("HLA_mismatch_base works with vectorized inputs", {
   recip <- c(
     "HLA-A*01:01+HLA-A*02:01",

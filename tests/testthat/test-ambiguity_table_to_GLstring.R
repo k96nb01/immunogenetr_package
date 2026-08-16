@@ -74,3 +74,11 @@ test_that("ambiguity_table_to_GLstring preserves NA in value", {
   )
   expect_true(is.na(ambiguity_table_to_GLstring(mixed_table)))
 })
+
+test_that("a zero-row table returns character(0)", {
+  # Zero entries have a natural zero-length output, so filtered pipelines
+  # (GLstring_expand_longer |> filter |> ambiguity_table_to_GLstring) compose
+  # without special-casing an empty result.
+  empty_table <- GLstring_to_ambiguity_table("HLA-A*01:01")[0, ]
+  expect_equal(ambiguity_table_to_GLstring(empty_table), character(0))
+})
