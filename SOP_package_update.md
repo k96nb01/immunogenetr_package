@@ -25,6 +25,59 @@ gitcreds::gitcreds_set()          # store the token locally
 
 ------------------------------------------------------------------------
 
+## Release Cycle at a Glance
+
+The full path for one release. Each step links to its section below —
+read the detail the first time or when a step misbehaves. Commands run
+in RStudio.
+
+**[Phase 1 — Set up](#phase-1-setting-up-a-development-session)**
+
+- Pull `master` (§1.2)
+- `usethis::pr_init("dev")` (§1.3)
+- `devtools::load_all()` (§1.4)
+- `usethis::use_dev_version()` (§1.5)
+
+**[Phase 2 — Make changes](#phase-2-making-changes)**
+
+- Edit code + `devtools::document()` (§2.1–2.2)
+- Write or update tests (§2.3)
+- Update `NEWS.md` (§2.4)
+- `devtools::check()` — 0/0/0 (§2.5)
+- `covr::package_coverage()` + `covr::report()` (§2.6)
+- Update vignette / README if touched (§2.7–2.8)
+
+**[Phase 3 — PR](#phase-3-committing-pushing-and-opening-the-pr)**
+
+- Commit (§3.1)
+- AI verification pass (§3.2)
+- `usethis::pr_push()` (§3.3)
+- Wait for CI (R-CMD-check + coverage) green
+
+**[Phase 4 — CRAN prep](#phase-4-preparing-a-cran-release)**
+
+- `usethis::use_release_issue()` (§4.1)
+- `devtools::check(remote = TRUE, manual = TRUE)` (§4.2)
+- `urlchecker::url_check()` (§4.2)
+- `devtools::check_win_devel()` (§4.2)
+- Trigger `rhub.yaml` = `gcc16,donttest,nosuggests` (§4.2)
+- Update `cran-comments.md` (§4.3)
+- `usethis::use_version()` (§4.4)
+
+**[Phase 5 — Merge & submit](#phase-5-merge-and-submit)**
+
+- Squash-merge the PR on GitHub (§5.1)
+- `usethis::pr_finish()` — deletes `dev`, returns to `master` (§5.2)
+- `devtools::submit_cran()` (§5.3)
+- Click the confirmation email (§5.3)
+
+**[Phase 6 — After acceptance](#phase-6-after-cran-acceptance)**
+
+- `usethis::use_github_release()` (§6.1)
+- Return to Phase 1 on a fresh `dev` (§6.2)
+
+------------------------------------------------------------------------
+
 ## Phase 1: Setting Up a Development Session
 
 ### 1.1 Open the project
@@ -45,33 +98,27 @@ Make sure you’re working from the current state of `master`. In the
 The Git pane should briefly show a progress dialog, then return to a
 clean state with no pending changes.
 
-### 1.3 Create or refresh the development branch
+### 1.3 Create the development branch
 
-Never work directly on `master`. Use a `dev` branch, which persists
-across release cycles.
+Never work directly on `master`. Each release cycle uses a **fresh `dev`
+branch created from the current `master` tip**. The previous cycle’s
+`dev` was deleted at its squash-merge (§5.1), so at the start of every
+cycle you create `dev` anew — there is no long-lived `dev` to sync or
+reset.
 
-**If `dev` doesn’t exist yet (first cycle):** From the R Console:
+Create it from the R Console:
 
 ``` r
 
 usethis::pr_init("dev")
 ```
 
-This creates a fresh `dev` branch from `master`, checks it out locally,
-sets up upstream tracking, and prepares the branch for development.
-
-**If `dev` exists from a previous cycle:** In the RStudio Git pane,
-click the branch dropdown and switch to `dev`, then click **Pull** to
-sync any commits from the remote. You’re ready to continue.
-
-You don’t need to “reset” `dev` to `master` after a squash merge. The
-previous release’s content is on `master` (in the single squashed commit
-from §5.1) AND on `dev` (in the original individual commits) — both
-represent the same code. New work simply goes on top of `dev`’s existing
-history. When the next release PR is opened, GitHub will diff `dev`
-against `master` and show only the *new* changes; the
-previously-squashed commits don’t reappear in the PR diff. The PR’s
-commit list will be informational only.
+This creates `dev` from `master`, checks it out locally, and sets up
+upstream tracking. Because it branches from `master` — which holds
+exactly the last accepted release (plus any hotfix) — `dev` starts with
+zero drift by construction. There is no “reset after squash merge” step
+to remember: the squash lives in `master`, and the new `dev` inherits it
+directly.
 
 Confirm you’re on `dev`: the branch dropdown in the RStudio Git pane
 should read `dev`.
@@ -258,7 +305,45 @@ In the **RStudio Git pane**:
 5.  Click **Commit** in the dialog. The dialog can stay open for
     additional commits in the same session.
 
-### 3.2 Push and open the PR
+### 3.2 AI verification pass (before every PR)
+
+When development is done with an AI agent (Claude Code or similar), the
+agent must launch an **independent review subagent** over the full set
+of changes before the PR is opened — a fresh context that reads the
+changes cold, without the assumptions accumulated while writing them.
+Run it after the final commit on `dev` and before `usethis::pr_push()`
+(§3.3); fix any findings, commit, and re-run until the pass comes back
+clean.
+
+The review prompt should direct the subagent to:
+
+- run `git diff master...dev` and `git status` itself and read the
+  surrounding code, not trust the author-agent’s description of the
+  change;
+- verify behavioral claims by **executing code**, not by reading it —
+  and via `devtools::load_all()`, since a plain R session tests the
+  *installed* release rather than the working tree;
+- check that any code splitting or matching GL Strings handles the
+  **full delimiter set** (`^`, `|`, `+`, `~`, `/`, `?`) — partial
+  delimiter handling is the most common silent breakage in this
+  codebase;
+- check nomenclature-touching changes against **both serologic and
+  molecular forms** (including `Cw`, `Bw4`/`Bw6`, and the DQA/DPA/DPB
+  serologic names), plus expression suffixes and G/P group names where
+  relevant;
+- exercise exported functions with a **single value, a vector, and
+  `NA`** — vectorization and NA propagation regressions pass
+  single-value tests;
+- confirm the public surface is consistent: roxygen docs regenerated
+  (`devtools::document()`), a `NEWS.md` entry that matches what the code
+  actually does, new exports listed in the package overview
+  (`R/immunogenetr-package.R`), and tests covering the changed behavior;
+- confirm **no references to private repositories, institutional
+  systems, or PHI** anywhere in the diff — this is a public repo, and
+  that includes `Notes/`;
+- report findings as <file:line> + issue + severity, or “no findings”.
+
+### 3.3 Push and open the PR
 
 `usethis::pr_push()` does both steps in one call. From the R Console,
 while on `dev`:
@@ -359,26 +444,27 @@ Work through the checklist items in order, checking them off as you go.
 
 #### Custom checklist items via `release_bullets()`
 
-The checklist that `use_release_issue()` generates is general-purpose.
-To add immunogenetr-specific items that should appear in every release
-issue, define a `release_bullets()` function in `R/utils-release.R`:
+`use_release_issue()` generates a general-purpose checklist and
+automatically appends any strings returned by an internal
+`release_bullets()` function, if the package defines one. immunogenetr
+defines it in `R/utils-release.R` (internal, not exported), so every
+release issue also includes these immunogenetr-specific reminders:
 
-``` r
+- Manually trigger the `rhub.yaml` workflow (Actions → R-hub → Run
+  workflow → Branch: `dev`); confirm the only ERROR is the expected
+  `nosuggests` vignette one disclosed in `cran-comments.md`.
+- Run
+  [`pkgdown::build_home()`](https://pkgdown.r-lib.org/reference/build_home.html)
+  and eyeball GL String rendering (no stray superscripts/italics from
+  `^`/`*`) before merging.
+- Confirm the DOI in `inst/CITATION` still resolves.
+- Check `Haplotype_frequencies` and `HLA_dictionary` nomenclature
+  against the latest WHO/IPD-IMGT/HLA release.
+- Confirm the PDF manual builds (TinyTeX present and on PATH).
 
-release_bullets <- function() {
-  c(
-    "Verify DQA1/DPB1/DPA1 handling matches the latest WHO update",
-    "Check `inst/CITATION` DOI still resolves",
-    "Confirm `Haplotype_frequencies` dataset is up to date"
-  )
-}
-```
-
-This function should not be exported — it’s internal infrastructure.
-`use_release_issue()` looks for it automatically when generating the
-checklist and appends any returned strings as additional bulleted items.
-Update the list as you discover new immunogenetr-specific things to
-remember during a release.
+To add or change a reminder, edit the `release_bullets()` character
+vector in `R/utils-release.R`. Keep the function non-exported —
+`use_release_issue()` discovers it automatically.
 
 ### 4.2 Run comprehensive checks
 
@@ -387,20 +473,15 @@ non-redundant — they catch different things.
 
 ``` r
 
-# CRAN-flavored check: builds PDF manual, validates URLs against the live web,
-# enables the same env vars CRAN's incoming check uses. Strict superset of
-# devtools::check() — don't run both, just this one.
+# CRAN-flavored superset of devtools::check(): builds the PDF manual,
+# validates URLs live, uses CRAN's check env vars. Don't also run check().
 devtools::check(remote = TRUE, manual = TRUE)
 
-# Explicit URL audit across DESCRIPTION/README/vignette/man.
-# Faster and more thorough than the URL pass inside check(remote = TRUE).
+# Thorough URL audit across DESCRIPTION/README/vignette/man.
 urlchecker::url_check()
 
-# Submit to win-builder for an R-devel check on Windows. CRAN's submission
-# pipeline mirrors this; a clean win-builder result is the strongest
-# pre-submission signal. Results are emailed (no local output) within
-# ~30-90 min on weekdays. Required even on a Windows host — your local
-# R is R-release, not R-devel.
+# R-devel check on Windows via win-builder — strongest pre-submission signal
+# (mirrors CRAN). Emailed in ~30-90 min; required even on a Windows host.
 devtools::check_win_devel()
 ```
 
@@ -586,20 +667,27 @@ reflects exactly what was submitted to CRAN — no extra commits.
 2.  Click the **Squash and merge** dropdown → “Squash and merge”. Squash
     keeps `master`’s history one-commit-per-release; the individual
     development commits are preserved in the PR record.
-3.  Click **Confirm squash and merge**.
-4.  **Do NOT delete the remote `dev` branch** — it is reused for the
-    next release cycle (per §1.3 and §6.2).
+3.  Click **Confirm squash and merge**. Ignore GitHub’s **Delete
+    branch** button — `usethis::pr_finish()` in §5.2 removes `dev` for
+    you.
 
-### 5.2 Sync local master
+### 5.2 Sync master and delete `dev`
 
-Update your local repository so §5.3 works from the post-merge state. In
-the **RStudio Git pane**:
+From R (you’ll still be on `dev` locally right after the merge), run:
 
-1.  Click the branch dropdown and switch to `master`.
-2.  Click the **Pull** button.
+``` r
 
-The pull brings down the squashed release commit you just merged. Don’t
-delete local `dev` either — same reason as in §5.1.
+usethis::pr_finish()
+```
+
+This switches you back to `master`, pulls the squashed release commit,
+and deletes `dev` both locally and on the remote (the PR is merged and
+you have push access). `dev` is single-use — it’s recreated fresh from
+`master` at the next cycle (§1.3). Deleting it here means no commits can
+land on `dev` during CRAN review, so the next cycle starts from exactly
+the accepted `master` — no drift by construction.
+
+You should now be on `master`, synced with origin, ready to submit.
 
 ### 5.3 Submit to CRAN
 
@@ -646,9 +734,14 @@ After confirmation, expect a sequence of automated emails over the next
   email.
 
 If CRAN flags an issue and requires changes, do not resubmit the same
-version number — CRAN rejects duplicates. Fix the issue, run
-`usethis::use_version("patch")` to bump to the next patch (e.g., 1.3.0 →
-1.3.1), update `cran-comments.md`, and resubmit (returning to §5.3).
+version number — CRAN rejects duplicates. Because `dev` was deleted at
+the merge (§5.1), recreate a working branch from the now-current
+`master` per §1.3 (`usethis::pr_init("dev")`), fix the issue there, run
+`usethis::use_version("patch")` to bump to the next patch (e.g., 1.4.0 →
+1.4.1), update `cran-comments.md`, then take it through Phase 3 (PR → CI
+→ squash-merge, deleting the branch again) and resubmit from `master`
+(§5.3). Working on a fresh branch off the submitted `master` keeps the
+fix minimal and the history clean.
 
 ------------------------------------------------------------------------
 
@@ -669,14 +762,15 @@ also deletes the `CRAN-SUBMISSION` file.
 
 ### 6.2 Begin the next release cycle
 
-To start work on the next release, return to Phase 1. The `dev` branch
-is reused across cycles — fast-forward (or, after a squash merge, reset)
-it to the new `master` tip per §1.3, reload the package per §1.4, and
-bump to a new dev version per §1.5. Any open issues or features you want
-to address fit into Phase 2 from there.
+To start work on the next release, return to Phase 1. The old `dev` was
+deleted at the squash-merge (§5.1), so create a **new** `dev` from the
+current `master` tip per §1.3, reload the package per §1.4, and bump to
+a new dev version per §1.5. Any open issues or features you want to
+address fit into Phase 2 from there.
 
 This is the “loop close” of the SOP: every accepted release ends with
-the next one beginning on a refreshed `dev`.
+the next one beginning on a fresh `dev` branched from the accepted
+`master`.
 
 ------------------------------------------------------------------------
 
@@ -828,8 +922,8 @@ gh pr create --base master --head pkgdown-setup \
 Once CI is green, merge to `master`. The `pkgdown.yaml` workflow now
 runs on every push to `master` and publishes to `gh-pages`. Confirm the
 first run completes successfully under the Actions tab. After the merge
-you can delete the `pkgdown-setup` branch — unlike `dev`, it is not
-reused.
+you can delete the `pkgdown-setup` branch — like every release branch,
+it is single-use.
 
 If your release-cycle `dev` branch already has unmerged work on it (so
 it has diverged from `master`), bring the pkgdown changes into it after
@@ -983,7 +1077,7 @@ package work.** Specifically:
 | Interactive coverage report | `covr::report()` |
 | Preview a vignette | `pkgdown::build_article("immunogenetr")` |
 | Knit README | `devtools::build_readme()` |
-| Create `dev` branch (first cycle) | `usethis::pr_init("dev")` |
+| Create `dev` branch (each cycle, from `master`) | `usethis::pr_init("dev")` |
 | Push branch + open PR creation page | `usethis::pr_push()` |
 | Open current PR in browser | `usethis::pr_view()` |
 | Switch back to a PR branch | `usethis::pr_resume()` |

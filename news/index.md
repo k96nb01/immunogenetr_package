@@ -1,5 +1,91 @@
 # Changelog
 
+## immunogenetr (development version)
+
+- Fixed `GLstring_regex` producing patterns that could not match alleles
+  carrying a WHO expression suffix (N, Q, L, S, C, A) or a G/P group
+  letter
+  ([\#43](https://github.com/k96nb01/immunogenetr_package/issues/43)).
+  An allele supplied without a suffix now matches regardless of
+  expression status (`HLA-A*24:09` matches `HLA-A*24:09N`) and matches G
+  and P group names, which include the allele in their name
+  (`HLA-A*01:01:01` matches `HLA-A*01:01:01G`). An allele supplied with
+  a suffix matches only alleles carrying that same letter, at the same
+  or higher resolution, so a name truncated by `HLA_truncate` (which
+  keeps the suffix) once again finds the allele it came from:
+  `HLA-A*01:01N` matches `HLA-A*01:01:03N`, but never `HLA-A*01:01:03`
+  or `HLA-A*01:01:03Q`. A G/P query still requires the G/P letter in the
+  GL String. Code relying on suffixed alleles being invisible to
+  unsuffixed searches will see new matches;
+  `GLstring_drop_non_expressed` (also in this release) removes
+  non-expressed alleles beforehand where that behavior was wanted.
+
+- `GLstring_regex` no longer requires the `HLA-` prefix. The allele must
+  still carry its locus designation, but the prefix is now optional in
+  both the allele and the GL String being searched: `A*02:01` and
+  `HLA-A*02:01` produce equivalent patterns, and either matches a GL
+  String written in either convention — wild-caught GL Strings commonly
+  omit the prefix. The pattern now anchors the start of the allele to a
+  GL String delimiter or the start of the string, so a prefix-less
+  allele cannot match inside a longer locus name (`A*008:01` does not
+  match within `MICA*008:01`). A bare field value with no locus
+  (`02:01`) is still rejected, since its locus cannot be inferred.
+  ([\#43](https://github.com/k96nb01/immunogenetr_package/issues/43))
+
+- Added `GLstring_drop_non_expressed`, which removes alleles carrying a
+  WHO expression suffix from a GL String. The `suffixes` argument
+  selects which variants to treat as non-expressed, defaulting to N, S
+  and C (alleles producing no cell-surface protein) while keeping L, Q
+  and A. Removal is structural: an allele ambiguity list narrows, a gene
+  copy with no expressed alleles collapses, a locus with no expressed
+  alleles disappears along with its delimiter, and a GL String with
+  nothing left becomes `NA`.
+
+- The text matched by a `GLstring_regex` pattern is now the full allele
+  name as it appears in the GL String, rather than the search string.
+  `str_extract` therefore reports the allele that was actually found
+  (`HLA-A*02:01` extracts `HLA-A*02:01:01:01`, not `HLA-A*02:01`), and
+  `str_replace` replaces the whole allele — previously a
+  lower-resolution pattern replaced only the leading fields, corrupting
+  the GL String with dangling fields (`XXX:01`). `str_detect` results
+  are unchanged apart from the suffix fixes above.
+  ([\#43](https://github.com/k96nb01/immunogenetr_package/issues/43))
+
+- Fixed the matching/mismatching family (`HLA_mismatch_base`,
+  `HLA_mismatch_number`, `HLA_mismatch_logical`, `HLA_match_number`,
+  `HLA_match_summary_HCT`) aborting with a misleading “missing these
+  loci” error when a GL String vector contained an NA. A pair with
+  missing typing on either side now returns NA for that pair while the
+  rest of the cohort is processed normally.
+
+- The matching/mismatching functions now reject GL Strings containing
+  the `~` (haplotype) or `?` (possible gene location) delimiters, which
+  were previously accepted and silently mis-tokenized — a `?`-joined
+  pair of DRB3/4/5 alleles, for example, was read as a single allele,
+  producing wrong match counts. Ambiguous GL Strings containing `|` or
+  `/` were already rejected; the error message now covers all four.
+
+- Fixed null alleles written with a lowercase suffix (`HLA-A*01:01n`)
+  taking a different path through the mismatch calculation than their
+  uppercase equivalents. Both spellings are now treated identically;
+  lowercase suffixes are produced by `HLA_validate` and preserved by
+  `HLA_truncate`, so they occur in real cleaned data.
+
+- Added a `take_first_allele` argument to `HLA_validate` and
+  `HLA_columns_to_GLstring`. Both functions expect one allele per value;
+  a value containing GL String delimiters has always been silently
+  reduced to its first allele, and the default (`TRUE`) preserves that
+  behavior exactly. Setting `take_first_allele = FALSE` treats such
+  values as malformed input and raises an error naming the offending
+  value, for callers who want a GL String landing in a typing column
+  caught rather than truncated. One-allele-per-value is now stated in
+  both functions’ documentation.
+
+- `ambiguity_table_to_GLstring` now returns `character(0)` for a
+  zero-row table instead of erroring, so pipelines that expand a GL
+  String, filter rows, and reassemble compose without special-casing an
+  empty result.
+
 ## immunogenetr 1.4.0
 
 CRAN release: 2026-07-06

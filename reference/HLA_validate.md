@@ -9,10 +9,18 @@ retained. Other values, such as "blank" or "-" will be converted to NA
 values. This function is helpful for cleaning up the typing of an entire
 table of HLA values.
 
+Each value is expected to hold a single allele. If a value contains GL
+String delimiters ("^", "\|", "+", "~", "/" or "?"), only the first
+allele is retained (the historical behavior, controlled by
+\`take_first_allele\`); set \`take_first_allele = FALSE\` to treat such
+values as malformed input and get an error instead. Use the GL String
+functions (e.g. \`GLstring_expand_longer\`) to work with multi-allele
+values.
+
 ## Usage
 
 ``` r
-HLA_validate(data)
+HLA_validate(data, take_first_allele = TRUE)
 ```
 
 ## Arguments
@@ -20,6 +28,13 @@ HLA_validate(data)
 - data:
 
   A string containing an HLA allele.
+
+- take_first_allele:
+
+  A logical value. If TRUE (the default), a value containing GL String
+  delimiters is silently reduced to its first allele. If FALSE, such
+  values raise an error instead, for callers that want malformed
+  multi-allele input caught rather than truncated.
 
 ## Value
 

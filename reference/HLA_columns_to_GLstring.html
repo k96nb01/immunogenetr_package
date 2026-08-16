@@ -17,7 +17,7 @@ how these arguments are used.'></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">immunogenetr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +40,7 @@ how these arguments are used.'></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>HLA_columns_to_GLstring</h1>
-      <small class="dont-index">Source: <a href="https://github.com/k96nb01/immunogenetr_package/blob/v1.4.0/R/HLA_columns_to_GLstring.R" class="external-link"><code>R/HLA_columns_to_GLstring.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/k96nb01/immunogenetr_package/blob/master/R/HLA_columns_to_GLstring.R" class="external-link"><code>R/HLA_columns_to_GLstring.R</code></a></small>
       <div class="d-none name"><code>HLA_columns_to_GLstring.Rd</code></div>
     </div>
 
@@ -60,7 +60,8 @@ how these arguments are used.</p>
 <span>  <span class="va">HLA_typing_columns</span>,</span>
 <span>  prefix_to_remove <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  suffix_to_remove <span class="op">=</span> <span class="st">""</span>,</span>
-<span>  nomenclature <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  nomenclature <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  take_first_allele <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -70,7 +71,9 @@ how these arguments are used.</p>
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>A data frame with each row including an HLA typing result, with
-individual columns containing a single allele.</p></dd>
+individual columns containing a single allele. One allele per cell is the
+function's contract: a cell holding a GL String is reduced to its first
+allele (see `take_first_allele`).</p></dd>
 
 
 <dt id="arg-hla-typing-columns">HLA_typing_columns<a class="anchor" aria-label="anchor" href="#arg-hla-typing-columns"></a></dt>
@@ -100,6 +103,14 @@ molecular or serologic spelling of a locus (`"HLA-C"` and `"HLA-Cw"` are
 equivalent). Relabeling is structural only: `"ser"` strips any asterisk and
 uses the serologic locus name; `"mol"` uses the molecular locus name. No
 cross-nomenclature allele translation is performed.</p></dd>
+
+
+<dt id="arg-take-first-allele">take_first_allele<a class="anchor" aria-label="anchor" href="#arg-take-first-allele"></a></dt>
+<dd><p>A logical value, passed through to `HLA_validate`
+when each cell is cleaned. If TRUE (the default), a cell containing GL
+String delimiters ("^", "|", "+", "~", "/" or "?") is silently reduced to
+its first allele. If FALSE, such cells raise an error instead, for callers
+that want malformed multi-allele cells caught rather than truncated.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -133,7 +144,7 @@ cross-nomenclature allele translation is performed.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   mDQA11Cd.recipient &lt;chr&gt;, mDQA12Cd.recipient &lt;chr&gt;,</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   mDQB11cd.recipient &lt;chr&gt;, mDQB12cd.recipient &lt;chr&gt;, …</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># The `HLA_columns_to_GLString` function can be used to coerce typing spread across</span></span></span>
+<span class="r-in"><span><span class="co"># The `HLA_columns_to_GLstring` function can be used to coerce typing spread across</span></span></span>
 <span class="r-in"><span><span class="co"># multiple columns into a GL String:</span></span></span>
 <span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">HLA_typing_LIS</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span></span>
@@ -173,7 +184,7 @@ cross-nomenclature allele translation is performed.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

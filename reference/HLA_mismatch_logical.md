@@ -38,7 +38,8 @@ HLA_mismatch_logical(GL_string_recip, GL_string_donor, loci, direction)
 
 A logical value (\`TRUE\` or \`FALSE\`): - \`TRUE\` if there are
 mismatches between recipient and donor HLA alleles. - \`FALSE\` if there
-are no mismatches.
+are no mismatches. - \`NA\` if either GL String of a pair is NA (missing
+typing).
 
 ## Examples
 

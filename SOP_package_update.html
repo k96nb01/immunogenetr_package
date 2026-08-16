@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">immunogenetr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -30,7 +30,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Standard Operating Procedure: Updating the immunogenetr Package</h1>
-      <small class="dont-index">Source: <a href="https://github.com/k96nb01/immunogenetr_package/blob/v1.4.0/SOP_package_update.md" class="external-link"><code>SOP_package_update.md</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/k96nb01/immunogenetr_package/blob/master/SOP_package_update.md" class="external-link"><code>SOP_package_update.md</code></a></small>
     </div>
 
 <div id="standard-operating-procedure-updating-the-immunogenetr-package" class="section level1">
@@ -47,6 +47,57 @@
 <span><span class="fu">gitcreds</span><span class="fu">::</span><span class="fu">gitcreds_set</span><span class="op">(</span><span class="op">)</span>          <span class="co"># store the token locally</span></span></code></pre></div>
 <hr></div>
 <div class="section level2">
+<h2 id="release-cycle-at-a-glance">Release Cycle at a Glance<a class="anchor" aria-label="anchor" href="#release-cycle-at-a-glance"></a></h2>
+<p>The full path for one release. Each step links to its section below — read the detail the first time or when a step misbehaves. Commands run in RStudio.</p>
+<p><strong><a href="#phase-1-setting-up-a-development-session">Phase 1 — Set up</a></strong></p>
+<ul><li>Pull <code>master</code> (§1.2)</li>
+<li>
+<code>usethis::pr_init("dev")</code> (§1.3)</li>
+<li>
+<code>devtools::load_all()</code> (§1.4)</li>
+<li>
+<code>usethis::use_dev_version()</code> (§1.5)</li>
+</ul><p><strong><a href="#phase-2-making-changes">Phase 2 — Make changes</a></strong></p>
+<ul><li>Edit code + <code>devtools::document()</code> (§2.1–2.2)</li>
+<li>Write or update tests (§2.3)</li>
+<li>Update <code>NEWS.md</code> (§2.4)</li>
+<li>
+<code>devtools::check()</code> — 0/0/0 (§2.5)</li>
+<li>
+<code>covr::package_coverage()</code> + <code>covr::report()</code> (§2.6)</li>
+<li>Update vignette / README if touched (§2.7–2.8)</li>
+</ul><p><strong><a href="#phase-3-committing-pushing-and-opening-the-pr">Phase 3 — PR</a></strong></p>
+<ul><li>Commit (§3.1)</li>
+<li>AI verification pass (§3.2)</li>
+<li>
+<code>usethis::pr_push()</code> (§3.3)</li>
+<li>Wait for CI (R-CMD-check + coverage) green</li>
+</ul><p><strong><a href="#phase-4-preparing-a-cran-release">Phase 4 — CRAN prep</a></strong></p>
+<ul><li>
+<code>usethis::use_release_issue()</code> (§4.1)</li>
+<li>
+<code>devtools::check(remote = TRUE, manual = TRUE)</code> (§4.2)</li>
+<li>
+<code>urlchecker::url_check()</code> (§4.2)</li>
+<li>
+<code>devtools::check_win_devel()</code> (§4.2)</li>
+<li>Trigger <code>rhub.yaml</code> = <code>gcc16,donttest,nosuggests</code> (§4.2)</li>
+<li>Update <code>cran-comments.md</code> (§4.3)</li>
+<li>
+<code>usethis::use_version()</code> (§4.4)</li>
+</ul><p><strong><a href="#phase-5-merge-and-submit">Phase 5 — Merge &amp; submit</a></strong></p>
+<ul><li>Squash-merge the PR on GitHub (§5.1)</li>
+<li>
+<code>usethis::pr_finish()</code> — deletes <code>dev</code>, returns to <code>master</code> (§5.2)</li>
+<li>
+<code>devtools::submit_cran()</code> (§5.3)</li>
+<li>Click the confirmation email (§5.3)</li>
+</ul><p><strong><a href="#phase-6-after-cran-acceptance">Phase 6 — After acceptance</a></strong></p>
+<ul><li>
+<code>usethis::use_github_release()</code> (§6.1)</li>
+<li>Return to Phase 1 on a fresh <code>dev</code> (§6.2)</li>
+</ul><hr></div>
+<div class="section level2">
 <h2 id="phase-1-setting-up-a-development-session">Phase 1: Setting Up a Development Session<a class="anchor" aria-label="anchor" href="#phase-1-setting-up-a-development-session"></a></h2>
 <div class="section level3">
 <h3 id="id_11-open-the-project">1.1 Open the project<a class="anchor" aria-label="anchor" href="#id_11-open-the-project"></a></h3>
@@ -60,14 +111,12 @@
 </ol><p>The Git pane should briefly show a progress dialog, then return to a clean state with no pending changes.</p>
 </div>
 <div class="section level3">
-<h3 id="id_13-create-or-refresh-the-development-branch">1.3 Create or refresh the development branch<a class="anchor" aria-label="anchor" href="#id_13-create-or-refresh-the-development-branch"></a></h3>
-<p>Never work directly on <code>master</code>. Use a <code>dev</code> branch, which persists across release cycles.</p>
-<p><strong>If <code>dev</code> doesn’t exist yet (first cycle):</strong> From the R Console:</p>
+<h3 id="id_13-create-the-development-branch">1.3 Create the development branch<a class="anchor" aria-label="anchor" href="#id_13-create-the-development-branch"></a></h3>
+<p>Never work directly on <code>master</code>. Each release cycle uses a <strong>fresh <code>dev</code> branch created from the current <code>master</code> tip</strong>. The previous cycle’s <code>dev</code> was deleted at its squash-merge (§5.1), so at the start of every cycle you create <code>dev</code> anew — there is no long-lived <code>dev</code> to sync or reset.</p>
+<p>Create it from the R Console:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">pr_init</span><span class="op">(</span><span class="st">"dev"</span><span class="op">)</span></span></code></pre></div>
-<p>This creates a fresh <code>dev</code> branch from <code>master</code>, checks it out locally, sets up upstream tracking, and prepares the branch for development.</p>
-<p><strong>If <code>dev</code> exists from a previous cycle:</strong> In the RStudio Git pane, click the branch dropdown and switch to <code>dev</code>, then click <strong>Pull</strong> to sync any commits from the remote. You’re ready to continue.</p>
-<p>You don’t need to “reset” <code>dev</code> to <code>master</code> after a squash merge. The previous release’s content is on <code>master</code> (in the single squashed commit from §5.1) AND on <code>dev</code> (in the original individual commits) — both represent the same code. New work simply goes on top of <code>dev</code>’s existing history. When the next release PR is opened, GitHub will diff <code>dev</code> against <code>master</code> and show only the <em>new</em> changes; the previously-squashed commits don’t reappear in the PR diff. The PR’s commit list will be informational only.</p>
+<p>This creates <code>dev</code> from <code>master</code>, checks it out locally, and sets up upstream tracking. Because it branches from <code>master</code> — which holds exactly the last accepted release (plus any hotfix) — <code>dev</code> starts with zero drift by construction. There is no “reset after squash merge” step to remember: the squash lives in <code>master</code>, and the new <code>dev</code> inherits it directly.</p>
 <p>Confirm you’re on <code>dev</code>: the branch dropdown in the RStudio Git pane should read <code>dev</code>.</p>
 </div>
 <div class="section level3">
@@ -175,7 +224,20 @@
 <li>Click <strong>Commit</strong> in the dialog. The dialog can stay open for additional commits in the same session.</li>
 </ol></div>
 <div class="section level3">
-<h3 id="id_32-push-and-open-the-pr">3.2 Push and open the PR<a class="anchor" aria-label="anchor" href="#id_32-push-and-open-the-pr"></a></h3>
+<h3 id="id_32-ai-verification-pass-before-every-pr">3.2 AI verification pass (before every PR)<a class="anchor" aria-label="anchor" href="#id_32-ai-verification-pass-before-every-pr"></a></h3>
+<p>When development is done with an AI agent (Claude Code or similar), the agent must launch an <strong>independent review subagent</strong> over the full set of changes before the PR is opened — a fresh context that reads the changes cold, without the assumptions accumulated while writing them. Run it after the final commit on <code>dev</code> and before <code>usethis::pr_push()</code> (§3.3); fix any findings, commit, and re-run until the pass comes back clean.</p>
+<p>The review prompt should direct the subagent to:</p>
+<ul><li>run <code>git diff master...dev</code> and <code>git status</code> itself and read the surrounding code, not trust the author-agent’s description of the change;</li>
+<li>verify behavioral claims by <strong>executing code</strong>, not by reading it — and via <code>devtools::load_all()</code>, since a plain R session tests the <em>installed</em> release rather than the working tree;</li>
+<li>check that any code splitting or matching GL Strings handles the <strong>full delimiter set</strong> (<code>^</code>, <code>|</code>, <code>+</code>, <code>~</code>, <code>/</code>, <code>?</code>) — partial delimiter handling is the most common silent breakage in this codebase;</li>
+<li>check nomenclature-touching changes against <strong>both serologic and molecular forms</strong> (including <code>Cw</code>, <code>Bw4</code>/<code>Bw6</code>, and the DQA/DPA/DPB serologic names), plus expression suffixes and G/P group names where relevant;</li>
+<li>exercise exported functions with a <strong>single value, a vector, and <code>NA</code></strong> — vectorization and NA propagation regressions pass single-value tests;</li>
+<li>confirm the public surface is consistent: roxygen docs regenerated (<code>devtools::document()</code>), a <code>NEWS.md</code> entry that matches what the code actually does, new exports listed in the package overview (<code>R/immunogenetr-package.R</code>), and tests covering the changed behavior;</li>
+<li>confirm <strong>no references to private repositories, institutional systems, or PHI</strong> anywhere in the diff — this is a public repo, and that includes <code>Notes/</code>;</li>
+<li>report findings as <a href="file:line" class="uri">file:line</a> + issue + severity, or “no findings”.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="id_33-push-and-open-the-pr">3.3 Push and open the PR<a class="anchor" aria-label="anchor" href="#id_33-push-and-open-the-pr"></a></h3>
 <p><code>usethis::pr_push()</code> does both steps in one call. From the R Console, while on <code>dev</code>:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">pr_push</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -235,39 +297,31 @@
 <div class="section level4">
 <h4 id="custom-checklist-items-via-release_bullets">Custom checklist items via <code>release_bullets()</code>
 <a class="anchor" aria-label="anchor" href="#custom-checklist-items-via-release_bullets"></a></h4>
-<p>The checklist that <code>use_release_issue()</code> generates is general-purpose. To add immunogenetr-specific items that should appear in every release issue, define a <code>release_bullets()</code> function in <code>R/utils-release.R</code>:</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">release_bullets</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"Verify DQA1/DPB1/DPA1 handling matches the latest WHO update"</span>,</span>
-<span>    <span class="st">"Check `inst/CITATION` DOI still resolves"</span>,</span>
-<span>    <span class="st">"Confirm `Haplotype_frequencies` dataset is up to date"</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p>This function should not be exported — it’s internal infrastructure. <code>use_release_issue()</code> looks for it automatically when generating the checklist and appends any returned strings as additional bulleted items. Update the list as you discover new immunogenetr-specific things to remember during a release.</p>
+<p><code>use_release_issue()</code> generates a general-purpose checklist and automatically appends any strings returned by an internal <code>release_bullets()</code> function, if the package defines one. immunogenetr defines it in <code>R/utils-release.R</code> (internal, not exported), so every release issue also includes these immunogenetr-specific reminders:</p>
+<ul><li>Manually trigger the <code>rhub.yaml</code> workflow (Actions → R-hub → Run workflow → Branch: <code>dev</code>); confirm the only ERROR is the expected <code>nosuggests</code> vignette one disclosed in <code>cran-comments.md</code>.</li>
+<li>Run <code><a href="https://pkgdown.r-lib.org/reference/build_home.html" class="external-link">pkgdown::build_home()</a></code> and eyeball GL String rendering (no stray superscripts/italics from <code>^</code>/<code>*</code>) before merging.</li>
+<li>Confirm the DOI in <code>inst/CITATION</code> still resolves.</li>
+<li>Check <code>Haplotype_frequencies</code> and <code>HLA_dictionary</code> nomenclature against the latest WHO/IPD-IMGT/HLA release.</li>
+<li>Confirm the PDF manual builds (TinyTeX present and on PATH).</li>
+</ul><p>To add or change a reminder, edit the <code>release_bullets()</code> character vector in <code>R/utils-release.R</code>. Keep the function non-exported — <code>use_release_issue()</code> discovers it automatically.</p>
 </div>
 </div>
 <div class="section level3">
 <h3 id="id_42-run-comprehensive-checks">4.2 Run comprehensive checks<a class="anchor" aria-label="anchor" href="#id_42-run-comprehensive-checks"></a></h3>
 <p>Run the full check suite before submitting. Each item here is non-redundant — they catch different things.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># CRAN-flavored check: builds PDF manual, validates URLs against the live web,</span></span>
-<span><span class="co"># enables the same env vars CRAN's incoming check uses. Strict superset of</span></span>
-<span><span class="co"># devtools::check() — don't run both, just this one.</span></span>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># CRAN-flavored superset of devtools::check(): builds the PDF manual,</span></span>
+<span><span class="co"># validates URLs live, uses CRAN's check env vars. Don't also run check().</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">check</span><span class="op">(</span>remote <span class="op">=</span> <span class="cn">TRUE</span>, manual <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Explicit URL audit across DESCRIPTION/README/vignette/man.</span></span>
-<span><span class="co"># Faster and more thorough than the URL pass inside check(remote = TRUE).</span></span>
+<span><span class="co"># Thorough URL audit across DESCRIPTION/README/vignette/man.</span></span>
 <span><span class="fu">urlchecker</span><span class="fu">::</span><span class="fu">url_check</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Submit to win-builder for an R-devel check on Windows. CRAN's submission</span></span>
-<span><span class="co"># pipeline mirrors this; a clean win-builder result is the strongest</span></span>
-<span><span class="co"># pre-submission signal. Results are emailed (no local output) within</span></span>
-<span><span class="co"># ~30-90 min on weekdays. Required even on a Windows host — your local</span></span>
-<span><span class="co"># R is R-release, not R-devel.</span></span>
+<span><span class="co"># R-devel check on Windows via win-builder — strongest pre-submission signal</span></span>
+<span><span class="co"># (mirrors CRAN). Emailed in ~30-90 min; required even on a Windows host.</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">check_win_devel</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Also refresh the GitHub-derived metadata in <code>DESCRIPTION</code> before submitting. From R:</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_github_links</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>This pulls the GitHub remote URL and writes/updates the <code>URL:</code> and <code>BugReports:</code> fields in <code>DESCRIPTION</code>. It’s idempotent — if the fields are already correct, it does nothing. The canonical <code>use_release_issue()</code> checklist includes this as a conditional step.</p>
 <p>For R-hub multi-platform checks, <strong>don’t install rhub locally</strong> — modern <code>rhub</code> v2 runs on GitHub Actions runners anyway, so the local invocation is just a remote queue. Instead, trigger the existing <code>rhub.yaml</code> workflow from the Actions tab (<a href="https://github.com/k96nb01/immunogenetr_package/actions/workflows/rhub.yaml" class="external-link uri">https://github.com/k96nb01/immunogenetr_package/actions/workflows/rhub.yaml</a>) with <strong>workflow_dispatch</strong>. For the <code>config</code> input, the platforms that add coverage beyond the existing <code>R-CMD-check.yaml</code> GHA matrix are:</p>
@@ -291,17 +345,17 @@
 <p><code>devtools::check(manual = TRUE)</code> builds the PDF manual via TinyTeX. Three failure modes recur:</p>
 <ul><li>
 <p><strong><code>Cannot find pcrr8t.mf</code> (or similar missing font metric).</strong> Your local TinyTeX is on an older TeX Live year than the current CTAN — TeX Live’s yearly release cycle disallows cross-year installs from the same <code>tlmgr</code>. Fix with <code><a href="https://rdrr.io/pkg/tinytex/man/install_tinytex.html" class="external-link">tinytex::reinstall_tinytex()</a></code> (downloads ~100 MB, takes a few minutes). After reinstall, install the base 35 PostScript font packages explicitly:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">tinytex</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tinytex/man/tlmgr.html" class="external-link">tlmgr_install</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"psnfss"</span>, <span class="st">"courier"</span>, <span class="st">"helvetic"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><strong>Do not</strong> try to install <code>urw-base35</code> — it is not present in Yihui’s TLNet mirror (the rhub.yaml-and-tinytex default). The individual font packages above are the right install.</p>
 </li>
 <li>
 <p><strong><code>checking PDF version of manual ... WARNING</code> with <code>LaTeX errors found:</code> followed by nothing, plus a NOTE about a leftover <code>immunogenetr-manual.tex</code> in the check directory.</strong> Both messages have the same root cause: <code>makeindex</code> is missing from PATH, so the with-index PDF build can’t generate the <code>.ind</code> file and texi2pdf leaves intermediate artifacts behind. Fix:</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">tinytex</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/tinytex/man/tlmgr.html" class="external-link">tlmgr_install</a></span><span class="op">(</span><span class="st">"makeindex"</span><span class="op">)</span></span></code></pre></div>
 </li>
 </ul><p>After any TinyTeX change, <strong>wipe the check directory before re-running</strong> — its <code>.Rcheck</code> lingers between runs and can make the leftover-<code>.tex</code> NOTE persist even after the underlying issue is fixed:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/unlink.html" class="external-link">unlink</a></span><span class="op">(</span><span class="st">"../immunogenetr.Rcheck"</span>, recursive <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">check</span><span class="op">(</span>remote <span class="op">=</span> <span class="cn">TRUE</span>, manual <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Side note: <code>devtools::check()</code> may also print a <code>Warning in system2("quarto", "-V", ...)</code> about Quarto receiving <code>TMPDIR=...</code> as a positional argument. This is a Quarto CLI parsing bug on Windows, harmless, and unrelated to your package.</p>
@@ -342,7 +396,7 @@ This is the standard interaction between R-hub's `nosuggests` platform and vigne
 <h3 id="id_44-bump-the-version-number">4.4 Bump the version number<a class="anchor" aria-label="anchor" href="#id_44-bump-the-version-number"></a></h3>
 <p>This is the last step before merging. By bumping at the end of Phase 4 — after the comprehensive checks and <code>cran-comments.md</code> are settled — you avoid having to rebump if a check turns up something that requires reworking. This ordering matches the <code>use_release_issue()</code> checklist, which places <code>use_version()</code> under “Submit to CRAN,” not “Prepare for release.”</p>
 <p>Use <code>usethis::use_version()</code> to increment the version in <code>DESCRIPTION</code>:</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_version</span><span class="op">(</span><span class="st">"patch"</span><span class="op">)</span>   <span class="co"># e.g., 1.3.0 -&gt; 1.3.1</span></span>
 <span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_version</span><span class="op">(</span><span class="st">"minor"</span><span class="op">)</span>   <span class="co"># e.g., 1.3.0 -&gt; 1.4.0</span></span>
 <span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">use_version</span><span class="op">(</span><span class="st">"major"</span><span class="op">)</span>   <span class="co"># e.g., 1.3.0 -&gt; 2.0.0</span></span></code></pre></div>
@@ -356,16 +410,16 @@ This is the standard interaction between R-hub's `nosuggests` platform and vigne
 <h3 id="id_51-merge-the-pr">5.1 Merge the PR<a class="anchor" aria-label="anchor" href="#id_51-merge-the-pr"></a></h3>
 <ol style="list-style-type: decimal"><li>Go to the pull request on GitHub.</li>
 <li>Click the <strong>Squash and merge</strong> dropdown → “Squash and merge”. Squash keeps <code>master</code>’s history one-commit-per-release; the individual development commits are preserved in the PR record.</li>
-<li>Click <strong>Confirm squash and merge</strong>.</li>
-<li>
-<strong>Do NOT delete the remote <code>dev</code> branch</strong> — it is reused for the next release cycle (per §1.3 and §6.2).</li>
+<li>Click <strong>Confirm squash and merge</strong>. Ignore GitHub’s <strong>Delete branch</strong> button — <code>usethis::pr_finish()</code> in §5.2 removes <code>dev</code> for you.</li>
 </ol></div>
 <div class="section level3">
-<h3 id="id_52-sync-local-master">5.2 Sync local master<a class="anchor" aria-label="anchor" href="#id_52-sync-local-master"></a></h3>
-<p>Update your local repository so §5.3 works from the post-merge state. In the <strong>RStudio Git pane</strong>:</p>
-<ol style="list-style-type: decimal"><li>Click the branch dropdown and switch to <code>master</code>.</li>
-<li>Click the <strong>Pull</strong> button.</li>
-</ol><p>The pull brings down the squashed release commit you just merged. Don’t delete local <code>dev</code> either — same reason as in §5.1.</p>
+<h3 id="id_52-sync-master-and-delete-dev">5.2 Sync master and delete <code>dev</code>
+<a class="anchor" aria-label="anchor" href="#id_52-sync-master-and-delete-dev"></a></h3>
+<p>From R (you’ll still be on <code>dev</code> locally right after the merge), run:</p>
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">usethis</span><span class="fu">::</span><span class="fu">pr_finish</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>This switches you back to <code>master</code>, pulls the squashed release commit, and deletes <code>dev</code> both locally and on the remote (the PR is merged and you have push access). <code>dev</code> is single-use — it’s recreated fresh from <code>master</code> at the next cycle (§1.3). Deleting it here means no commits can land on <code>dev</code> during CRAN review, so the next cycle starts from exactly the accepted <code>master</code> — no drift by construction.</p>
+<p>You should now be on <code>master</code>, synced with origin, ready to submit.</p>
 </div>
 <div class="section level3">
 <h3 id="id_53-submit-to-cran">5.3 Submit to CRAN<a class="anchor" aria-label="anchor" href="#id_53-submit-to-cran"></a></h3>
@@ -387,7 +441,7 @@ This is the standard interaction between R-hub's `nosuggests` platform and vigne
 <strong>Human review</strong> — a CRAN reviewer eyeballs the submission for policy compliance. Most submissions pass without comment.</li>
 <li>
 <strong>Acceptance</strong> — <code>"package immunogenetr &lt;version&gt; has been published on CRAN"</code>. The package goes live on CRAN’s package index within a few hours of this email.</li>
-</ul><p>If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Fix the issue, run <code>usethis::use_version("patch")</code> to bump to the next patch (e.g., 1.3.0 → 1.3.1), update <code>cran-comments.md</code>, and resubmit (returning to §5.3).</p>
+</ul><p>If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Because <code>dev</code> was deleted at the merge (§5.1), recreate a working branch from the now-current <code>master</code> per §1.3 (<code>usethis::pr_init("dev")</code>), fix the issue there, run <code>usethis::use_version("patch")</code> to bump to the next patch (e.g., 1.4.0 → 1.4.1), update <code>cran-comments.md</code>, then take it through Phase 3 (PR → CI → squash-merge, deleting the branch again) and resubmit from <code>master</code> (§5.3). Working on a fresh branch off the submitted <code>master</code> keeps the fix minimal and the history clean.</p>
 <hr></div>
 </div>
 <div class="section level2">
@@ -401,8 +455,8 @@ This is the standard interaction between R-hub's `nosuggests` platform and vigne
 </div>
 <div class="section level3">
 <h3 id="id_62-begin-the-next-release-cycle">6.2 Begin the next release cycle<a class="anchor" aria-label="anchor" href="#id_62-begin-the-next-release-cycle"></a></h3>
-<p>To start work on the next release, return to Phase 1. The <code>dev</code> branch is reused across cycles — fast-forward (or, after a squash merge, reset) it to the new <code>master</code> tip per §1.3, reload the package per §1.4, and bump to a new dev version per §1.5. Any open issues or features you want to address fit into Phase 2 from there.</p>
-<p>This is the “loop close” of the SOP: every accepted release ends with the next one beginning on a refreshed <code>dev</code>.</p>
+<p>To start work on the next release, return to Phase 1. The old <code>dev</code> was deleted at the squash-merge (§5.1), so create a <strong>new</strong> <code>dev</code> from the current <code>master</code> tip per §1.3, reload the package per §1.4, and bump to a new dev version per §1.5. Any open issues or features you want to address fit into Phase 2 from there.</p>
+<p>This is the “loop close” of the SOP: every accepted release ends with the next one beginning on a fresh <code>dev</code> branched from the accepted <code>master</code>.</p>
 <hr></div>
 </div>
 <div class="section level2">
@@ -470,7 +524,7 @@ This is the standard interaction between R-hub's `nosuggests` platform and vigne
 <span id="cb33-4"><a href="#cb33-4" tabindex="-1"></a><span class="ex">gh</span> pr create <span class="at">--base</span> master <span class="at">--head</span> pkgdown-setup <span class="dt">\</span></span>
 <span id="cb33-5"><a href="#cb33-5" tabindex="-1"></a>  <span class="at">--title</span> <span class="st">"Add pkgdown documentation site"</span> <span class="dt">\</span></span>
 <span id="cb33-6"><a href="#cb33-6" tabindex="-1"></a>  <span class="at">--body</span> <span class="st">"Initial pkgdown setup; site deploys to immunogenetr.org on merge."</span></span></code></pre></div>
-<p>Once CI is green, merge to <code>master</code>. The <code>pkgdown.yaml</code> workflow now runs on every push to <code>master</code> and publishes to <code>gh-pages</code>. Confirm the first run completes successfully under the Actions tab. After the merge you can delete the <code>pkgdown-setup</code> branch — unlike <code>dev</code>, it is not reused.</p>
+<p>Once CI is green, merge to <code>master</code>. The <code>pkgdown.yaml</code> workflow now runs on every push to <code>master</code> and publishes to <code>gh-pages</code>. Confirm the first run completes successfully under the Actions tab. After the merge you can delete the <code>pkgdown-setup</code> branch — like every release branch, it is single-use.</p>
 <p>If your release-cycle <code>dev</code> branch already has unmerged work on it (so it has diverged from <code>master</code>), bring the pkgdown changes into it after this PR lands so <code>dev</code> stays current:</p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" tabindex="-1"></a><span class="fu">git</span> checkout dev</span>
 <span id="cb34-2"><a href="#cb34-2" tabindex="-1"></a><span class="fu">git</span> pull origin dev</span>
@@ -589,7 +643,7 @@ This is the standard interaction between R-hub's `nosuggests` platform and vigne
 <td><code>pkgdown::build_article("immunogenetr")</code></td>
 </tr><tr><td>Knit README</td>
 <td><code>devtools::build_readme()</code></td>
-</tr><tr><td>Create <code>dev</code> branch (first cycle)</td>
+</tr><tr><td>Create <code>dev</code> branch (each cycle, from <code>master</code>)</td>
 <td><code>usethis::pr_init("dev")</code></td>
 </tr><tr><td>Push branch + open PR creation page</td>
 <td><code>usethis::pr_push()</code></td>
@@ -655,7 +709,7 @@ This is the standard interaction between R-hub's `nosuggests` platform and vigne
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

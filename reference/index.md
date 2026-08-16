@@ -2,6 +2,8 @@
 
 ## All functions
 
+- [`GLstring_drop_non_expressed()`](https://immunogenetr.org/reference/GLstring_drop_non_expressed.md)
+  : GLstring_drop_non_expressed
 - [`GLstring_expand_longer()`](https://immunogenetr.org/reference/GLstring_expand_longer.md)
   : GLstring_expand_longer
 - [`GLstring_gene_copies_combine()`](https://immunogenetr.org/reference/GLstring_gene_copies_combine.md)

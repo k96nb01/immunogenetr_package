@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">immunogenetr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,7 @@
       <h1>Getting Started with immunogenetr</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/k96nb01/immunogenetr_package/blob/v1.4.0/vignettes/immunogenetr.Rmd" class="external-link"><code>vignettes/immunogenetr.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/k96nb01/immunogenetr_package/blob/master/vignettes/immunogenetr.Rmd" class="external-link"><code>vignettes/immunogenetr.Rmd</code></a></small>
       <div class="d-none name"><code>immunogenetr.Rmd</code></div>
     </div>
 
@@ -539,6 +539,57 @@ boundaries:</p>
 <code class="sourceCode R"><span><span class="co"># But won't falsely match a longer allele number.</span></span>
 <span><span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html" class="external-link">str_detect</a></span><span class="op">(</span><span class="st">"HLA-A*02:149:01"</span>, <span class="fu"><a href="../reference/GLstring_regex.html">GLstring_regex</a></span><span class="op">(</span><span class="st">"HLA-A*02:14"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; [1] FALSE</span></span></code></pre>
+<p>Expression suffixes and G/P groups are handled on a simple rule: a
+search without a suffix matches the allele regardless of expression
+status or group membership, while a search carrying a suffix matches
+only alleles with that same letter, at the same or higher resolution. A
+G or P group search matches the group name only, not its member
+alleles:</p>
+<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># An unsuffixed search finds the null allele.</span></span>
+<span><span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html" class="external-link">str_detect</a></span><span class="op">(</span><span class="st">"HLA-A*24:09N+HLA-A*02:01"</span>, <span class="fu"><a href="../reference/GLstring_regex.html">GLstring_regex</a></span><span class="op">(</span><span class="st">"HLA-A*24:09"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] TRUE</span></span></code></pre>
+<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># A null search finds the null allele at higher resolution, but never an</span></span>
+<span><span class="co"># expressed allele.</span></span>
+<span><span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html" class="external-link">str_detect</a></span><span class="op">(</span><span class="st">"HLA-A*01:01:03N"</span>, <span class="fu"><a href="../reference/GLstring_regex.html">GLstring_regex</a></span><span class="op">(</span><span class="st">"HLA-A*01:01N"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] TRUE</span></span></code></pre>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html" class="external-link">str_detect</a></span><span class="op">(</span><span class="st">"HLA-A*01:01:03"</span>, <span class="fu"><a href="../reference/GLstring_regex.html">GLstring_regex</a></span><span class="op">(</span><span class="st">"HLA-A*01:01N"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] FALSE</span></span></code></pre>
+<p>The matched text is always the full allele as it appears in the GL
+String, so <code><a href="https://stringr.tidyverse.org/reference/str_extract.html" class="external-link">stringr::str_extract()</a></code> reports what was actually
+found:</p>
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_extract.html" class="external-link">str_extract</a></span><span class="op">(</span><span class="va">gl</span>, <span class="fu"><a href="../reference/GLstring_regex.html">GLstring_regex</a></span><span class="op">(</span><span class="st">"HLA-A*02:01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] "HLA-A*02:01:01"</span></span></code></pre>
+<p>The <code>HLA-</code> prefix is optional in both the allele and the
+GL String — wild-caught GL Strings often omit it — so an allele in
+either convention matches a GL String in either convention:</p>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_detect.html" class="external-link">str_detect</a></span><span class="op">(</span><span class="st">"A*02:01:01+A*68:01"</span>, <span class="fu"><a href="../reference/GLstring_regex.html">GLstring_regex</a></span><span class="op">(</span><span class="st">"HLA-A*02:01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] TRUE</span></span></code></pre>
+<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">stringr</span><span class="fu">::</span><span class="fu"><a href="https://stringr.tidyverse.org/reference/str_extract.html" class="external-link">str_extract</a></span><span class="op">(</span><span class="va">gl</span>, <span class="fu"><a href="../reference/GLstring_regex.html">GLstring_regex</a></span><span class="op">(</span><span class="st">"A*02:01"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] "HLA-A*02:01:01"</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="removing-non-expressed-alleles">Removing non-expressed alleles<a class="anchor" aria-label="anchor" href="#removing-non-expressed-alleles"></a>
+</h3>
+<p>Because an unsuffixed search matches expression variants, workflows
+that should ignore non-expressed alleles can remove them first with
+<code><a href="../reference/GLstring_drop_non_expressed.html">GLstring_drop_non_expressed()</a></code>. The default removes N, S and
+C alleles, which produce no cell-surface protein; the
+<code>suffixes</code> argument adjusts that judgement:</p>
+<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># The null allele is removed; a gene copy or locus with nothing left collapses</span></span>
+<span><span class="co"># cleanly.</span></span>
+<span><span class="fu"><a href="../reference/GLstring_drop_non_expressed.html">GLstring_drop_non_expressed</a></span><span class="op">(</span><span class="st">"HLA-A*01:01N+HLA-A*02:01^HLA-B*07:02/HLA-B*07:02N+HLA-B*08:01"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] "HLA-A*02:01^HLA-B*07:02+HLA-B*08:01"</span></span></code></pre>
+<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Remove only null alleles.</span></span>
+<span><span class="fu"><a href="../reference/GLstring_drop_non_expressed.html">GLstring_drop_non_expressed</a></span><span class="op">(</span><span class="st">"HLA-A*01:01N+HLA-A*23:38S"</span>, suffixes <span class="op">=</span> <span class="st">"N"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">#&gt; [1] "HLA-A*23:38S"</span></span></code></pre>
 </div>
 </div>
 <div class="section level2">
@@ -548,13 +599,13 @@ boundaries:</p>
 are inconvenient. <code><a href="../reference/HLA_column_repair.html">HLA_column_repair()</a></code> converts between
 WHO-standard (<code>HLA-A*</code>) and tidyverse-friendly
 (<code>HLA_A</code>) formats:</p>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># GLstring_genes returns tidyverse-friendly names by default.</span></span>
 <span><span class="va">repaired</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/GLstring_genes.html">GLstring_genes</a></span><span class="op">(</span><span class="va">single_patient</span>, <span class="st">"GL_string"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">repaired</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">#&gt; [1] "HLA_A"    "HLA_C"    "HLA_B"    "HLA_DRB5" "HLA_DRB1" "HLA_DQA1" "HLA_DQB1"</span></span>
 <span><span class="co">#&gt; [8] "HLA_DPA1" "HLA_DPB1"</span></span></code></pre>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Convert back to WHO format with asterisks.</span></span>
 <span><span class="va">who_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/HLA_column_repair.html">HLA_column_repair</a></span><span class="op">(</span><span class="va">repaired</span>, format <span class="op">=</span> <span class="st">"WHO"</span>, asterisk <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">who_names</span><span class="op">)</span></span></code></pre></div>
@@ -567,7 +618,7 @@ WHO-standard (<code>HLA-A*</code>) and tidyverse-friendly
 <p>The <code><a href="../reference/read_HML.html">read_HML()</a></code> function extracts GL Strings from HML
 (HLA Markup Language) files, which are a standard format for reporting
 HLA typing results from next-generation sequencing:</p>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># immunogenetr ships with two example HML files.</span></span>
 <span><span class="va">hml_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"HML_1.hml"</span>, package <span class="op">=</span> <span class="st">"immunogenetr"</span><span class="op">)</span></span>
 <span><span class="va">hml_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/read_HML.html">read_HML</a></span><span class="op">(</span><span class="va">hml_path</span><span class="op">)</span></span>
@@ -619,7 +670,7 @@ validated according to local regulations.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

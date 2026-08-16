@@ -54,7 +54,11 @@ HLA_mismatch_base(
 A character vector, where each element is a string summarizing the
 mismatches for the specified loci. The strings are formatted as
 comma-separated locus mismatch entries if multiple loci are supplied, or
-simple GL Strings if a single locus is supplied.
+simple GL Strings if a single locus is supplied. A pair in which either
+GL String is NA returns NA for that pair rather than erroring, so
+cohorts with missing typing can be processed in one call. Note that in
+single-locus mode NA is also the no-mismatch result; the derivative
+functions distinguish the two cases from their inputs.
 
 ## Examples
 

@@ -17,7 +17,7 @@ called directly; it is better to use one of the derivative functions."></head><b
 
     <a class="navbar-brand me-2" href="../index.html">immunogenetr</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +40,7 @@ called directly; it is better to use one of the derivative functions."></head><b
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>HLA_mismatch_base</h1>
-      <small class="dont-index">Source: <a href="https://github.com/k96nb01/immunogenetr_package/blob/v1.4.0/R/HLA_mismatch_base.R" class="external-link"><code>R/HLA_mismatch_base.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/k96nb01/immunogenetr_package/blob/master/R/HLA_mismatch_base.R" class="external-link"><code>R/HLA_mismatch_base.R</code></a></small>
       <div class="d-none name"><code>HLA_mismatch_base.Rd</code></div>
     </div>
 
@@ -100,7 +100,11 @@ alleles are treated as single occurrences without duplication.</p></dd>
     <p>A character vector, where each element is a string summarizing the
 mismatches for the specified loci. The strings are formatted as
 comma-separated locus mismatch entries if multiple loci are supplied, or
-simple GL Strings if a single locus is supplied.</p>
+simple GL Strings if a single locus is supplied. A pair in which either
+GL String is NA returns NA for that pair rather than erroring, so cohorts
+with missing typing can be processed in one call. Note that in
+single-locus mode NA is also the no-mismatch result; the derivative
+functions distinguish the two cases from their inputs.</p>
     </div>
 
     <div class="section level2">
@@ -127,7 +131,7 @@ simple GL Strings if a single locus is supplied.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

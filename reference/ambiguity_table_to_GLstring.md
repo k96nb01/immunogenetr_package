@@ -29,7 +29,10 @@ ambiguity_table_to_GLstring(data, remove_duplicates = FALSE)
 ## Value
 
 A GL String representing the combined gene locations, loci, genotype
-ambiguities, genotypes, and haplotypes.
+ambiguities, genotypes, and haplotypes. A zero-row table returns
+\`character(0)\`, so filtered pipelines (e.g. \`GLstring_expand_longer\`
+followed by a \`dplyr::filter\` that removes every row) compose without
+special-casing.
 
 ## Examples
 
