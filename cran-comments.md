@@ -1,6 +1,8 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 0 notes
+0 errors | 0 warnings | 1 note (local Windows only, an artifact of the check machinery; explained below)
+
+The local Windows check shows one NOTE at "checking for non-standard things in the check directory": a directory literally named `'NULL'`. This is an artifact of the R 4.6.1 check machinery on Windows, not of the package: `tools:::setRlibs()` passes the sh-quoted value `R_LIBS_USER='NULL'` unstripped to Rterm.exe, which creates the user library directory at startup. It reproduces with an empty package and does not appear on any other test platform.
 
 ## Test environments
 - local Windows 11 (R 4.6.1)
