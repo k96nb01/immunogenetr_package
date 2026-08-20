@@ -66,6 +66,7 @@ The full path for one release. Each step links to its section below — read the
 **[Phase 6 — After acceptance](#phase-6-after-cran-acceptance)**
 
 - `usethis::use_github_release()` (§6.1)
+- Move the `CRAN` tag to the accepted commit (§6.1a)
 - Return to Phase 1 on a fresh `dev` (§6.2)
 
 ---
@@ -519,6 +520,17 @@ usethis::use_github_release()
 
 This creates a Git tag and a corresponding GitHub release, using information from `CRAN-SUBMISSION` to populate the release notes. It also deletes the `CRAN-SUBMISSION` file.
 
+### 6.1a Move the CRAN tag
+
+The repository keeps a moving `CRAN` tag that always points at the commit currently released on CRAN (the same commit `use_github_release()` just tagged as `vX.Y.Z`). Update it from the Terminal, while on `master` (which at this point holds exactly the accepted release):
+
+```bash
+git tag -f CRAN master
+git push --force origin CRAN
+```
+
+The force flags are required because moving an existing tag is a non-fast-forward update; that is expected for this tag and safe — the versioned `vX.Y.Z` tags are the permanent history, `CRAN` is only a convenience pointer.
+
 ### 6.2 Begin the next release cycle
 
 To start work on the next release, return to Phase 1. The old `dev` was deleted at the squash-merge (§5.1), so create a **new** `dev` from the current `master` tip per §1.3, reload the package per §1.4, and bump to a new dev version per §1.5. Any open issues or features you want to address fit into Phase 2 from there.
@@ -731,6 +743,7 @@ Once §A.1–A.8 are done, the site is fully self-maintaining for normal develop
 | Bump to dev version | `usethis::use_dev_version()` |
 | Submit to CRAN | `devtools::submit_cran()` |
 | Create GitHub release | `usethis::use_github_release()` |
+| Move CRAN tag after acceptance | `git tag -f CRAN master && git push --force origin CRAN` |
 | Build pkgdown site locally | `pkgdown::build_site()` |
 | Build pkgdown reference only | `pkgdown::build_reference()` |
 | Build pkgdown articles only | `pkgdown::build_articles()` |

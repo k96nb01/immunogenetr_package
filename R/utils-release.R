@@ -39,6 +39,15 @@ release_bullets <- function() {
     # check(manual = TRUE) already exercises this, but the PDF manual build
     # silently needs a TeX distribution (TinyTeX) on PATH -- worth an explicit
     # confirmation so a missing/broken TeX setup is caught before submit.
-    "Confirm the PDF manual builds (TinyTeX present and on PATH)"
+    "Confirm the PDF manual builds (TinyTeX present and on PATH)",
+
+    # The moving CRAN tag is not part of the standard usethis checklist, so
+    # it was missed for the 1.2.0-1.4.0 releases. It marks the commit
+    # currently on CRAN.
+    paste(
+      "After acceptance, move the `CRAN` tag to the accepted commit:",
+      "`git tag -f CRAN master && git push --force origin CRAN`",
+      "(SOP section 6.1a)"
+    )
   )
 }
