@@ -10,7 +10,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/k96nb01/immunogenetr_package/blob/master/inst/CITATION)
+[`inst/CITATION`](https://github.com/k96nb01/immunogenetr_package/blob/v1.5.0/inst/CITATION)
 
 Coskun B, Brown N (2026). “Immunogenetr: A comprehensive toolkit for
 clinical HLA informatics.” *Human Immunology*, **87**(1), 111619.

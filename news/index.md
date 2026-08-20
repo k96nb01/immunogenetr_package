@@ -2,6 +2,8 @@
 
 ## immunogenetr 1.5.0
 
+CRAN release: 2026-08-19
+
 - Fixed `GLstring_regex` producing patterns that could not match alleles
   carrying a WHO expression suffix (N, Q, L, S, C, A) or a G/P group
   letter
