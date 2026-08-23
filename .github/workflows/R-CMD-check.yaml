@@ -13,6 +13,14 @@ jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
 
+    # Backstop against a hung setup step. GitHub's default is 6 hours, which on
+    # 2026-08-19 let six jobs stall in setup-r@v2 and burn 2,242 Linux minutes.
+    # Applies per matrix leg, not per run. Legs normally finish in 2-10 min, but
+    # sized well above the slowest observed *successful* leg (ubuntu-latest
+    # release, 44.8 min, on that same degraded day) so a slow-but-healthy run
+    # is never failed.
+    timeout-minutes: 75
+
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
 
     strategy:

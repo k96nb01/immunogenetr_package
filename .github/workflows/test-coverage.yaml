@@ -12,6 +12,9 @@ permissions: read-all
 jobs:
   test-coverage:
     runs-on: ubuntu-latest
+    # Normally ~3 min. Generous for the same reason as pkgdown: this job calls
+    # setup-r@v2, which stalled for 6 hours on 2026-08-19.
+    timeout-minutes: 60
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
