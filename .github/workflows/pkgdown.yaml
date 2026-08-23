@@ -15,6 +15,10 @@ permissions: read-all
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
+    # Normally ~3 min. Generous because this job calls setup-r@v2, the step that
+    # stalled for 6 hours on 2026-08-19; a slow-but-recovering setup-r has been
+    # observed at 43 min.
+    timeout-minutes: 60
     # Only restrict concurrency for non-PR jobs
     concurrency:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
