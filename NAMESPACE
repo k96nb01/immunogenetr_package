@@ -25,7 +25,6 @@ export(ambiguity_table_to_GLstring)
 export(read_HML)
 importFrom(cli,cli_abort)
 importFrom(dplyr,
-  "%>%",
   across,
   bind_rows,
   contains,

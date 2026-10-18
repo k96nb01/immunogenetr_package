@@ -33,7 +33,6 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr across
 #' @importFrom dplyr summarize
-#' @importFrom dplyr %>%
 #' @importFrom dplyr contains
 #' @importFrom dplyr na_if
 #' @importFrom stringr str_detect
@@ -58,20 +57,19 @@ GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE)
   }
 
   # Copy GL String to a new ambiguity column.
-  data %>%
+  result <- data |>
     mutate(across({{ cols2mod }},
       ~ as.character(.),
       .names = "{col}_genotype_ambiguity"
-    )) %>%
+    )) |>
     # Keep the first genotype ambiguity in the original columns.
-    mutate(across({{ cols2mod }}, ~ str_extract(., "[^|]+"))) %>%
+    mutate(across({{ cols2mod }}, ~ str_extract(., "[^|]+"))) |>
     # Remove the first genotype and its trailing pipe from the ambiguity columns,
     # then convert empty strings to NA.
-    mutate(across(ends_with("_genotype_ambiguity"), ~ na_if(str_replace(., "^[^|]+\\|?", ""), ""))) %>%
-    # Drop the ambiguity columns if not wanted
-    {
-      if (keep_ambiguities) . else select(., -contains("ambiguity"))
-    }
+    mutate(across(ends_with("_genotype_ambiguity"), ~ na_if(str_replace(., "^[^|]+\\|?", ""), "")))
+
+  # Drop the ambiguity columns if not wanted.
+  if (keep_ambiguities) result else select(result, -contains("ambiguity"))
 }
 
 globalVariables(c("X", "Y", "ends_with"))

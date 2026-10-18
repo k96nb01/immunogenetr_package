@@ -43,7 +43,7 @@
 #'
 #' # Cleaning up the entire table. Note that blank values will be converted to "NA".
 #' library(dplyr)
-#' HLA_typing_LIS %>% mutate(
+#' HLA_typing_LIS |> mutate(
 #'   across(
 #'     mA1Cd.recipient:mDPB12cd.recipient,
 #'     ~ HLA_validate(.)
@@ -52,7 +52,6 @@
 #' @export
 #'
 #' @importFrom cli cli_abort
-#' @importFrom dplyr %>%
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_extract
 
@@ -70,7 +69,7 @@ HLA_validate <- function(data, take_first_allele = TRUE) {
     }
   }
 
-  data %>%
-    str_extract("(HLA-)?([:alnum:]*)(\\*)?[:digit:]{1,}:?[:digit:]*:?[:digit:]*:?[:digit:]*([GPLSCAQNgplscaqn](?!.))*") %>%
+  data |>
+    str_extract("(HLA-)?([:alnum:]*)(\\*)?[:digit:]{1,}:?[:digit:]*:?[:digit:]*:?[:digit:]*([GPLSCAQNgplscaqn](?!.))*") |>
     as.character()
 }

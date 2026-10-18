@@ -44,17 +44,16 @@
 #' # The `HLA_columns_to_GLstring` function can be used to coerce typing spread across
 #' # multiple columns into a GL String:
 #' library(dplyr)
-#' HLA_typing_LIS %>%
+#' HLA_typing_LIS |>
 #'   mutate(
 #'     GL_string = HLA_columns_to_GLstring(
-#'       ., # Note that if this function is used inside a `mutate` call "." will have to be
-#'       # used as the first argument to extract data from the working data frame.
+#'       pick(everything()),
 #'       HLA_typing_columns = mA1Cd.recipient:mDPB12cd.recipient,
 #'       prefix_to_remove = "m",
 #'       suffix_to_remove = "Cd.recipient"
 #'     ),
 #'     .after = patient
-#'   ) %>%
+#'   ) |>
 #'   select(patient, GL_string)
 #'
 #' @export

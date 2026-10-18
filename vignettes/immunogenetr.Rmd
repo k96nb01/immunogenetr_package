@@ -64,15 +64,18 @@ head(HLA_typing_1, 3)
 ```
 
 The `HLA_columns_to_GLstring()` function converts these columns into a single
-GL String per individual. When used inside `mutate()`, pass `.` as the first
-argument to reference the working data frame:
+GL String per individual. When used inside `mutate()`, use `pick(everything())`
+as the first argument to reference the working data frame:
 ```{r}
-HLA_typing_GL <- HLA_typing_1 %>%
+HLA_typing_GL <- HLA_typing_1 |>
   # Convert all typing columns (A1 through DPB1_2) into a GL String.
   mutate(
-    GL_string = HLA_columns_to_GLstring(., HLA_typing_columns = A1:DPB1_2),
+    GL_string = HLA_columns_to_GLstring(
+      pick(everything()),
+      HLA_typing_columns = A1:DPB1_2
+    ),
     .after = patient
-  ) %>%
+  ) |>
   # Keep only patient ID and the new GL String column.
   select(patient, GL_string)
 
@@ -112,8 +115,8 @@ Let's set up a recipient/donor pair:
 
 ```{r}
 # Patient 7 is the recipient, patient 9 is the donor.
-recip_gl <- HLA_typing_GL %>% filter(patient == 7) %>% pull(GL_string)
-donor_gl <- HLA_typing_GL %>% filter(patient == 9) %>% pull(GL_string)
+recip_gl <- HLA_typing_GL |> filter(patient == 7) |> pull(GL_string)
+donor_gl <- HLA_typing_GL |> filter(patient == 9) |> pull(GL_string)
 ```
 
 ### Is there a mismatch? (`HLA_mismatch_logical`)
@@ -180,15 +183,15 @@ A common workflow is comparing one recipient against multiple potential donors:
 
 ```{r}
 # Patient 3 is the recipient; compare against all 10 donors.
-recipient <- HLA_typing_GL %>%
-  filter(patient == 3) %>%
-  select(GL_string) %>%
+recipient <- HLA_typing_GL |>
+  filter(patient == 3) |>
+  select(GL_string) |>
   rename(GL_string_recip = GL_string)
 
-donors <- HLA_typing_GL %>%
-  rename(GL_string_donor = GL_string, donor = patient) %>%
+donors <- HLA_typing_GL |>
+  rename(GL_string_donor = GL_string, donor = patient) |>
   # Cross-join to pair recipient with each donor.
-  cross_join(recipient) %>%
+  cross_join(recipient) |>
   # Calculate 8/8 match grade for each pair.
   mutate(
     match_8of8 = HLA_match_summary_HCT(
@@ -197,11 +200,11 @@ donors <- HLA_typing_GL %>%
       match_grade = "Xof8"
     ),
     .after = donor
-  ) %>%
+  ) |>
   # Sort best matches first.
   arrange(desc(match_8of8))
 
-donors %>% select(donor, match_8of8)
+donors |> select(donor, match_8of8)
 ```
 
 ## Working with HLA allele names

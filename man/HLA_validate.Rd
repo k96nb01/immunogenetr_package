@@ -52,7 +52,7 @@ print(HLA_typing_LIS)
 
 # Cleaning up the entire table. Note that blank values will be converted to "NA".
 library(dplyr)
-HLA_typing_LIS \%>\% mutate(
+HLA_typing_LIS |> mutate(
   across(
     mA1Cd.recipient:mDPB12cd.recipient,
     ~ HLA_validate(.)

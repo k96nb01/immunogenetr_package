@@ -18,7 +18,7 @@
 #'
 #' # The `HLA_prefix_add` function can be used to add the correct HLA prefixes to the table:
 #' library(dplyr)
-#' HLA_typing_LIS %>% mutate(
+#' HLA_typing_LIS |> mutate(
 #'   across(
 #'     mA1Cd.recipient:mA2Cd.recipient,
 #'     ~ HLA_prefix_add(., "HLA-A*")
@@ -29,17 +29,16 @@
 #'
 #' @importFrom stringr str_replace
 #' @importFrom dplyr mutate
-#' @importFrom dplyr %>%
 
 HLA_prefix_add <- function(data, prefix = "HLA-") {
   # Validate input
   check_gl_string(data, "data")
 
   # Expand the allele of GL String
-  data %>%
-    GLstring_expand_longer() %>%
+  data |>
+    GLstring_expand_longer() |>
     # Add string to beginning of typing
-    mutate(value = str_replace(value, "^", prefix)) %>%
+    mutate(value = str_replace(value, "^", prefix)) |>
     # Collapse the GL String
     ambiguity_table_to_GLstring()
 }

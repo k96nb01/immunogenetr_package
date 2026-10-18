@@ -18,7 +18,6 @@
 #'
 #' @importFrom cli cli_abort
 #' @importFrom xml2 read_xml
-#' @importFrom dplyr %>%
 #' @importFrom xml2 xml_find_all
 #' @importFrom xml2 xml_ns
 #' @importFrom purrr map
@@ -88,12 +87,12 @@ read_HML <- function(HML_file) {
   combined <- bind_rows(GL_strings)
 
   # Some implementations of HML put the same locus in multiple nodes; this combines them with "+" to form a compliant GL String
-  reduced <- combined %>%
-    mutate(locus = str_extract(glstring, "[^//*]+")) %>%
-    mutate(glstring = paste0(glstring, collapse = "+"), .by = c(sampleID, locus)) %>%
+  reduced <- combined |>
+    mutate(locus = str_extract(glstring, "[^//*]+")) |>
+    mutate(glstring = paste0(glstring, collapse = "+"), .by = c(sampleID, locus)) |>
     # Clean up values
-    distinct(sampleID, glstring, locus) %>%
-    filter(!is.na(sampleID) & !is.na(glstring)) %>%
+    distinct(sampleID, glstring, locus) |>
+    filter(!is.na(sampleID) & !is.na(glstring)) |>
     select(-locus)
 
   # Combine to a single GL String per sample

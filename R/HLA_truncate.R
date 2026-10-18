@@ -32,7 +32,7 @@
 #'
 #' # The `HLA_truncate` function can be used to truncate the typing results to 2 fields:
 #' library(dplyr)
-#' Haplotype_frequencies %>% mutate(
+#' Haplotype_frequencies |> mutate(
 #'   across(
 #'     "HLA-A":"HLA-DPB1",
 #'     ~ HLA_truncate(

@@ -28,7 +28,7 @@ print(HLA_typing_1)
 # The `HLA_prefix_remove` function can be used to get each column to have only the
 # colon-separated fields:
 library(dplyr)
-HLA_typing_1 \%>\% mutate(
+HLA_typing_1 |> mutate(
   across(
     A1:DPB1_2,
     ~ HLA_prefix_remove(.)
