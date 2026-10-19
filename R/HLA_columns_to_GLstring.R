@@ -59,6 +59,7 @@
 #' @export
 #'
 #' @importFrom dplyr select
+#' @importFrom dplyr ungroup
 #' @importFrom cli cli_abort
 #' @importFrom stringi stri_startswith_fixed stri_endswith_fixed
 
@@ -67,7 +68,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   check_data_frame(data, "data")
 
   # Resolve the tidyselect argument to a character vector of column names.
-  col2mod <- names(select(data, {{ HLA_typing_columns }}))
+  col2mod <- names(select(ungroup(data), {{ HLA_typing_columns }}))
 
   n_rows <- nrow(data)
   n_cols <- length(col2mod)

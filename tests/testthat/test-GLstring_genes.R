@@ -134,3 +134,14 @@ test_that("GLstring_genes handles NA entries in the GL_string column", {
   expect_true(is.na(result$HLA_A[2]))
   expect_true(is.na(result$HLA_B[2]))
 })
+
+test_that("GLstring_genes does not pick up grouping variables", {
+  df <- tibble::tibble(
+    grp = c("x", "y"),
+    gl = c("HLA-A*01:01+HLA-A*02:01^HLA-B*07:02", "HLA-A*03:01^HLA-B*44:02")
+  )
+  expect_equal(
+    GLstring_genes(dplyr::group_by(df, grp), gl),
+    GLstring_genes(df, gl)
+  )
+})

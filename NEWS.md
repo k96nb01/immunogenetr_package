@@ -1,5 +1,7 @@
 # immunogenetr (development version)
 
+* Fixed `GLstring_genotype_ambiguity` erroring on grouped data frames ("Can't select columns that don't exist"): the grouping variables were being added to the columns to process. It now works on grouped input and preserves the grouping. `GLstring_genes`, `GLstring_gene_copies_combine` and `HLA_columns_to_GLstring` resolved their column arguments the same way and also errored or misbehaved on grouped input; they no longer pick up grouping variables.
+
 # immunogenetr 1.5.0
 
 * Fixed `GLstring_regex` producing patterns that could not match alleles carrying a WHO expression suffix (N, Q, L, S, C, A) or a G/P group letter (#43). An allele supplied without a suffix now matches regardless of expression status (`HLA-A*24:09` matches `HLA-A*24:09N`) and matches G and P group names, which include the allele in their name (`HLA-A*01:01:01` matches `HLA-A*01:01:01G`). An allele supplied with a suffix matches only alleles carrying that same letter, at the same or higher resolution, so a name truncated by `HLA_truncate` (which keeps the suffix) once again finds the allele it came from: `HLA-A*01:01N` matches `HLA-A*01:01:03N`, but never `HLA-A*01:01:03` or `HLA-A*01:01:03Q`. A G/P query still requires the G/P letter in the GL String. Code relying on suffixed alleles being invisible to unsuffixed searches will see new matches; `GLstring_drop_non_expressed` (also in this release) removes non-expressed alleles beforehand where that behavior was wanted.

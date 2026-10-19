@@ -60,3 +60,16 @@ test_that("GLstring_gene_copies_combine works with multiple loci", {
   expect_match(result$HLA_B[1], "HLA-B\\*07:01\\+HLA-B\\*07:02")
   expect_match(result$HLA_B[2], "HLA-B\\*08:01\\+HLA-B\\*08:02")
 })
+
+test_that("GLstring_gene_copies_combine does not pick up grouping variables", {
+  df <- tibble::tibble(
+    sample = c("s1", "s2"),
+    grp = c("a", "b"),
+    A1 = c("HLA-A*01:01", "HLA-A*03:01"),
+    A2 = c("HLA-A*02:01", "HLA-A*24:02")
+  )
+  expect_equal(
+    GLstring_gene_copies_combine(dplyr::group_by(df, grp), c(A1, A2), sample_column = sample),
+    GLstring_gene_copies_combine(df, c(A1, A2), sample_column = sample)
+  )
+})
