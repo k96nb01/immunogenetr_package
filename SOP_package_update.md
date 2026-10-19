@@ -60,14 +60,15 @@ The full path for one release. Each step links to its section below — read the
 
 - Squash-merge the PR on GitHub (§5.1)
 - `usethis::pr_finish()` — deletes `dev`, returns to `master` (§5.2)
-- `devtools::submit_cran()` (§5.3)
+- `usethis::pr_init("dev")` + `use_dev_version()` — recreate `dev` immediately (§5.2a)
+- `devtools::submit_cran()` from `master` (§5.3)
 - Click the confirmation email (§5.3)
 
 **[Phase 6 — After acceptance](#phase-6-after-cran-acceptance)**
 
 - `usethis::use_github_release()` (§6.1)
 - Move the `CRAN` tag to the accepted commit (§6.1a)
-- Return to Phase 1 on a fresh `dev` (§6.2)
+- Continue Phase 2 on the `dev` recreated in §5.2a (§6.2)
 
 ---
 
@@ -88,7 +89,7 @@ The Git pane should briefly show a progress dialog, then return to a clean state
 
 ### 1.3 Create the development branch
 
-Never work directly on `master`. Each release cycle uses a **fresh `dev` branch created from the current `master` tip**. The previous cycle's `dev` was deleted at its squash-merge (§5.1), so at the start of every cycle you create `dev` anew — there is no long-lived `dev` to sync or reset.
+Never work directly on `master`. Each release cycle uses a **fresh `dev` branch created from the current `master` tip**. Normally this already exists: §5.2a recreates `dev` immediately after every merge to `master`, so at the start of a cycle you just switch to `dev` and pull. Only create it here if `dev` does not exist on GitHub (first-time setup, or §5.2a was skipped).
 
 Create it from the R Console:
 
@@ -109,6 +110,8 @@ devtools::load_all()
 This simulates installing the package so you can test functions interactively without a full install. Run this any time you change code and want to test it.
 
 ### 1.5 Bump to a development version
+
+Skip this if `DESCRIPTION` already shows a `.9000` version; §5.2a normally does this bump when it recreates `dev`.
 
 ```r
 usethis::use_dev_version()
@@ -476,7 +479,32 @@ From R (you'll still be on `dev` locally right after the merge), run:
 usethis::pr_finish()
 ```
 
-This switches you back to `master`, pulls the squashed release commit, and deletes `dev` both locally and on the remote (the PR is merged and you have push access). `dev` is single-use — it's recreated fresh from `master` at the next cycle (§1.3). Deleting it here means no commits can land on `dev` during CRAN review, so the next cycle starts from exactly the accepted `master` — no drift by construction.
+This switches you back to `master`, pulls the squashed release commit, and deletes `dev` both locally and on the remote (the PR is merged and you have push access). The "Protect dev" ruleset blocks branch deletion for everyone except the repository admin role, so this step must be run by the maintainer. `dev` is single-use: the old branch carries the pre-squash commits, which `master` no longer shares, so it is never reused.
+
+### 5.2a Recreate `dev` immediately
+
+Do this right after §5.2, **before** submitting to CRAN, so collaborators always have a `dev` to branch from and open PRs into. From the R Console:
+
+```r
+usethis::pr_init("dev")
+usethis::use_dev_version()
+```
+
+`pr_init("dev")` creates `dev` from the squashed release commit on `master`, so the new `dev` starts with zero drift by construction. `use_dev_version()` bumps `DESCRIPTION` to `X.Y.Z.9000` and adds the development heading to `NEWS.md` (§1.5). Commit and push the bump directly to `dev` (the admin role can bypass the ruleset):
+
+```bash
+git add DESCRIPTION NEWS.md
+git commit -m "Begin development version X.Y.Z.9000"
+git push -u origin dev
+```
+
+Then switch back to `master` before §5.3 — `submit_cran()` builds from the working tree, and the submission must come from `master`, not the bumped `dev`:
+
+```bash
+git switch master
+```
+
+Anything merged into `dev` during CRAN review goes into the *next* release, not this submission. Tell collaborators that `dev` is back, and that branches they cut from the previous `dev` must be recreated from the new one (CONTRIBUTING.md).
 
 You should now be on `master`, synced with origin, ready to submit.
 
@@ -504,7 +532,18 @@ After confirmation, expect a sequence of automated emails over the next 24–72 
 - **Human review** — a CRAN reviewer eyeballs the submission for policy compliance. Most submissions pass without comment.
 - **Acceptance** — `"package immunogenetr <version> has been published on CRAN"`. The package goes live on CRAN's package index within a few hours of this email.
 
-If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Because `dev` was deleted at the merge (§5.1), recreate a working branch from the now-current `master` per §1.3 (`usethis::pr_init("dev")`), fix the issue there, run `usethis::use_version("patch")` to bump to the next patch (e.g., 1.4.0 → 1.4.1), update `cran-comments.md`, then take it through Phase 3 (PR → CI → squash-merge, deleting the branch again) and resubmit from `master` (§5.3). Working on a fresh branch off the submitted `master` keeps the fix minimal and the history clean.
+If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Do **not** make the fix on `dev`: it was recreated in §5.2a and may already hold next-release work. Instead, cut a short-lived branch from the submitted `master` (`usethis::pr_init("cran-fix")`), fix the issue there, run `usethis::use_version("patch")` to bump to the next patch (e.g., 1.4.0 → 1.4.1), update `cran-comments.md`, then take it through Phase 3 with the PR targeting `master` (PR → CI → squash-merge → `usethis::pr_finish()`), and resubmit from `master` (§5.3). Working on a branch off the submitted `master` keeps the fix minimal and the history clean.
+
+Then bring the fix into `dev` so it is not lost or reintroduced:
+
+```bash
+git switch dev
+git pull
+git merge master
+git push
+```
+
+If `DESCRIPTION` or `NEWS.md` conflict, keep `dev`'s `.9000` development version and its development heading, and move the patch's NEWS bullet under the patch release heading.
 
 ---
 
@@ -533,9 +572,9 @@ The force flags are required because moving an existing tag is a non-fast-forwar
 
 ### 6.2 Begin the next release cycle
 
-To start work on the next release, return to Phase 1. The old `dev` was deleted at the squash-merge (§5.1), so create a **new** `dev` from the current `master` tip per §1.3, reload the package per §1.4, and bump to a new dev version per §1.5. Any open issues or features you want to address fit into Phase 2 from there.
+The next cycle's `dev` already exists: it was recreated from the release commit and bumped to a development version in §5.2a. Switch to it and pull (§1.2, selecting `dev` instead of `master`), reload the package per §1.4, and continue with Phase 2. If a CRAN patch was needed, confirm `master` was merged back into `dev` (§5.3) before starting new work.
 
-This is the "loop close" of the SOP: every accepted release ends with the next one beginning on a fresh `dev` branched from the accepted `master`.
+This is the "loop close" of the SOP: every merge to `master` is followed immediately by a fresh `dev` branched from it.
 
 ---
 

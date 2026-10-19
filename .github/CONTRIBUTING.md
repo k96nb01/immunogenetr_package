@@ -12,7 +12,7 @@ This guide is for collaborators with write access to `k96nb01/immunogenetr_packa
 
 Both `master` and `dev` are protected by repository rulesets: no direct pushes, no force-pushes, no deletion, and every PR needs one approving review. You cannot approve your own PR, so the maintainer reviews and merges.
 
-`dev` is single-use: after each release it is squash-merged into `master`, deleted, and later recreated fresh from `master` (SOP §5.2, §6.2). Between a release and the next `dev` there is nowhere to merge, so hold new work until `dev` exists again. Always cut new branches from the *current* `dev`; a branch cut from a previous cycle's `dev` will carry stale history and conflict.
+`dev` is single-use: after each release it is squash-merged into `master`, deleted, and immediately recreated fresh from `master` (SOP §5.2–5.2a). After a release, pull the new `dev` before starting work. A branch cut from the previous cycle's `dev` carries history that `master` no longer shares and will conflict, so recreate it from the new `dev` (or ask for help moving your commits over).
 
 ## The workflow
 
