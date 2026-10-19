@@ -98,6 +98,10 @@ check_fields <- function(x, call = caller_env()) {
 #
 # Accepts the same special cases as check_gl_string(): a bare NA or a
 # character vector of all-NA is treated as "no data" and passes.
+#
+# NOTE: currently unused (only its tests call it); kept on purpose for
+# future work. Before wiring it in, extend the split below to the full GL
+# String delimiter set: it handles ^ + | / but not ~ or ?.
 check_molecular_gl_string <- function(x, arg_name = "data", call = caller_env()) {
   check_gl_string(x, arg_name = arg_name, call = call)
   if (is.logical(x) && all(is.na(x))) return(invisible(x))

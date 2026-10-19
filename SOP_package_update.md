@@ -25,10 +25,10 @@ The full path for one release. Each step links to its section below — read the
 
 **[Phase 1 — Set up](#phase-1-setting-up-a-development-session)**
 
-- Pull `master` (§1.2)
-- `usethis::pr_init("dev")` (§1.3)
+- Switch to `dev` and pull (§1.2)
+- Only if `dev` is missing on GitHub: `usethis::pr_init("dev")` (§1.3)
 - `devtools::load_all()` (§1.4)
-- `usethis::use_dev_version()` (§1.5)
+- Only if not already `.9000`: `usethis::use_dev_version()` (§1.5)
 
 **[Phase 2 — Make changes](#phase-2-making-changes)**
 
@@ -80,9 +80,9 @@ Open `immunogenetr.Rproj` in RStudio. This ensures your working directory and bu
 
 ### 1.2 Pull the latest changes
 
-Make sure you're working from the current state of `master`. In the **RStudio Git pane** (top-right by default):
+Make sure you're working from the current state of `dev` (or of `master`, if `dev` does not exist yet and you are about to create it in §1.3). In the **RStudio Git pane** (top-right by default):
 
-1. Click the branch dropdown (top-right of the Git pane) and select `master`.
+1. Click the branch dropdown (top-right of the Git pane) and select `dev` (or `master`).
 2. Click the **Pull** button — the blue down-arrow icon at the top of the Git pane.
 
 The Git pane should briefly show a progress dialog, then return to a clean state with no pending changes.
@@ -97,7 +97,7 @@ Create it from the R Console:
 usethis::pr_init("dev")
 ```
 
-This creates `dev` from `master`, checks it out locally, and sets up upstream tracking. Because it branches from `master` — which holds exactly the last accepted release (plus any hotfix) — `dev` starts with zero drift by construction. There is no "reset after squash merge" step to remember: the squash lives in `master`, and the new `dev` inherits it directly.
+Run it while on an up-to-date `master` (§1.2): `pr_init()` branches from whatever is currently checked out. It creates `dev` locally and checks it out, but does not push it; publish it with `git push -u origin dev`. (Don't use `usethis::pr_push()` for this: it would also open the dev → master release PR far too early.) Because it branches from `master` — which holds exactly the last accepted release (plus any hotfix) — `dev` starts with zero drift by construction. There is no "reset after squash merge" step to remember: the squash lives in `master`, and the new `dev` inherits it directly.
 
 Confirm you're on `dev`: the branch dropdown in the RStudio Git pane should read `dev`.
 
@@ -240,11 +240,11 @@ In the **RStudio Git pane**:
 
 ### 3.2 AI verification pass (before every PR)
 
-When development is done with an AI agent (Claude Code or similar), the agent must launch an **independent review subagent** over the full set of changes before the PR is opened — a fresh context that reads the changes cold, without the assumptions accumulated while writing them. Run it after the final commit on `dev` and before `usethis::pr_push()` (§3.3); fix any findings, commit, and re-run until the pass comes back clean.
+When development is done with an AI agent (Claude Code, Codex or similar), the agent must launch an **independent reviewer** (a subagent or a fresh-context process) over the full set of changes before the PR is opened — a fresh context that reads the changes cold, without the assumptions accumulated while writing them. Run it after the final commit on the branch (`dev` for the release PR, the issue branch for a contributor PR) and before the PR is opened (§3.3); fix any findings, have the human commit the fixes (agents don't commit on their own; see AGENTS.md rule 2), and re-run until the pass comes back clean. AGENTS.md adds an earlier pass on uncommitted work, before the human commits.
 
-The review prompt should direct the subagent to:
+The review prompt should direct the reviewer to:
 
-- run `git diff master...dev` and `git status` itself and read the surrounding code, not trust the author-agent's description of the change;
+- run the diff itself and read the surrounding code, not trust the author-agent's description of the change. Use the range that matches the branch: `git diff master...dev` for the release PR, `git fetch` then `git diff origin/dev...HEAD` for a contributor's issue branch, and `git status` plus `git diff` for uncommitted work (AGENTS.md's pre-commit review), including any untracked files;
 - verify behavioral claims by **executing code**, not by reading it — and via `devtools::load_all()`, since a plain R session tests the *installed* release rather than the working tree;
 - check that any code splitting or matching GL Strings handles the **full delimiter set** (`^`, `|`, `+`, `~`, `/`, `?`) — partial delimiter handling is the most common silent breakage in this codebase;
 - check nomenclature-touching changes against **both serologic and molecular forms** (including `Cw`, `Bw4`/`Bw6`, and the DQA/DPA/DPB serologic names), plus expression suffixes and G/P group names where relevant;
@@ -252,6 +252,8 @@ The review prompt should direct the subagent to:
 - confirm the public surface is consistent: roxygen docs regenerated (`devtools::document()`), a `NEWS.md` entry that matches what the code actually does, new exports listed in the package overview (`R/immunogenetr-package.R`), and tests covering the changed behavior;
 - confirm **no references to private repositories, institutional systems, or PHI** anywhere in the diff — this is a public repo, and that includes `Notes/`;
 - report findings as file:line + issue + severity, or "no findings".
+
+Record the pass in the PR description's "Verification pass" section (reviewer, rounds, findings and fixes). It is not enforced by CI; the record is what the maintainer checks in review.
 
 ### 3.3 Push and open the PR
 
@@ -266,14 +268,14 @@ This pushes `dev` to GitHub (setting up remote tracking if needed), then opens y
 Fill in the PR title and body in the browser:
 
 - **Title**: `1.x.y: brief summary` (e.g., `1.4.0: HLA WHO update`)
-- **Body**: a short Summary section and a Test plan checklist, for example:
+- **Body**: GitHub pre-fills it from `.github/pull_request_template.md` (once that file is on `master`). Fill in each section, including "Verification pass" (§3.2). For a release PR, the Summary and Testing sections typically look like:
 
 ```markdown
 ## Summary
 
 - Bullet points of what changed.
 
-## Test plan
+## Testing
 
 - [x] devtools::test()
 - [x] devtools::check() from RStudio (0/0/0 including vignettes)
@@ -467,6 +469,7 @@ With Phase 4 complete and CI green, this phase moves the release from `dev` onto
 
 ### 5.1 Merge the PR
 
+0. **First, clear open PRs into `dev`.** §5.2 deletes `dev`, and GitHub then either retargets any PR still open against it (to `master`, the merged PR's base) or closes it — neither is what a collaborator wants. Check with `gh pr list --base dev`; merge, close, or ask the author to hold each one, and tell collaborators not to open new PRs into `dev` until §5.2a recreates it.
 1. Go to the pull request on GitHub.
 2. Click the **Squash and merge** dropdown → "Squash and merge". Squash keeps `master`'s history one-commit-per-release; the individual development commits are preserved in the PR record.
 3. Click **Confirm squash and merge**. Ignore GitHub's **Delete branch** button — `usethis::pr_finish()` in §5.2 removes `dev` for you.
@@ -490,11 +493,9 @@ usethis::pr_init("dev")
 usethis::use_dev_version()
 ```
 
-`pr_init("dev")` creates `dev` from the squashed release commit on `master`, so the new `dev` starts with zero drift by construction. `use_dev_version()` bumps `DESCRIPTION` to `X.Y.Z.9000` and adds the development heading to `NEWS.md` (§1.5). Commit and push the bump directly to `dev` (the admin role can bypass the ruleset):
+`pr_init("dev")` creates `dev` from the squashed release commit on `master` (you are on `master` after §5.2), so the new `dev` starts with zero drift by construction. `use_dev_version()` bumps `DESCRIPTION` to `X.Y.Z.9000` and adds the development heading to `NEWS.md` (§1.5), then asks "Is it ok to commit them?" — answer **yes**, and it commits both files. `pr_init()` does not push, so publish the new branch directly (the admin role can bypass the ruleset):
 
 ```bash
-git add DESCRIPTION NEWS.md
-git commit -m "Begin development version X.Y.Z.9000"
 git push -u origin dev
 ```
 
@@ -532,7 +533,18 @@ After confirmation, expect a sequence of automated emails over the next 24–72 
 - **Human review** — a CRAN reviewer eyeballs the submission for policy compliance. Most submissions pass without comment.
 - **Acceptance** — `"package immunogenetr <version> has been published on CRAN"`. The package goes live on CRAN's package index within a few hours of this email.
 
-If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Do **not** make the fix on `dev`: it was recreated in §5.2a and may already hold next-release work. Instead, cut a short-lived branch from the submitted `master` (`usethis::pr_init("cran-fix")`), fix the issue there, run `usethis::use_version("patch")` to bump to the next patch (e.g., 1.4.0 → 1.4.1), update `cran-comments.md`, then take it through Phase 3 with the PR targeting `master` (PR → CI → squash-merge → `usethis::pr_finish()`), and resubmit from `master` (§5.3). Working on a branch off the submitted `master` keeps the fix minimal and the history clean.
+If CRAN flags an issue and requires changes, do not resubmit the same version number — CRAN rejects duplicates. Do **not** make the fix on `dev`: it was recreated in §5.2a and may already hold next-release work. Instead, cut a short-lived branch from the submitted `master`. `pr_init()` branches from whatever is checked out, so switch to `master` and pull first:
+
+```bash
+git switch master
+git pull
+```
+
+```r
+usethis::pr_init("cran-fix")
+```
+
+Fix the issue there, run `usethis::use_version("patch")` to bump to the next patch (e.g., 1.4.0 → 1.4.1), and update `cran-comments.md`. Then take it through Phase 3 with two substitutions: in §3.2 the reviewer diffs `master...cran-fix` instead of `master...dev`, and in §3.3 you run `pr_push()` while on `cran-fix`, which opens the PR against `master` (the default branch). After CI, squash-merge, run `usethis::pr_finish()`, and resubmit from `master` (§5.3). Working on a branch off the submitted `master` keeps the fix minimal and the history clean.
 
 Then bring the fix into `dev` so it is not lost or reintroduced:
 
@@ -543,7 +555,7 @@ git merge master
 git push
 ```
 
-If `DESCRIPTION` or `NEWS.md` conflict, keep `dev`'s `.9000` development version and its development heading, and move the patch's NEWS bullet under the patch release heading.
+If `DESCRIPTION` or `NEWS.md` conflict, set `dev`'s version to the **patch version plus `.9000`** (e.g., 1.4.1.9000 after 1.4.1 ships, not the old 1.4.0.9000, or a later `use_version("patch")` on `dev` would produce 1.4.1 a second time). Keep the development heading at the top of `NEWS.md`, with the patch release's heading and bullet below it.
 
 ---
 
@@ -551,7 +563,12 @@ If `DESCRIPTION` or `NEWS.md` conflict, keep `dev`'s `.9000` development version
 
 ### 6.1 Create a GitHub release
 
-Once CRAN has accepted the package:
+Once CRAN has accepted the package, switch to `master` first — after §5.2a you may have been working on `dev`, and `use_github_release()` pushes the current branch while §6.1a assumes you are on `master`:
+
+```bash
+git switch master
+git pull
+```
 
 ```r
 usethis::use_github_release()
@@ -772,7 +789,7 @@ Once §A.1–A.8 are done, the site is fully self-maintaining for normal develop
 | Interactive coverage report | `covr::report()` |
 | Preview a vignette | `pkgdown::build_article("immunogenetr")` |
 | Knit README | `devtools::build_readme()` |
-| Create `dev` branch (each cycle, from `master`) | `usethis::pr_init("dev")` |
+| Recreate `dev` from `master` (right after each release merge, §5.2a) | `usethis::pr_init("dev")` |
 | Push branch + open PR creation page | `usethis::pr_push()` |
 | Open current PR in browser | `usethis::pr_view()` |
 | Switch back to a PR branch | `usethis::pr_resume()` |

@@ -15,3 +15,5 @@
 ^Claude files$
 ^Notes$
 ^\.covrignore$
+^AGENTS\.md$
+^CLAUDE\.md$

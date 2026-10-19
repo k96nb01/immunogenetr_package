@@ -6,13 +6,13 @@ This guide is for collaborators with write access to `k96nb01/immunogenetr_packa
 
 | Branch | Purpose | Who can merge |
 |---|---|---|
-| `master` | Released code. Matches CRAN. | Maintainer only, via PR from `dev` |
-| `dev` | Integration branch for the next release. | Via PR with 1 approving review |
+| `master` | Released code. Matches CRAN. | Maintainer only, via PR (normally the release PR from `dev`) |
+| `dev` | Integration branch for the next release. | Maintainer, via PR with 1 approving review |
 | `<issue#>-<short-name>` | One branch per issue, cut from `dev`. | — |
 
-Both `master` and `dev` are protected by repository rulesets: no direct pushes, no force-pushes, no deletion, and every PR needs one approving review. You cannot approve your own PR, so the maintainer reviews and merges.
+Both `master` and `dev` are protected by repository rulesets: no direct pushes, no force-pushes, no deletion, and every PR needs one approving review. GitHub won't let you approve your own PR. Our policy goes further: only the maintainer approves and merges PRs. Please don't approve or merge another collaborator's PR, even though GitHub would allow it.
 
-`dev` is single-use: after each release it is squash-merged into `master`, deleted, and immediately recreated fresh from `master` (SOP §5.2–5.2a). After a release, pull the new `dev` before starting work. A branch cut from the previous cycle's `dev` carries history that `master` no longer shares and will conflict, so recreate it from the new `dev` (or ask for help moving your commits over).
+`dev` is single-use: after each release it is squash-merged into `master`, deleted, and immediately recreated fresh from `master` (SOP §5.2–5.2a). Before a release, the maintainer will ask you to get open PRs into `dev` merged or put on hold, because deleting `dev` retargets or closes any PR still open against it. Don't open new PRs into `dev` until it has been recreated. After a release, pull the new `dev` before starting work. A branch cut from the previous cycle's `dev` carries history that `master` no longer shares and will conflict, so recreate it from the new `dev` (or ask for help moving your commits over).
 
 ## The workflow
 
@@ -67,12 +67,13 @@ gh pr create --base dev
 
 Or use the "Compare & pull request" button on GitHub, and make sure the **base** branch is `dev`, not `master`.
 
-In the PR description:
+Fill in the PR description using the template ([`.github/pull_request_template.md`](pull_request_template.md)). GitHub pre-fills new PRs from it once it is on `master`; until the next release, copy it into the description yourself. It asks you to:
 
 - Link the issue: `Part of #48` (see step 8 for why not `Closes #48`).
 - Summarize what changed and anything you were unsure about.
 - Say how you tested it (`devtools::check()` result, any manual checks).
-- If you used an AI coding tool (Claude Code, Codex, Copilot, etc.), say which and for what part of the work. That's fine to do; reviewers just read AI-assisted changes with that in mind. The AI verification pass in SOP §3.2 applies to your PR too.
+- Say whether you used an AI coding tool (Claude Code, Codex, Copilot, etc.), which one, and for what part of the work. That's fine to do; reviewers just read AI-assisted changes with that in mind.
+- If an AI tool wrote or edited any of the PR, record the independent verification pass you ran locally (AGENTS.md rule 1, SOP §3.2): who reviewed, how many rounds, and what was fixed. Nothing enforces this automatically; it's part of what the maintainer checks in review.
 
 CI (R-CMD-check and test coverage) runs automatically on the PR. Fix any failures by pushing more commits to the same branch.
 
@@ -100,5 +101,5 @@ git branch -d 48-base-pipe
 - [ ] `NEWS.md` bullet added with the issue number
 - [ ] `devtools::check()` clean
 - [ ] PR targets `dev` and links the issue
-- [ ] AI tool use (if any) noted in the PR description
+- [ ] AI tool use (if any) noted, and the verification pass recorded, in the PR description
 - [ ] No private data, PHI, or references to institutional systems in the diff (this is a public repo)
