@@ -30,6 +30,7 @@
 #' @export
 #'
 #' @importFrom dplyr select
+#' @importFrom dplyr ungroup
 #' @importFrom dplyr mutate
 #' @importFrom dplyr across
 #' @importFrom dplyr summarize
@@ -48,7 +49,7 @@ GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE)
   check_logical_flag(keep_ambiguities, "keep_ambiguities")
 
   # Identify the columns to modify
-  cols2mod <- names(select(data, {{ columns }}))
+  cols2mod <- names(select(ungroup(data), {{ columns }}))
 
   # Check for "^" in any of the selected columns, which indicates genes
   # haven't been separated from the GL String yet.

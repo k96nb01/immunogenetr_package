@@ -21,6 +21,7 @@
 #' @export
 #'
 #' @importFrom dplyr select
+#' @importFrom dplyr ungroup
 #' @importFrom tibble as_tibble
 
 GLstring_gene_copies_combine <- function(.data, columns, sample_column = "sample") {
@@ -30,8 +31,8 @@ GLstring_gene_copies_combine <- function(.data, columns, sample_column = "sample
   # Resolve tidyselect args to plain column-name strings. select(.data, {{ x }})
   # accepts bare symbols, strings, and tidyselect helpers, so this single
   # pattern matches what the v1 dplyr pipeline supported.
-  cols2mod    <- names(select(.data, {{ columns }}))
-  sample_name <- names(select(.data, {{ sample_column }}))
+  cols2mod    <- names(select(ungroup(.data), {{ columns }}))
+  sample_name <- names(select(ungroup(.data), {{ sample_column }}))
 
   # -------------------------------------------------------------------------
   # Iteration 6 rewrite: replace the pivot_longer → mutate → filter →

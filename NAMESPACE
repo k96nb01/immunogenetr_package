@@ -36,7 +36,8 @@ importFrom(dplyr,
   select,
   starts_with,
   summarise,
-  summarize
+  summarize,
+  ungroup
 )
 importFrom(purrr,map)
 importFrom(rlang,caller_env)

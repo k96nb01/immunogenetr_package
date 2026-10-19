@@ -226,3 +226,15 @@ test_that("take_first_allele = FALSE rejects multi-allele cells", {
     "HLA-A*01:01+HLA-A*02:01"
   )
 })
+
+test_that("HLA_columns_to_GLstring does not pick up grouping variables", {
+  df <- tibble::tibble(
+    patient = c("p1", "p2"),
+    A1 = c("HLA-A*01:01", "HLA-A*03:01"),
+    A2 = c("HLA-A*02:01", "HLA-A*24:02")
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(dplyr::group_by(df, patient), c(A1, A2)),
+    c("HLA-A*01:01+HLA-A*02:01", "HLA-A*03:01+HLA-A*24:02")
+  )
+})

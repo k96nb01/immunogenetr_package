@@ -86,3 +86,27 @@ test_that("GLstring_genotype_ambiguity validates inputs", {
     GLstring_genotype_ambiguity(HLA_type, columns = "HLA_A", keep_ambiguities = "yes")
   )
 })
+
+test_that("GLstring_genotype_ambiguity works on grouped data and preserves grouping", {
+  df <- tibble::tibble(
+    id = 1:2,
+    HLA_A = c("A*01:01+A*68:01|A*01:02+A*68:55", "A*02:01+A*03:01")
+  )
+  grouped <- dplyr::group_by(df, id)
+
+  # The grouping variable must not be swept into the selected columns.
+  result <- GLstring_genotype_ambiguity(grouped, "HLA_A")
+  expect_equal(dplyr::group_vars(result), "id")
+  expect_equal(names(result), c("id", "HLA_A"))
+  expect_equal(result$HLA_A, c("A*01:01+A*68:01", "A*02:01+A*03:01"))
+  expect_equal(dplyr::ungroup(result), GLstring_genotype_ambiguity(df, "HLA_A"))
+
+  result_keep <- GLstring_genotype_ambiguity(grouped, "HLA_A", keep_ambiguities = TRUE)
+  expect_equal(dplyr::group_vars(result_keep), "id")
+  expect_equal(names(result_keep), c("id", "HLA_A", "HLA_A_genotype_ambiguity"))
+  expect_equal(result_keep$HLA_A_genotype_ambiguity, c("A*01:02+A*68:55", NA))
+  expect_equal(
+    dplyr::ungroup(result_keep),
+    GLstring_genotype_ambiguity(df, "HLA_A", keep_ambiguities = TRUE)
+  )
+})

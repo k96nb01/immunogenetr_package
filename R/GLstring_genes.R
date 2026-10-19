@@ -25,6 +25,7 @@
 #' @export
 #'
 #' @importFrom dplyr select
+#' @importFrom dplyr ungroup
 #' @importFrom tibble as_tibble
 #' @importFrom stringi stri_split_fixed
 
@@ -34,7 +35,7 @@ GLstring_genes <- function(data, gl_string) {
   check_data_frame(data, "data")
 
   # Resolve tidyselect to a single column name.
-  col2mod <- names(select(data, {{ gl_string }}))
+  col2mod <- names(select(ungroup(data), {{ gl_string }}))
 
   # -------------------------------------------------------------------------
   # Iteration 7 rewrite: replace the
