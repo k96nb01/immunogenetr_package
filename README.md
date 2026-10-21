@@ -271,8 +271,8 @@ recipient.
 If you use immunogenetr in your research, please cite:
 
 Coskun B, Brown NK. Immunogenetr: A comprehensive toolkit for clinical
-HLA informatics. *Human Immunology*. 2026;87(1):111619.
-<doi:%5B10.1016/j.humimm.2025.111619>\](<https://doi.org/10.1016/j.humimm.2025.111619>)
+HLA informatics. *Human Immunology*. 2026;87(1):111619. DOI:
+[10.1016/j.humimm.2025.111619](https://doi.org/10.1016/j.humimm.2025.111619)
 
 You can also get the citation from R with `citation("immunogenetr")`.
 
@@ -285,7 +285,3 @@ This project is licensed under the GNU General Public License v3.0.
 This library is intended for research use. Any application making use of
 this package in a clinical setting will need to be independently
 validated according to local regulations.
-
-</div>
-
-</div>
