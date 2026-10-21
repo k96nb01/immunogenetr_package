@@ -1,5 +1,7 @@
 # immunogenetr (development version)
 
+* Modernized package code, documentation, vignettes, and tests to use the base R pipe (`|>`) instead of the magrittr pipe (`%>%`) (#48).
+
 * Fixed `GLstring_genotype_ambiguity` erroring on grouped data frames ("Can't select columns that don't exist"): the grouping variables were being added to the columns to process. It now works on grouped input and preserves the grouping. `GLstring_genes`, `GLstring_gene_copies_combine` and `HLA_columns_to_GLstring` resolved their column arguments the same way and also errored or misbehaved on grouped input; they no longer pick up grouping variables.
 
 # immunogenetr 1.5.0
