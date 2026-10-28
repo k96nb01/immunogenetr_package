@@ -55,7 +55,7 @@ library(dplyr)
 HLA_typing_LIS |> mutate(
   across(
     mA1Cd.recipient:mDPB12cd.recipient,
-    ~ HLA_validate(.)
+    HLA_validate
   )
 )
 }

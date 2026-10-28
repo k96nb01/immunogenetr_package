@@ -356,7 +356,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 }
 
 globalVariables(c(
-  ".", "truncated_names", "lower_names", "locus_from_name", "DRB_locus",
+  "truncated_names", "lower_names", "locus_from_name", "DRB_locus",
   "row_for_function", "molecular_locus", "molecular", "serologic_name",
   "final_type", "DRB345", "final_type_2", "GL_string", "DRB_locus_raw"
 ))

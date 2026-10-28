@@ -60,14 +60,14 @@ GLstring_genotype_ambiguity <- function(data, columns, keep_ambiguities = FALSE)
   # Copy GL String to a new ambiguity column.
   result <- data |>
     mutate(across({{ cols2mod }},
-      ~ as.character(.),
+      as.character,
       .names = "{col}_genotype_ambiguity"
     )) |>
     # Keep the first genotype ambiguity in the original columns.
-    mutate(across({{ cols2mod }}, ~ str_extract(., "[^|]+"))) |>
+    mutate(across({{ cols2mod }}, \(x) str_extract(x, "[^|]+"))) |>
     # Remove the first genotype and its trailing pipe from the ambiguity columns,
     # then convert empty strings to NA.
-    mutate(across(ends_with("_genotype_ambiguity"), ~ na_if(str_replace(., "^[^|]+\\|?", ""), "")))
+    mutate(across(ends_with("_genotype_ambiguity"), \(x) na_if(str_replace(x, "^[^|]+\\|?", ""), "")))
 
   # Drop the ambiguity columns if not wanted.
   if (keep_ambiguities) result else select(result, -contains("ambiguity"))

@@ -21,7 +21,7 @@
 #' HLA_typing_1 |> mutate(
 #'   across(
 #'     A1:DPB1_2,
-#'     ~ HLA_prefix_remove(.)
+#'     HLA_prefix_remove
 #'   )
 #' )
 #'

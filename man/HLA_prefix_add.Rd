@@ -31,7 +31,7 @@ library(dplyr)
 HLA_typing_LIS |> mutate(
   across(
     mA1Cd.recipient:mA2Cd.recipient,
-    ~ HLA_prefix_add(., "HLA-A*")
+    \(x) HLA_prefix_add(x, "HLA-A*")
   )
 )
 
