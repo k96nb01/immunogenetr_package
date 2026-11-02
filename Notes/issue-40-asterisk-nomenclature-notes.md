@@ -267,4 +267,4 @@ A separate, opt-in function for exploratory work:
 ## 9. Not addressed today (separate threads from the same 2026-06-18 message)
 
 - **`HLA-` prefix tolerance** — make all functions accept `A*02:01` as readily as `HLA-A*02:01`, including inside GL strings (`A*02:01+A*03:01` ≡ `HLA-A*02:01+HLA-A*03:01`). Separate task.
-- **Colleague replies** — `Responses from Eric and Loren.pdf` and the accompanying txt in this folder; feed into the issue-33 serologic design.
+- **Colleague replies** — kept privately (not tracked in this repository); they and the accompanying txt in this folder feed into the issue-33 serologic design.
