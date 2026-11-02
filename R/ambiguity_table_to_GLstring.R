@@ -239,5 +239,3 @@ ambiguity_table_to_GLstring <- function(data, remove_duplicates = FALSE) {
   # and GLstring_expand_longer always emits entries in 1..N order).
   r$value
 }
-
-globalVariables(c("."))

@@ -54,8 +54,8 @@ library(dplyr)
 Haplotype_frequencies |> mutate(
   across(
     "HLA-A":"HLA-DPB1",
-    ~ HLA_truncate(
-      .,
+    \(x) HLA_truncate(
+      x,
       fields = 2,
       keep_suffix = TRUE,
       keep_G_P_group = FALSE

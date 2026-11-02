@@ -104,5 +104,3 @@ GLstring_genes <- function(data, gl_string) {
   # "HLA_A" (tidyverse form without the asterisk), mirroring v1's chain.
   HLA_column_repair(as_tibble(out))
 }
-
-globalVariables(c("."))
