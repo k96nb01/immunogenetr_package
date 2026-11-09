@@ -389,6 +389,71 @@ test_that("take_first_allele = keep retains slash allele ambiguity", {
   )
   expect_equal(
     HLA_columns_to_GLstring(
+      data.frame(
+        DR1 = "DR52/DRB3*01:01",
+        DRB3_1 = "DRB3*02:02"
+      ),
+      everything(),
+      take_first_allele = "keep"
+    ),
+    "HLA-DR52/HLA-DRB3*01:01+HLA-DRB3*02:02"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB1_1 = "DR52/DRB3*01:01"),
+      DRB1_1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-DRB3*XX/HLA-DRB3*01:01"
+  )
+  ordinary_dr <- data.frame(
+    DR1 = "7",
+    DR2 = "6",
+    DR3 = "51",
+    DR4 = "52"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      ordinary_dr,
+      everything(),
+      take_first_allele = "keep"
+    ),
+    HLA_columns_to_GLstring(
+      ordinary_dr,
+      everything(),
+      take_first_allele = TRUE
+    )
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB1_1 = "52"),
+      DRB1_1,
+      nomenclature = "mol",
+      take_first_allele = TRUE
+    ),
+    "HLA-DRB1*52"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "52"),
+      DR1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-DRB3*XX"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB1_1 = "52"),
+      DRB1_1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-DRB1*52"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
       data.frame(A1 = c("", "01:01")),
       A1,
       take_first_allele = "keep"

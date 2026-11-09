@@ -337,7 +337,17 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   # serologic number carries no allele information; DR52 != DRB3*52). Every
   # other DR value maps to DRB1 and keeps its allele. Restricted to serologic
   # "DR" columns so genuine DRB1 columns are untouched. (issue #40 §5.6)
-  dr_mol <- force_mol & (locus_from_name[col_idx] == "HLA-DR")
+  if (keep_ambiguity) {
+    ambiguity_member <- stats::ave(cell_idx, cell_idx, FUN = length) > 1L
+    generic_dr_legacy <- !ambiguity_member &
+      locus_from_name[col_idx] == "HLA-DR"
+    retained_dr_hint <- ambiguity_member &
+      startsWith(locus_from_name[col_idx], "HLA-DR") &
+      (is.na(explicit_locus) | toupper(explicit_locus) == "DR")
+    dr_mol <- force_mol & (generic_dr_legacy | retained_dr_hint)
+  } else {
+    dr_mol <- force_mol & (locus_from_name[col_idx] == "HLA-DR")
+  }
   allele_clean_for_validation <- allele_clean
   if (any(dr_mol)) {
     is51 <- dr_mol & !is.na(allele_clean) & allele_clean == "51"
@@ -386,6 +396,11 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
       bad_cell <- as.integer(names(mixed_locus)[which(mixed_locus)[1]])
       cli_abort("Allele-ambiguity value {.val {as.vector(allele_mat)[bad_cell]}} contains alternatives from different HLA loci. All alleles separated by {.val /} must belong to the same locus.")
     }
+
+    # Use the resolved ambiguity locus for downstream grouping. This keeps a
+    # broad/molecular pair such as DR52/DRB3*01:01 in the same `+`-joined DRB3
+    # group as another DRB3 allele instead of splitting it across `^`.
+    canonical_locus[ambiguity_member] <- validation_locus[ambiguity_member]
   }
 
   # DR51/52/53 SEROLOGIC grouping flag (default rendering): keep serologic DR5x
@@ -439,6 +454,9 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     row_idx <- row_idx[first_member]
     canonical_locus <- canonical_locus[first_member]
     DRB345 <- DRB345[first_member]
+    cell_sizes <- tabulate(cell_group, nbins = length(unique_cells))
+    resolved_secondary_dr <- cell_sizes > 1L & grepl("DRB[345]", canonical_locus)
+    DRB345[resolved_secondary_dr] <- FALSE
   }
 
   # --- Two-level collapse: (row, canonical_locus, DRB345) with "+", then row
