@@ -234,7 +234,14 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     }
 
     ambiguity_parts <- lapply(raw, function(value) {
-      if (is.na(value)) NA_character_ else strsplit(value, "/", fixed = TRUE)[[1]]
+      if (is.na(value) || !nzchar(value)) {
+        value
+      } else {
+        if (startsWith(value, "/") || endsWith(value, "/") || grepl("//", value, fixed = TRUE)) {
+          cli_abort("Allele-ambiguity value {.val {value}} contains an empty alternative. Every allele separated by {.val /} must be non-empty.")
+        }
+        strsplit(value, "/", fixed = TRUE)[[1]]
+      }
     })
     cell_idx <- rep.int(cell_idx, lengths(ambiguity_parts))
     raw <- unlist(ambiguity_parts, use.names = FALSE)
@@ -282,6 +289,24 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     raw,
     take_first_allele = if (keep_ambiguity) TRUE else take_first_allele
   )
+
+  # Capture an explicit locus on each ambiguity member before removing it.
+  # Molecular names take everything before "*" (e.g. DRB4); serologic names
+  # take the leading letters (e.g. Cw or DR). Bare field values have no hint.
+  explicit_locus <- rep(NA_character_, length(validated))
+  if (keep_ambiguity) {
+    explicit_locus <- vapply(validated, function(value) {
+      if (is.na(value)) {
+        return(NA_character_)
+      }
+      value <- sub("^HLA-", "", value, ignore.case = TRUE)
+      if (grepl("*", value, fixed = TRUE)) {
+        return(sub("\\*.*$", "", value))
+      }
+      hit <- regexpr("^[[:alpha:]]+", value)
+      if (hit == -1L) NA_character_ else regmatches(value, hit)
+    }, character(1), USE.NAMES = FALSE)
+  }
   allele_clean <- HLA_prefix_remove(validated)
 
   # Allele-derived DRB3/4/5 hint, preferred over the column-name locus when
@@ -313,6 +338,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   # other DR value maps to DRB1 and keeps its allele. Restricted to serologic
   # "DR" columns so genuine DRB1 columns are untouched. (issue #40 §5.6)
   dr_mol <- force_mol & (locus_from_name[col_idx] == "HLA-DR")
+  allele_clean_for_validation <- allele_clean
   if (any(dr_mol)) {
     is51 <- dr_mol & !is.na(allele_clean) & allele_clean == "51"
     is52 <- dr_mol & !is.na(allele_clean) & allele_clean == "52"
@@ -327,7 +353,34 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   # DR51/52/53 mapping because that mapping can change a member's locus.
   # Mixed nomenclature is allowed (e.g. Cw7/C*17:01), but mixed loci are not.
   if (keep_ambiguity) {
-    loci_per_cell <- split(canonical_locus, cell_idx)
+    explicit_map <- c(
+      "A" = "HLA-A", "B" = "HLA-B", "BW" = "HLA-Bw",
+      "C" = "HLA-C", "CW" = "HLA-C",
+      "DR" = "HLA-DRB1", "DRB1" = "HLA-DRB1",
+      "DRB3" = "HLA-DRB3", "DRB4" = "HLA-DRB4", "DRB5" = "HLA-DRB5",
+      "DQ" = "HLA-DQB1", "DQB1" = "HLA-DQB1",
+      "DQA" = "HLA-DQA1", "DQA1" = "HLA-DQA1",
+      "DPA" = "HLA-DPA1", "DPA1" = "HLA-DPA1",
+      "DPB" = "HLA-DPB1", "DPB1" = "HLA-DPB1"
+    )
+    explicit_canonical <- unname(explicit_map[toupper(explicit_locus)])
+    validation_locus <- canonical_locus
+    has_explicit <- !is.na(explicit_canonical)
+    validation_locus[has_explicit] <- explicit_canonical[has_explicit]
+    dr_mol_hint <- dr_mol & (is.na(explicit_canonical) | toupper(explicit_locus) == "DR")
+    validation_locus[dr_mol_hint] <- canonical_locus[dr_mol_hint]
+
+    # DR51/52/53 imply DRB5/3/4 even when their output stays serologic. Apply
+    # the hint throughout the DR family, including generic DRB345 and dedicated
+    # secondary-DR columns, because wild-caught data can carry the broad
+    # specificity alongside its molecular form in any of those columns.
+    dr_hint <- startsWith(locus_from_name[col_idx], "HLA-DR")
+    broad_hint <- dr_hint & (is.na(explicit_canonical) | toupper(explicit_locus) == "DR")
+    validation_locus[broad_hint & !is.na(allele_clean_for_validation) & allele_clean_for_validation == "51"] <- "HLA-DRB5"
+    validation_locus[broad_hint & !is.na(allele_clean_for_validation) & allele_clean_for_validation == "52"] <- "HLA-DRB3"
+    validation_locus[broad_hint & !is.na(allele_clean_for_validation) & allele_clean_for_validation == "53"] <- "HLA-DRB4"
+
+    loci_per_cell <- split(validation_locus, cell_idx)
     mixed_locus <- vapply(loci_per_cell, function(x) length(unique(x)) > 1L, logical(1))
     if (any(mixed_locus)) {
       bad_cell <- as.integer(names(mixed_locus)[which(mixed_locus)[1]])

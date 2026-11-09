@@ -332,6 +332,81 @@ test_that("take_first_allele = keep retains slash allele ambiguity", {
   )
   expect_error(
     HLA_columns_to_GLstring(
+      data.frame(A1 = "A*01:01/B*07:02"),
+      A1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "DR51/DR52"),
+      DR1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DRB345_1 = "DR51/DR52"),
+      DRB345_1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "A51/DRB5*01:01"),
+      DR1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "A51/DRB5*01:01"),
+      DR1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB345_1 = c(
+        "DR51/DRB5*01:01",
+        "DR52/DRB3*01:01",
+        "DR53/DRB4*01:03"
+      )),
+      DRB345_1,
+      take_first_allele = "keep"
+    ),
+    c(
+      "HLA-DR51/HLA-DRB5*01:01",
+      "HLA-DR52/HLA-DRB3*01:01",
+      "HLA-DR53/HLA-DRB4*01:03"
+    )
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = c("", "01:01")),
+      A1,
+      take_first_allele = "keep"
+    ),
+    c("HLA-AXX", "HLA-A*01:01")
+  )
+  for (value in c("/01:01", "01:01/", "01:01//02:01")) {
+    expect_error(
+      HLA_columns_to_GLstring(
+        data.frame(A1 = value),
+        A1,
+        take_first_allele = "keep"
+      ),
+      "empty alternative"
+    )
+  }
+  expect_error(
+    HLA_columns_to_GLstring(
       data.frame(A1 = "01:01"),
       A1,
       take_first_allele = "other"
