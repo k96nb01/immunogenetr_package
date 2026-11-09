@@ -1,5 +1,7 @@
 # immunogenetr (development version)
 
+* `HLA_columns_to_GLstring()` can now retain `/`-delimited allele ambiguity by setting `take_first_allele = "keep"`. Every allele in the ambiguity list is cleaned and receives its own locus prefix; the other GL String delimiters remain invalid within an input cell (#45).
+
 * Documentation: `across()` examples now pass functions directly when no extra arguments are needed and use base R anonymous functions otherwise. Internal `across()` and `rename_with()` calls follow the same convention. Function behavior is unchanged (#55).
 
 * Package code, documentation examples, the README, the vignette, and tests now use the base R pipe (`|>`) instead of the magrittr pipe (`%>%`), and the package no longer imports `%>%` from dplyr. The `HLA_columns_to_GLstring` examples pass the working data frame with `pick(everything())` in place of the magrittr `.` placeholder. Function behavior is unchanged (#48).

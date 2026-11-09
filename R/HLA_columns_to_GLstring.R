@@ -8,9 +8,8 @@
 #' how these arguments are used.
 #'
 #' @param data A data frame with each row including an HLA typing result, with
-#' individual columns containing a single allele. One allele per cell is the
-#' function's contract: a cell holding a GL String is reduced to its first
-#' allele (see `take_first_allele`).
+#' individual columns containing a single allele or, when requested, a
+#' `/`-delimited allele-ambiguity list (see `take_first_allele`).
 #' @param HLA_typing_columns A list of columns containing the HLA alleles. Tidyselect is supported.
 #' @param prefix_to_remove An optional string of characters to remove from the
 #' locus names. The goal is to get the column names to the locus and a number. For example,
@@ -28,11 +27,12 @@
 #' equivalent). Relabeling is structural only: `"ser"` strips any asterisk and
 #' uses the serologic locus name; `"mol"` uses the molecular locus name. No
 #' cross-nomenclature allele translation is performed.
-#' @param take_first_allele A logical value, passed through to `HLA_validate`
-#' when each cell is cleaned. If TRUE (the default), a cell containing GL
-#' String delimiters ("^", "|", "+", "~", "/" or "?") is silently reduced to
-#' its first allele. If FALSE, such cells raise an error instead, for callers
-#' that want malformed multi-allele cells caught rather than truncated.
+#' @param take_first_allele A logical value or `"keep"`. If TRUE (the
+#' default), a cell containing GL String delimiters (`"^"`, `"|"`, `"+"`,
+#' `"~"`, `"/"` or `"?"`) is silently reduced to its first allele. If FALSE,
+#' such cells raise an error. If `"keep"`, `/`-delimited allele ambiguity is
+#' retained and every allele is cleaned and prefixed independently; cells
+#' containing any other GL String delimiter still raise an error.
 #'
 #' @return A list of GL Strings in the order of the original data frame.
 #'
@@ -66,6 +66,14 @@
 HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove = "", suffix_to_remove = "", nomenclature = NULL, take_first_allele = TRUE) {
   # Validate the data frame input up-front.
   check_data_frame(data, "data")
+
+  keep_ambiguity <- is.character(take_first_allele) &&
+    length(take_first_allele) == 1L &&
+    !is.na(take_first_allele) &&
+    take_first_allele == "keep"
+  if (!keep_ambiguity) {
+    check_logical_flag(take_first_allele, "take_first_allele")
+  }
 
   # Resolve the tidyselect argument to a character vector of column names.
   col2mod <- names(select(ungroup(data), {{ HLA_typing_columns }}))
@@ -213,6 +221,27 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   row_idx <- rep.int(seq_len(n_rows), n_cols)
   col_idx <- rep(seq_len(n_cols), each = n_rows)
 
+  # In "keep" mode, expand slash ambiguity before every per-cell decision so
+  # nomenclature detection, prefix repair, and DRB3/4/5 inference run on each
+  # alternative independently. `cell_idx` records the original input cell for
+  # reassembly after those transformations.
+  cell_idx <- seq_along(raw)
+  if (keep_ambiguity) {
+    raw <- as.character(raw)
+    other_gl_input <- !is.na(raw) & grepl("[\\^|+~?]", raw)
+    if (any(other_gl_input)) {
+      cli_abort("{sum(other_gl_input)} value{?s} passed to {.fn HLA_columns_to_GLstring} contain{?s/} GL String delimiters other than {.val /} (e.g. {.val {raw[other_gl_input][1]}}). Only allele ambiguity separated by {.val /} can be retained when {.arg take_first_allele} is {.val keep}.")
+    }
+
+    ambiguity_parts <- lapply(raw, function(value) {
+      if (is.na(value)) NA_character_ else strsplit(value, "/", fixed = TRUE)[[1]]
+    })
+    cell_idx <- rep.int(cell_idx, lengths(ambiguity_parts))
+    raw <- unlist(ambiguity_parts, use.names = FALSE)
+    row_idx <- row_idx[cell_idx]
+    col_idx <- col_idx[cell_idx]
+  }
+
   # --- Per-cell transformations --------------------------------------------
 
   # DEFAULT (auto-detect) classification, decided from the RAW cell value. A
@@ -247,11 +276,12 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   molecular_cell[force_mol] <- TRUE
   molecular_cell[is_bw]     <- FALSE
 
-  # Clean each cell via HLA_validate, then strip the "HLA-"/locus prefix so the
-  # output re-applies locus names consistently. Both are already vectorised.
-  # take_first_allele = FALSE makes a multi-allele cell error here rather than
-  # be reduced to its first allele.
-  validated    <- HLA_validate(raw, take_first_allele = take_first_allele)
+  # Clean each allele via HLA_validate, then strip its "HLA-"/locus prefix so
+  # the output re-applies locus names consistently.
+  validated <- HLA_validate(
+    raw,
+    take_first_allele = if (keep_ambiguity) TRUE else take_first_allele
+  )
   allele_clean <- HLA_prefix_remove(validated)
 
   # Allele-derived DRB3/4/5 hint, preferred over the column-name locus when
@@ -292,6 +322,19 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     canonical_locus[is53] <- "HLA-DRB4"; allele_clean[is53] <- "XX"
   }
 
+  # Slash ambiguity represents alternatives at one allele position, so every
+  # member must resolve to the same canonical locus. Run this after forced
+  # DR51/52/53 mapping because that mapping can change a member's locus.
+  # Mixed nomenclature is allowed (e.g. Cw7/C*17:01), but mixed loci are not.
+  if (keep_ambiguity) {
+    loci_per_cell <- split(canonical_locus, cell_idx)
+    mixed_locus <- vapply(loci_per_cell, function(x) length(unique(x)) > 1L, logical(1))
+    if (any(mixed_locus)) {
+      bad_cell <- as.integer(names(mixed_locus)[which(mixed_locus)[1]])
+      cli_abort("Allele-ambiguity value {.val {as.vector(allele_mat)[bad_cell]}} contains alternatives from different HLA loci. All alleles separated by {.val /} must belong to the same locus.")
+    }
+  }
+
   # DR51/52/53 SEROLOGIC grouping flag (default rendering): keep serologic DR5x
   # entries in their own group, separate from the other DR antigens, matching
   # historical behavior. (Forced-molecular DR5x are already split by canonical
@@ -317,6 +360,7 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   keep <- !is.na(allele_clean) & !(placeholder_xx & is_drb345_locus)
 
   row_idx          <- row_idx[keep]
+  cell_idx         <- cell_idx[keep]
   canonical_locus  <- canonical_locus[keep]
   molecular_cell   <- molecular_cell[keep]
   serologic_name_c <- serologic_name_col[col_idx[keep]]
@@ -325,11 +369,24 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 
   # --- Build the per-cell final_type string --------------------------------
   # Molecular: "<canonical-locus>*<allele>"; serologic: "<serologic-name><allele>".
+  # Prefix every member of a retained ambiguity list rather than only its head.
   final_type <- ifelse(
     molecular_cell,
     paste0(canonical_locus, "*", allele_clean),
     paste0(serologic_name_c, allele_clean)
   )
+
+  # Reassemble alternatives into their original cell after every member has
+  # received its own locus and nomenclature treatment.
+  if (keep_ambiguity) {
+    unique_cells <- unique(cell_idx)
+    cell_group <- match(cell_idx, unique_cells)
+    final_type <- vapply(split(final_type, cell_group), paste, character(1), collapse = "/")
+    first_member <- match(unique_cells, cell_idx)
+    row_idx <- row_idx[first_member]
+    canonical_locus <- canonical_locus[first_member]
+    DRB345 <- DRB345[first_member]
+  }
 
   # --- Two-level collapse: (row, canonical_locus, DRB345) with "+", then row
   # with "^". First-appearance order within each row is preserved by grouping

@@ -227,6 +227,119 @@ test_that("take_first_allele = FALSE rejects multi-allele cells", {
   )
 })
 
+test_that("take_first_allele = keep retains slash allele ambiguity", {
+  df <- data.frame(
+    DRB345_1 = c(
+      "DRB4*01:03:01:01/DRB4*01:03:01:03",
+      "4*01:03/4*01:04",
+      NA
+    ),
+    A1 = c("01:01/01:02N", "02:01", NA),
+    stringsAsFactors = FALSE
+  )
+
+  expect_equal(
+    HLA_columns_to_GLstring(
+      df,
+      HLA_typing_columns = c(DRB345_1, A1),
+      take_first_allele = "keep"
+    ),
+    c(
+      "HLA-DRB4*01:03:01:01/HLA-DRB4*01:03:01:03^HLA-A*01:01/HLA-A*01:02N",
+      "HLA-DRB4*01:03/HLA-DRB4*01:04^HLA-A*02:01",
+      "HLA-AXX"
+    )
+  )
+
+  # The packaged data includes wild-caught slash ambiguity and exercises a
+  # vector containing ordinary cells, ambiguous cells, and missing values.
+  kept <- HLA_columns_to_GLstring(
+    Haplotype_frequencies,
+    c("HLA-A":"HLA-DPB1"),
+    take_first_allele = "keep"
+  )
+  expect_true(any(grepl("HLA-DRB4\\*01:03:01:01/HLA-DRB4\\*01:03:01:03", kept)))
+
+  for (delimiter in c("^", "|", "+", "~", "?")) {
+    expect_error(
+      HLA_columns_to_GLstring(
+        data.frame(A1 = paste0("01:01", delimiter, "02:01")),
+        A1,
+        take_first_allele = "keep"
+      ),
+      "other than.*[/]"
+    )
+  }
+
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(Cw1 = "Cw7/Cw17"),
+      Cw1,
+      take_first_allele = "keep"
+    ),
+    "HLA-Cw7/HLA-Cw17"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(Cw1 = "Cw*07:01/C*17:01"),
+      Cw1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-C*07:01/HLA-C*17:01"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(Cw1 = "Cw7/C*17:01"),
+      Cw1,
+      take_first_allele = "keep"
+    ),
+    "HLA-Cw7/HLA-C*17:01"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "DR52/DR52"),
+      DR1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-DRB3*XX/HLA-DRB3*XX"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = c(2, NA)),
+      A1,
+      take_first_allele = "keep"
+    ),
+    c("HLA-A2", "HLA-AXX")
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DRB345_1 = "DRB3*01:01/DRB4*01:03"),
+      DRB345_1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "DR51/DR52"),
+      DR1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "01:01"),
+      A1,
+      take_first_allele = "other"
+    ),
+    "TRUE.*or.*FALSE"
+  )
+})
+
 test_that("HLA_columns_to_GLstring does not pick up grouping variables", {
   df <- tibble::tibble(
     patient = c("p1", "p2"),
