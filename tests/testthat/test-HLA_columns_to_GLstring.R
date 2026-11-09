@@ -338,6 +338,17 @@ test_that("take_first_allele = keep retains slash allele ambiguity", {
     ),
     "different HLA loci"
   )
+  for (nomenclature in list(NULL, "mol", "ser")) {
+    expect_error(
+      HLA_columns_to_GLstring(
+        data.frame(A1 = "A*01:01/MICA*008:01"),
+        A1,
+        nomenclature = nomenclature,
+        take_first_allele = "keep"
+      ),
+      "unrecognized HLA locus.*MICA"
+    )
+  }
   expect_error(
     HLA_columns_to_GLstring(
       data.frame(DR1 = "DR51/DR52"),

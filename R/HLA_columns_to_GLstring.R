@@ -368,12 +368,19 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
       "C" = "HLA-C", "CW" = "HLA-C",
       "DR" = "HLA-DRB1", "DRB1" = "HLA-DRB1",
       "DRB3" = "HLA-DRB3", "DRB4" = "HLA-DRB4", "DRB5" = "HLA-DRB5",
+      "3" = "HLA-DRB3", "4" = "HLA-DRB4", "5" = "HLA-DRB5",
       "DQ" = "HLA-DQB1", "DQB1" = "HLA-DQB1",
       "DQA" = "HLA-DQA1", "DQA1" = "HLA-DQA1",
       "DPA" = "HLA-DPA1", "DPA1" = "HLA-DPA1",
       "DPB" = "HLA-DPB1", "DPB1" = "HLA-DPB1"
     )
     explicit_canonical <- unname(explicit_map[toupper(explicit_locus)])
+    unknown_explicit <- !is.na(explicit_locus) & is.na(explicit_canonical)
+    if (any(unknown_explicit)) {
+      bad_member <- which(unknown_explicit)[1]
+      bad_cell <- cell_idx[bad_member]
+      cli_abort("Allele-ambiguity value {.val {as.vector(allele_mat)[bad_cell]}} contains the unrecognized HLA locus {.val {explicit_locus[bad_member]}}. Every explicit locus in a retained ambiguity list must be recognized.")
+    }
     validation_locus <- canonical_locus
     has_explicit <- !is.na(explicit_canonical)
     validation_locus[has_explicit] <- explicit_canonical[has_explicit]
