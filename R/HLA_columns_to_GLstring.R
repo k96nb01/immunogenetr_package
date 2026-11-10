@@ -180,7 +180,10 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   canonical_locus_map <- c(
     "HLA-Cw" = "HLA-C",
     "HLA-DR" = "HLA-DRB1",
-    "HLA-DQ" = "HLA-DQB1"
+    "HLA-DQ" = "HLA-DQB1",
+    "HLA-DQA" = "HLA-DQA1",
+    "HLA-DPA" = "HLA-DPA1",
+    "HLA-DPB" = "HLA-DPB1"
   )
   to_canonical <- function(x) {
     hit <- unname(canonical_locus_map[x])
@@ -419,6 +422,12 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     # differ from the source column. Reapply them to actual ambiguity members,
     # then enforce the invariant that Bw epitopes are never molecular.
     if (!is.null(named_nomenclature)) {
+      # Remove any named setting inherited from the source column before
+      # applying the setting for the ambiguity's resolved locus. Restore the
+      # pre-forcing allele too, because a source DR override may already have
+      # converted a broad specificity such as 52 to XX.
+      molecular_cell[ambiguity_member] <- auto_molecular[ambiguity_member]
+      allele_clean[ambiguity_member] <- allele_clean_for_validation[ambiguity_member]
       resolved_nomenclature <- named_nomenclature[
         match(canonical_locus, nomenclature_keys)
       ]
