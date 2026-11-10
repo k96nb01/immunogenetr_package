@@ -227,6 +227,416 @@ test_that("take_first_allele = FALSE rejects multi-allele cells", {
   )
 })
 
+test_that("take_first_allele = keep retains slash allele ambiguity", {
+  df <- data.frame(
+    DRB345_1 = c(
+      "DRB4*01:03:01:01/DRB4*01:03:01:03",
+      "4*01:03/4*01:04",
+      NA
+    ),
+    A1 = c("01:01/01:02N", "02:01", NA),
+    stringsAsFactors = FALSE
+  )
+
+  expect_equal(
+    HLA_columns_to_GLstring(
+      df,
+      HLA_typing_columns = c(DRB345_1, A1),
+      take_first_allele = "keep"
+    ),
+    c(
+      "HLA-DRB4*01:03:01:01/HLA-DRB4*01:03:01:03^HLA-A*01:01/HLA-A*01:02N",
+      "HLA-DRB4*01:03/HLA-DRB4*01:04^HLA-A*02:01",
+      "HLA-AXX"
+    )
+  )
+
+  # The packaged data includes wild-caught slash ambiguity and exercises a
+  # vector containing ordinary cells, ambiguous cells, and missing values.
+  kept <- HLA_columns_to_GLstring(
+    Haplotype_frequencies,
+    c("HLA-A":"HLA-DPB1"),
+    take_first_allele = "keep"
+  )
+  expect_true(any(grepl("HLA-DRB4\\*01:03:01:01/HLA-DRB4\\*01:03:01:03", kept)))
+
+  for (delimiter in c("^", "|", "+", "~", "?")) {
+    expect_error(
+      HLA_columns_to_GLstring(
+        data.frame(A1 = paste0("01:01", delimiter, "02:01")),
+        A1,
+        take_first_allele = "keep"
+      ),
+      "other than.*[/]"
+    )
+  }
+
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(Cw1 = "Cw7/Cw17"),
+      Cw1,
+      take_first_allele = "keep"
+    ),
+    "HLA-Cw7/HLA-Cw17"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(Cw1 = "Cw*07:01/C*17:01"),
+      Cw1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-C*07:01/HLA-C*17:01"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(Cw1 = "Cw7/C*17:01"),
+      Cw1,
+      take_first_allele = "keep"
+    ),
+    "HLA-Cw7/HLA-C*17:01"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "DR52/DR52"),
+      DR1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-DRB3*XX/HLA-DRB3*XX"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = c(2, NA)),
+      A1,
+      take_first_allele = "keep"
+    ),
+    c("HLA-A2", "HLA-AXX")
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DRB345_1 = "DRB3*01:01/DRB4*01:03"),
+      DRB345_1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "DR51/DR52"),
+      DR1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "A*01:01/B*07:02"),
+      A1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  for (nomenclature in list(NULL, "mol", "ser")) {
+    expect_error(
+      HLA_columns_to_GLstring(
+        data.frame(A1 = "A*01:01/MICA*008:01"),
+        A1,
+        nomenclature = nomenclature,
+        take_first_allele = "keep"
+      ),
+      "unrecognized HLA locus.*MICA"
+    )
+  }
+  for (value in c("MICA*008:01", "DRB9*01:01", "FOO*01:01")) {
+    expect_equal(
+      HLA_columns_to_GLstring(
+        data.frame(A1 = value),
+        A1,
+        take_first_allele = "keep"
+      ),
+      HLA_columns_to_GLstring(
+        data.frame(A1 = value),
+        A1,
+        take_first_allele = TRUE
+      )
+    )
+  }
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "B7/B8"),
+      A1,
+      take_first_allele = "keep"
+    ),
+    "HLA-B7/HLA-B8"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "Bw4/Bw6"),
+      A1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-Bw4/HLA-Bw6"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "B*07:02/B*08:01"),
+      A1,
+      nomenclature = c("HLA-B" = "ser"),
+      take_first_allele = "keep"
+    ),
+    "HLA-B07:02/HLA-B08:01"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "B7/B8"),
+      A1,
+      nomenclature = c("HLA-B" = "mol"),
+      take_first_allele = "keep"
+    ),
+    "HLA-B*7/HLA-B*8"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "B*07:02/B*08:01"),
+      A1,
+      nomenclature = c("HLA-A" = "ser"),
+      take_first_allele = "keep"
+    ),
+    "HLA-B*07:02/HLA-B*08:01"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "Cw7/Cw17"),
+      A1,
+      nomenclature = c("HLA-A" = "mol"),
+      take_first_allele = "keep"
+    ),
+    "HLA-Cw7/HLA-Cw17"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "DR52/DRB3*01:01"),
+      DR1,
+      nomenclature = c("HLA-DRB1" = "mol"),
+      take_first_allele = "keep"
+    ),
+    "HLA-DR52/HLA-DRB3*01:01"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = c(
+        "DQA*01:01/DQA1*02:01",
+        "DPA*01:03/DPA1*02:01",
+        "DPB*04:01/DPB1*05:01"
+      )),
+      A1,
+      nomenclature = c(
+        "HLA-DQA" = "ser",
+        "HLA-DPA" = "ser",
+        "HLA-DPB" = "ser"
+      ),
+      take_first_allele = "keep"
+    ),
+    c(
+      "HLA-DQA01:01/HLA-DQA02:01",
+      "HLA-DPA01:03/HLA-DPA02:01",
+      "HLA-DPB04:01/HLA-DPB05:01"
+    )
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = c(
+        "DR51/DRB5*01:01",
+        "DR52/DRB3*01:01",
+        "DR53/DRB4*01:03"
+      )),
+      DR1,
+      nomenclature = c(
+        "HLA-DRB5" = "mol",
+        "HLA-DRB3" = "mol",
+        "HLA-DRB4" = "mol"
+      ),
+      take_first_allele = "keep"
+    ),
+    c(
+      "HLA-DRB5*XX/HLA-DRB5*01:01",
+      "HLA-DRB3*XX/HLA-DRB3*01:01",
+      "HLA-DRB4*XX/HLA-DRB4*01:03"
+    )
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB345_1 = c(
+        "DRB3*52/DRB3*01:01",
+        "DRB4*53/DRB4*01:03",
+        "DRB5*51/DRB5*01:01",
+        "3*52/3*01:01"
+      )),
+      DRB345_1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    c(
+      "HLA-DRB3*52/HLA-DRB3*01:01",
+      "HLA-DRB4*53/HLA-DRB4*01:03",
+      "HLA-DRB5*51/HLA-DRB5*01:01",
+      "HLA-DRB3*52/HLA-DRB3*01:01"
+    )
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "B7/B8"),
+      A1,
+      nomenclature = "ser",
+      take_first_allele = "keep"
+    ),
+    "HLA-B7/HLA-B8"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "DR51/DR52"),
+      DR1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DRB345_1 = "DR51/DR52"),
+      DRB345_1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "A51/DRB5*01:01"),
+      DR1,
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "A51/DRB5*01:01"),
+      DR1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "different HLA loci"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB345_1 = c(
+        "DR51/DRB5*01:01",
+        "DR52/DRB3*01:01",
+        "DR53/DRB4*01:03"
+      )),
+      DRB345_1,
+      take_first_allele = "keep"
+    ),
+    c(
+      "HLA-DR51/HLA-DRB5*01:01",
+      "HLA-DR52/HLA-DRB3*01:01",
+      "HLA-DR53/HLA-DRB4*01:03"
+    )
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(
+        DR1 = "DR52/DRB3*01:01",
+        DRB3_1 = "DRB3*02:02"
+      ),
+      everything(),
+      take_first_allele = "keep"
+    ),
+    "HLA-DR52/HLA-DRB3*01:01+HLA-DRB3*02:02"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB1_1 = "DR52/DRB3*01:01"),
+      DRB1_1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-DRB3*XX/HLA-DRB3*01:01"
+  )
+  ordinary_dr <- data.frame(
+    DR1 = "7",
+    DR2 = "6",
+    DR3 = "51",
+    DR4 = "52"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      ordinary_dr,
+      everything(),
+      take_first_allele = "keep"
+    ),
+    HLA_columns_to_GLstring(
+      ordinary_dr,
+      everything(),
+      take_first_allele = TRUE
+    )
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB1_1 = "52"),
+      DRB1_1,
+      nomenclature = "mol",
+      take_first_allele = TRUE
+    ),
+    "HLA-DRB1*52"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = "52"),
+      DR1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-DRB3*XX"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB1_1 = "52"),
+      DRB1_1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-DRB1*52"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = c("", "01:01")),
+      A1,
+      take_first_allele = "keep"
+    ),
+    c("HLA-AXX", "HLA-A*01:01")
+  )
+  for (value in c("/01:01", "01:01/", "01:01//02:01")) {
+    expect_error(
+      HLA_columns_to_GLstring(
+        data.frame(A1 = value),
+        A1,
+        take_first_allele = "keep"
+      ),
+      "empty alternative"
+    )
+  }
+  expect_error(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "01:01"),
+      A1,
+      take_first_allele = "other"
+    ),
+    "TRUE.*or.*FALSE"
+  )
+})
+
 test_that("HLA_columns_to_GLstring does not pick up grouping variables", {
   df <- tibble::tibble(
     patient = c("p1", "p2"),

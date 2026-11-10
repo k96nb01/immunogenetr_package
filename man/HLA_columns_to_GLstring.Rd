@@ -15,9 +15,8 @@ HLA_columns_to_GLstring(
 }
 \arguments{
 \item{data}{A data frame with each row including an HLA typing result, with
-individual columns containing a single allele. One allele per cell is the
-function's contract: a cell holding a GL String is reduced to its first
-allele (see `take_first_allele`).}
+individual columns containing a single allele or, when requested, a
+`/`-delimited allele-ambiguity list (see `take_first_allele`).}
 
 \item{HLA_typing_columns}{A list of columns containing the HLA alleles. Tidyselect is supported.}
 
@@ -40,11 +39,12 @@ equivalent). Relabeling is structural only: `"ser"` strips any asterisk and
 uses the serologic locus name; `"mol"` uses the molecular locus name. No
 cross-nomenclature allele translation is performed.}
 
-\item{take_first_allele}{A logical value, passed through to `HLA_validate`
-when each cell is cleaned. If TRUE (the default), a cell containing GL
-String delimiters ("^", "|", "+", "~", "/" or "?") is silently reduced to
-its first allele. If FALSE, such cells raise an error instead, for callers
-that want malformed multi-allele cells caught rather than truncated.}
+\item{take_first_allele}{A logical value or `"keep"`. If TRUE (the
+default), a cell containing GL String delimiters (`"^"`, `"|"`, `"+"`,
+`"~"`, `"/"` or `"?"`) is silently reduced to its first allele. If FALSE,
+such cells raise an error. If `"keep"`, `/`-delimited allele ambiguity is
+retained and every allele is cleaned and prefixed independently; cells
+containing any other GL String delimiter still raise an error.}
 }
 \value{
 A list of GL Strings in the order of the original data frame.
