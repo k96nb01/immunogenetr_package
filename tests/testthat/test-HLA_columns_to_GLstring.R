@@ -349,6 +349,104 @@ test_that("take_first_allele = keep retains slash allele ambiguity", {
       "unrecognized HLA locus.*MICA"
     )
   }
+  for (value in c("MICA*008:01", "DRB9*01:01", "FOO*01:01")) {
+    expect_equal(
+      HLA_columns_to_GLstring(
+        data.frame(A1 = value),
+        A1,
+        take_first_allele = "keep"
+      ),
+      HLA_columns_to_GLstring(
+        data.frame(A1 = value),
+        A1,
+        take_first_allele = TRUE
+      )
+    )
+  }
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "B7/B8"),
+      A1,
+      take_first_allele = "keep"
+    ),
+    "HLA-B7/HLA-B8"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "Bw4/Bw6"),
+      A1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    "HLA-Bw4/HLA-Bw6"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "B*07:02/B*08:01"),
+      A1,
+      nomenclature = c("HLA-B" = "ser"),
+      take_first_allele = "keep"
+    ),
+    "HLA-B07:02/HLA-B08:01"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "B7/B8"),
+      A1,
+      nomenclature = c("HLA-B" = "mol"),
+      take_first_allele = "keep"
+    ),
+    "HLA-B*7/HLA-B*8"
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DR1 = c(
+        "DR51/DRB5*01:01",
+        "DR52/DRB3*01:01",
+        "DR53/DRB4*01:03"
+      )),
+      DR1,
+      nomenclature = c(
+        "HLA-DRB5" = "mol",
+        "HLA-DRB3" = "mol",
+        "HLA-DRB4" = "mol"
+      ),
+      take_first_allele = "keep"
+    ),
+    c(
+      "HLA-DRB5*XX/HLA-DRB5*01:01",
+      "HLA-DRB3*XX/HLA-DRB3*01:01",
+      "HLA-DRB4*XX/HLA-DRB4*01:03"
+    )
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(DRB345_1 = c(
+        "DRB3*52/DRB3*01:01",
+        "DRB4*53/DRB4*01:03",
+        "DRB5*51/DRB5*01:01",
+        "3*52/3*01:01"
+      )),
+      DRB345_1,
+      nomenclature = "mol",
+      take_first_allele = "keep"
+    ),
+    c(
+      "HLA-DRB3*52/HLA-DRB3*01:01",
+      "HLA-DRB4*53/HLA-DRB4*01:03",
+      "HLA-DRB5*51/HLA-DRB5*01:01",
+      "HLA-DRB3*52/HLA-DRB3*01:01"
+    )
+  )
+  expect_equal(
+    HLA_columns_to_GLstring(
+      data.frame(A1 = "B7/B8"),
+      A1,
+      nomenclature = "ser",
+      take_first_allele = "keep"
+    ),
+    "HLA-B7/HLA-B8"
+  )
   expect_error(
     HLA_columns_to_GLstring(
       data.frame(DR1 = "DR51/DR52"),

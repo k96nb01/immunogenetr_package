@@ -192,6 +192,8 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
   # selected locus) or a named vector keyed by locus in EITHER nomenclature
   # spelling (normalized to the canonical locus before matching). (issue #40 §5.3)
   nomen_col <- rep(NA_character_, n_cols)
+  named_nomenclature <- NULL
+  nomenclature_keys <- NULL
   if (!is.null(nomenclature)) {
     if (is.null(names(nomenclature))) {
       # Scalar form: one value applied to every selected locus.
@@ -204,6 +206,8 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
       }
       keys_canon <- to_canonical(names(nomenclature))
       nomen_col  <- unname(nomenclature[match(to_canonical(locus_from_name), keys_canon)])
+      named_nomenclature <- unname(nomenclature)
+      nomenclature_keys <- keys_canon
     }
   }
 
@@ -375,7 +379,9 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
       "DPB" = "HLA-DPB1", "DPB1" = "HLA-DPB1"
     )
     explicit_canonical <- unname(explicit_map[toupper(explicit_locus)])
-    unknown_explicit <- !is.na(explicit_locus) & is.na(explicit_canonical)
+    unknown_explicit <- ambiguity_member &
+      !is.na(explicit_locus) &
+      is.na(explicit_canonical)
     if (any(unknown_explicit)) {
       bad_member <- which(unknown_explicit)[1]
       bad_cell <- cell_idx[bad_member]
@@ -408,6 +414,50 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
     # broad/molecular pair such as DR52/DRB3*01:01 in the same `+`-joined DRB3
     # group as another DRB3 allele instead of splitting it across `^`.
     canonical_locus[ambiguity_member] <- validation_locus[ambiguity_member]
+
+    # Named nomenclature overrides are keyed by the resolved locus, which may
+    # differ from the source column. Reapply them to actual ambiguity members,
+    # then enforce the invariant that Bw epitopes are never molecular.
+    if (!is.null(named_nomenclature)) {
+      resolved_nomenclature <- named_nomenclature[
+        match(canonical_locus, nomenclature_keys)
+      ]
+      resolved_ser <- ambiguity_member &
+        !is.na(resolved_nomenclature) &
+        resolved_nomenclature == "ser"
+      resolved_mol <- ambiguity_member &
+        !is.na(resolved_nomenclature) &
+        resolved_nomenclature == "mol"
+      molecular_cell[resolved_ser] <- FALSE
+      molecular_cell[resolved_mol] <- TRUE
+    }
+    resolved_bw <- ambiguity_member & canonical_locus == "HLA-Bw"
+    molecular_cell[resolved_bw] <- FALSE
+
+    # A named override for a resolved secondary-DR locus is known only after
+    # ambiguity resolution. Apply the same broad-specificity conversion used
+    # by scalar molecular forcing so DR51/52/53 never become false molecular
+    # alleles such as DRB3*52.
+    broad_member <- is.na(explicit_locus) | toupper(explicit_locus) == "DR"
+    resolved_dr_mol <- ambiguity_member & molecular_cell & broad_member
+    allele_clean[
+      resolved_dr_mol &
+        canonical_locus == "HLA-DRB5" &
+        !is.na(allele_clean_for_validation) &
+        allele_clean_for_validation == "51"
+    ] <- "XX"
+    allele_clean[
+      resolved_dr_mol &
+        canonical_locus == "HLA-DRB3" &
+        !is.na(allele_clean_for_validation) &
+        allele_clean_for_validation == "52"
+    ] <- "XX"
+    allele_clean[
+      resolved_dr_mol &
+        canonical_locus == "HLA-DRB4" &
+        !is.na(allele_clean_for_validation) &
+        allele_clean_for_validation == "53"
+    ] <- "XX"
   }
 
   # DR51/52/53 SEROLOGIC grouping flag (default rendering): keep serologic DR5x
@@ -436,9 +486,17 @@ HLA_columns_to_GLstring <- function(data, HLA_typing_columns, prefix_to_remove =
 
   row_idx          <- row_idx[keep]
   cell_idx         <- cell_idx[keep]
+  if (keep_ambiguity) {
+    ambiguity_member <- ambiguity_member[keep]
+  }
   canonical_locus  <- canonical_locus[keep]
   molecular_cell   <- molecular_cell[keep]
   serologic_name_c <- serologic_name_col[col_idx[keep]]
+  if (keep_ambiguity) {
+    serologic_name_c[ambiguity_member] <- unname(
+      serologic_map[canonical_locus[ambiguity_member]]
+    )
+  }
   allele_clean     <- allele_clean[keep]
   DRB345           <- DRB345[keep]
 
